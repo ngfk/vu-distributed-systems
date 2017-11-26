@@ -1,0 +1,29 @@
+{
+    "folders": [
+        {
+            "name": "root",
+            "path": "."
+        },
+        {
+            "path": "ds-grid"
+        },
+        {
+            "path": "ds-site"
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/.git": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/CVS": true,
+            "**/.DS_Store": true,
+
+            "**/bin": true,
+            "**/node_modules": true,
+
+            "ds-grid": true,
+            "ds-site": true
+        }
+    }
+}

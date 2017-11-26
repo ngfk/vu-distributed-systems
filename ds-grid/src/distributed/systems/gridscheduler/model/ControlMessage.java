@@ -13,11 +13,6 @@ import distributed.systems.core.Message;
  */
 public class ControlMessage extends Message {
 
-	/**
-	 * Generated serial version UID
-	 */
-	private static final long serialVersionUID = -1453428681740343634L;
-
 	private final ControlMessageType type;
 	private String url;
 	private Job job;
