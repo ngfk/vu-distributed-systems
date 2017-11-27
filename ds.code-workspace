@@ -11,6 +11,9 @@
             "path": "ds-site"
         }
     ],
+    "extensions": {
+        "recommendations": ["esbenp.prettier-vscode"]
+    },
     "settings": {
         "files.exclude": {
             "**/.git": true,
@@ -22,11 +25,26 @@
             // root
             "ds-grid": true,
             "ds-site": true,
+            "**/node_modules": true,
 
             // ds-grid
             "bin": true,
             ".classpath": true,
             ".project": true
-        }
+        },
+
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "java.format.enabled": false,
+
+        "tslint.nodePath": "./ds-site/node_modules/tslint/lib",
+        "tslint.configFile": "./ds-site/tslint.json",
+        "tslint.enable": true,
+        "tslint.alwaysShowRuleFailuresAsWarnings": true,
+
+        "sort-imports.languages": ["javascript", "typescript"],
+        "sort-imports.on-save": true,
+        "sort-imports.suppress-warnings": false
     }
 }
