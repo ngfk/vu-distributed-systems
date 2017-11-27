@@ -19,11 +19,14 @@
             "**/CVS": true,
             "**/.DS_Store": true,
 
-            "**/bin": true,
-            "**/node_modules": true,
-
+            // root
             "ds-grid": true,
-            "ds-site": true
+            "ds-site": true,
+
+            // ds-grid
+            "bin": true,
+            ".classpath": true,
+            ".project": true
         }
     }
 }
