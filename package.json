@@ -4,6 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
+        "postinstall": "cd ds-site && npm i && cd ..",
+        "start:site": "npm run --prefix ds-site start",
         "commit": "git-cz"
     },
     "repository": {
@@ -28,5 +30,14 @@
         "cz-customizable": {
             "config": "./cz-config.js"
         }
+    },
+    "prettier": {
+        "printWidth": 80,
+        "tabWidth": 4,
+        "singleQuote": true,
+        "trailingComma": "none",
+        "bracketSpacing": true,
+        "semi": true,
+        "useTabs": false
     }
 }
