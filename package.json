@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "commit": "git-cz"
     },
     "repository": {
         "type": "git",
@@ -16,5 +16,17 @@
     "bugs": {
         "url": "https://github.com/ngfk/vu-distributed-systems/issues"
     },
-    "homepage": "https://github.com/ngfk/vu-distributed-systems#readme"
+    "homepage": "https://github.com/ngfk/vu-distributed-systems#readme",
+    "devDependencies": {
+        "commitizen": "^2.9.6",
+        "cz-customizable": "^5.2.0"
+    },
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-customizable"
+        },
+        "cz-customizable": {
+            "config": "./cz-config.js"
+        }
+    }
 }
