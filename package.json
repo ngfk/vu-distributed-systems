@@ -24,8 +24,7 @@
     "homepage": "https://github.com/ngfk/vu-distributed-systems#readme",
     "devDependencies": {
         "commitizen": "^2.9.6",
-        "cz-customizable": "^5.2.0",
-        "http-server": "^0.10.0"
+        "cz-customizable": "^5.2.0"
     },
     "config": {
         "commitizen": {
@@ -43,5 +42,8 @@
         "bracketSpacing": true,
         "semi": true,
         "useTabs": false
+    },
+    "dependencies": {
+        "http-server": "^0.10.0"
     }
 }
