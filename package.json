@@ -4,7 +4,10 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "postinstall": "cd ds-site && npm i && cd ..",
+        "start": "http-server ds-site/build --port $PORT",
+        "postinstall": "npm run install:site && npm run build:site",
+        "install:site": "npm install --prefix ds-site",
+        "build:site": "npm run --prefix ds-site build",
         "start:site": "npm run --prefix ds-site start",
         "commit": "git-cz"
     },
@@ -21,7 +24,8 @@
     "homepage": "https://github.com/ngfk/vu-distributed-systems#readme",
     "devDependencies": {
         "commitizen": "^2.9.6",
-        "cz-customizable": "^5.2.0"
+        "cz-customizable": "^5.2.0",
+        "http-server": "^0.10.0"
     },
     "config": {
         "commitizen": {

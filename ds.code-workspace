@@ -30,7 +30,11 @@
             // ds-grid
             "bin": true,
             ".classpath": true,
-            ".project": true
+            ".project": true,
+
+            // ds-site
+            "etc": true,
+            "build": true
         },
 
         "editor.formatOnSave": true,
