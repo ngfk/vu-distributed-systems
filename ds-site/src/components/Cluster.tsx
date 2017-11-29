@@ -8,15 +8,15 @@ export interface ClusterProps {
 
 export class Cluster extends React.Component<ClusterProps> {
     public render(): JSX.Element {
-        let i: number;
         let workerNodes = [];
+
         workerNodes.push(<ResourceManager />);
-        for (i = 1; i <= this.props.workers; i++) {
+        for (let i = 1; i <= this.props.workers; i++) {
             workerNodes.push(<Worker />);
         }
-        let formatted = workerNodes.map(function(line) {
-            return <div> {line} </div>;
-        });
+        let formatted = workerNodes.map((line, i) => (
+            <div key={i}> {line} </div>
+        ));
 
         return (
             <div>

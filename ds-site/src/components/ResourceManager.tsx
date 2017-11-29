@@ -10,8 +10,8 @@ export class ResourceManager extends React.Component<
 > {
     public render(): JSX.Element {
         return (
-            <div>
-                <div className="ResourceManager"> Resource manager </div>
+            <div className="ResourceManager">
+                <div className="ResourceManager-label">Resource manager</div>
             </div>
         );
     }

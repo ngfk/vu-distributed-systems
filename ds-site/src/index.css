@@ -4,14 +4,41 @@ body {
     font-family: sans-serif;
 }
 
+.User-box {
+    display: flex;
+    margin: 10px 60px;
+    justify-content: space-around;
+    flex-flow: row wrap;
+}
+
+.User {
+    margin: 5px;
+    width: 60px;
+    height: 60px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+.User-label {
+    margin-top: 35%;
+}
+
+.Cluster-box {
+    display: flex;
+    margin: 10px 60px;
+    justify-content: space-around;
+    flex-flow: row wrap;
+}
+
 .Cluster {
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
-    width: 140px;
+    width: 150px;
     border: 1px solid black;
+    border-radius: 5px;
     padding: 5px;
-    margin-left: 45%;
+    margin: 5px;
 }
 
 .Cluster-label {
@@ -19,11 +46,11 @@ body {
 }
 
 .Worker {
-    margin-left: 5px;
+    margin: 5px;
     width: 60px;
     height: 60px;
     border: 1px solid black;
-    margin-top: 5px;
+    border-radius: 5px;
 }
 
 .Worker-label {
@@ -31,14 +58,37 @@ body {
 }
 
 .ResourceManager {
-    margin-left: 5px;
+    margin: 5px;
     width: 125px;
     height: 60px;
     border: 1px solid black;
-    margin-top: 5px;
+    border-radius: 5px;
+    padding: 5px;
 }
 
 .ResourceManager-label {
+    margin-top: 5%;
+}
+
+.Scheduler-box {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    border: 1px solid black;
+    border-radius: 5px;
+    margin: 10px 60px;
+}
+
+.Scheduler {
+    width: 75px;
+    height: 75px;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 10px;
+}
+
+.Scheduler-label {
     margin-top: 35%;
 }
 
@@ -60,6 +110,11 @@ body {
 
 .App-intro {
     font-size: large;
+}
+
+.App-body {
+    display: flex;
+    flex-flow: column nowrap;
 }
 
 @keyframes App-logo-spin {

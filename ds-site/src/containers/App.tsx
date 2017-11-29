@@ -4,7 +4,8 @@ import { User } from '../components/User';
 import { Cluster } from '../components/Cluster';
 import { Scheduler } from '../components/Scheduler';
 
-const logo = require('./logo.svg');
+// tslint:disable-next-line
+const logo = require('./ludwig.jpg');
 
 export interface AppProps {}
 
@@ -16,19 +17,25 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     public render(): JSX.Element {
+        let clusters = [];
+        for (let i = 0; i < 4; i++) {
+            clusters.push(<Cluster workers={10} />);
+        }
         return (
             <div className="App">
                 <div className="App-header">
                     <img src={logo} className="App-logo" alt="logo" />
-                    <h2>Welcome to React</h2>
+                    <h2>Welcome to Ludwig Dahl Fanclub</h2>
                 </div>
-                <p className="App-intro">
-                    To get started, edit
-                    <code>src/App.tsx</code> and save to reload.
-                </p>
-                <User />
-                <Scheduler />
-                <Cluster workers={10} />
+                <h1 className="App-intro">Simulation of the grid schedulers</h1>
+
+                <div className="App-body">
+                    <div className="User-box">
+                        <User />{' '}
+                    </div>
+                    <Scheduler schedulers={5} />
+                    <div className="Cluster-box"> {clusters} </div>
+                </div>
             </div>
         );
     }
