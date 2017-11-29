@@ -23,14 +23,16 @@ public class Simulation {
 		}
 		
 		for (int i = 0; i < NUMBER_OF_RESOURCE_MANAGERS; i++) {
-			resourceManagers.add(new ResourceManager(i, NUMBER_OF_WORKERS));
+			ResourceManager newResourceManager = new ResourceManager(i, NUMBER_OF_WORKERS);
+			resourceManagers.add(newResourceManager);
+			Socket rmSocket = newResourceManager.getSocket();
 			
+			/**
+			 * We create all of the worker nodes here,
+			 * On init, the worker nodes will let the resourcemanager know that they're available
+			 */
 			for (int j = 0; j < NUMBER_OF_WORKERS; j++) {
-				Worker workingNode = new Worker(j);
-				
-				/* I think that communication should happen over sockets, since the nodes are possibly all distributed and stuff */
-				resourceManager.addWorker(workingNode.getSocket());
-				
+				Worker workingNode = new Worker(j, rmSocket);
 			}
 		}
 		

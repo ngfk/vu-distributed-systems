@@ -6,10 +6,10 @@ package distributed.systems.assignmentA;
  * Just simulates the behavior of a real socket.
  */
 public class Socket {
-	private ISocketCommunicator owner;
+	private ISocketCommunicator node;
 	
 	Socket(ISocketCommunicator node){
-		owner = node;
+		this.node = node;
 	}
 	
 	/**
@@ -19,6 +19,7 @@ public class Socket {
 	 *  We could implement some delaying function here.. to simulate traffic on a network
 	 */
 	public void sendMessage(Message message) {
-		ISocketCommunicator.onMessageReceived(message);
+		message.socket = this;
+		node.onMessageReceived(message);
 	}
 }

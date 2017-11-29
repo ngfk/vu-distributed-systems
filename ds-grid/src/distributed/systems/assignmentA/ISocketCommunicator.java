@@ -1,10 +1,12 @@
 package distributed.systems.assignmentA;
 
+/**
+ * Interface for every node that wants to receive messages through a socket
+ * 
+ *
+ */
 public interface ISocketCommunicator {
-
-	static void onMessageReceived(Message message) {
-		// TODO Auto-generated method stub
-		
-	}
+	
+	public void onMessageReceived(Message message);
 
 }
