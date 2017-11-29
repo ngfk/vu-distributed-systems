@@ -6,6 +6,7 @@ export interface ClusterProps {
     workers: number;
     resourceActive: number;
     workerActive: number;
+    workerNode: number;
 }
 
 export class Cluster extends React.Component<ClusterProps> {
@@ -16,7 +17,9 @@ export class Cluster extends React.Component<ClusterProps> {
             <ResourceManager active={this.props.resourceActive} />
         );
         for (let i = 1; i <= this.props.workers; i++) {
-            workerNodes.push(<Worker active={this.props.workerActive} />);
+            if (i === this.props.workerNode)
+                workerNodes.push(<Worker active={2} />);
+            else workerNodes.push(<Worker active={0} />);
         }
         let formatted = workerNodes.map((line, i) => (
             <div key={i}> {line} </div>

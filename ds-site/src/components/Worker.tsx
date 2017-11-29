@@ -18,7 +18,7 @@ export class Worker extends React.Component<WorkerProps, WorkerState> {
         }
         return (
             <div className="Worker" style={backgroundStyle}>
-                <div className="Worker-label"> Worker </div>
+                <div className="Worker-label"> W </div>
             </div>
         );
     }

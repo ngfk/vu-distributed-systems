@@ -11,17 +11,21 @@ export interface AppProps {}
 
 export interface AppState {
     active: number;
+    randomCluster: number;
+    randomWorker: number;
 }
 
 class App extends React.Component<AppProps, AppState> {
     constructor(props: AppProps) {
         super(props);
-        this.state = { active: 0 };
+        this.state = { active: 0, randomWorker: 0, randomCluster: 0 };
 
         setInterval(() => {
             this.setState(state => ({
                 ...state,
-                active: (this.state.active + 1) % 3
+                active: (this.state.active + 1) % 3,
+                randomCluster: Math.floor(Math.random() * 20),
+                randomWorker: Math.floor(Math.random() * 50)
             }));
         }, 2000);
     }
@@ -29,15 +33,27 @@ class App extends React.Component<AppProps, AppState> {
     public render(): JSX.Element {
         let clusters = [];
 
-        for (let i = 0; i < 4; i++) {
-            clusters.push(
-                <Cluster
-                    workers={10}
-                    key={i}
-                    resourceActive={(this.state.active + 3) % 3}
-                    workerActive={(this.state.active + 3) % 3}
-                />
-            );
+        for (let i = 0; i < 20; i++) {
+            if (i === this.state.randomCluster)
+                clusters.push(
+                    <Cluster
+                        workers={50}
+                        key={i}
+                        resourceActive={(this.state.active + 3) % 3}
+                        workerActive={(this.state.active + 3) % 3}
+                        workerNode={this.state.randomWorker}
+                    />
+                );
+            else
+                clusters.push(
+                    <Cluster
+                        workers={50}
+                        key={i}
+                        resourceActive={(this.state.active + 3) % 3}
+                        workerActive={(this.state.active + 3) % 3}
+                        workerNode={51}
+                    />
+                );
         }
         return (
             <div className="App">
