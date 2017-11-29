@@ -34,7 +34,7 @@ public class Worker implements ISocketCommunicator {
 	}
 	
 	private Message onCreateMessage() {
-		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.STATUS, 1);
+		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.STATUS, 0, socket);
 		return message;
 	}
 }

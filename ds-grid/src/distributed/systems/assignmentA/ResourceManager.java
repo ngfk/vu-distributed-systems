@@ -1,6 +1,7 @@
 package distributed.systems.assignmentA;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -39,9 +40,11 @@ public class ResourceManager implements ISocketCommunicator {
 		assert (message.getType() == Message.TYPE.STATUS);
 		assert (message.getSender() == Message.SENDER.WORKER);
 		
-		Socket workerSocket = message.socket; // we use the socket as identifier for the worker
+		Socket workerSocket = message.senderSocket; // we use the socket as identifier for the worker
 		Worker.STATUS newStatus = Worker.STATUS.values()[message.getValue()]; // hacky way to convert int -> enum
 		workers.put(workerSocket, newStatus);
+		
+		System.out.println(Arrays.toString(workers.values().toArray()));
 	}
 	/**
 	 * Types of messages we expect here:
@@ -52,7 +55,7 @@ public class ResourceManager implements ISocketCommunicator {
 	 * - Message from a scheduler saying that he received the result of the Job correctly (confirmation message)
 	 */
 	public void onMessageReceived(Message message) {
-		System.out.println("I received a message bruff");
+		System.out.printf("RM [%d] Message received: %s\n", id, message.toString());
 		
 		if (message.getSender() == Message.SENDER.WORKER) {
 			if (message.getType() == Message.TYPE.STATUS) {
