@@ -41,6 +41,7 @@ public class Simulation {
 
 		users = new ArrayList<User>();
 		for (int i = 0; i < NUMBER_OF_USERS; i++) {
+			// TODO: fix this.
 			users.add(new User(i, schedulers.get(0).getSocket(), schedulers.get(1).getSocket()));
 		}
 	}
