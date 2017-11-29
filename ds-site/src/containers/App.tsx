@@ -11,35 +11,66 @@ export interface AppProps {}
 
 export interface AppState {
     active: number;
+    randomResource: number;
     randomCluster: number;
     randomWorker: number;
+    randomScheduler: number;
 }
 
 class App extends React.Component<AppProps, AppState> {
     constructor(props: AppProps) {
         super(props);
-        this.state = { active: 0, randomWorker: 0, randomCluster: 0 };
+        this.state = {
+            active: 0,
+            randomWorker: 0,
+            randomCluster: 0,
+            randomResource: 0,
+            randomScheduler: 0
+        };
 
         setInterval(() => {
             this.setState(state => ({
                 ...state,
                 active: (this.state.active + 1) % 3,
                 randomCluster: Math.floor(Math.random() * 20),
-                randomWorker: Math.floor(Math.random() * 50)
+                randomResource: Math.floor(Math.random() * 20),
+                randomWorker: Math.floor(Math.random() * 50),
+                randomScheduler: Math.floor(Math.random() * 10)
             }));
-        }, 2000);
+        }, 500);
     }
 
     public render(): JSX.Element {
         let clusters = [];
 
         for (let i = 0; i < 20; i++) {
+            if (i === this.state.randomResource)
+                clusters.push(
+                    <Cluster
+                        workers={50}
+                        key={i}
+                        resourceActive={1}
+                        workerActive={(this.state.active + 3) % 3}
+                        workerNode={51}
+                    />
+                );
+            else
+                clusters.push(
+                    <Cluster
+                        workers={50}
+                        key={i}
+                        resourceActive={2}
+                        workerActive={(this.state.active + 3) % 3}
+                        workerNode={51}
+                    />
+                );
+
             if (i === this.state.randomCluster)
                 clusters.push(
                     <Cluster
                         workers={50}
                         key={i}
-                        resourceActive={(this.state.active + 3) % 3}
+                        resourceActive={2}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={this.state.randomWorker}
                     />
@@ -49,7 +80,7 @@ class App extends React.Component<AppProps, AppState> {
                     <Cluster
                         workers={50}
                         key={i}
-                        resourceActive={(this.state.active + 3) % 3}
+                        resourceActive={2}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={51}
                     />
@@ -65,9 +96,13 @@ class App extends React.Component<AppProps, AppState> {
 
                 <div className="App-body">
                     <div className="User-box">
-                        <User />{' '}
+                        <User />
                     </div>
-                    <Scheduler schedulers={5} active={this.state.active} />
+                    <Scheduler
+                        schedulers={5}
+                        active={1}
+                        randomScheduler={this.state.randomScheduler}
+                    />
                     <div className="Cluster-box"> {clusters} </div>
                 </div>
             </div>

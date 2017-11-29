@@ -3,6 +3,7 @@ import * as React from 'react';
 export interface SchedulerProps {
     schedulers: number;
     active: number;
+    randomScheduler: number;
 }
 
 export interface SchedulerState {}
@@ -22,6 +23,9 @@ export class Scheduler extends React.Component<SchedulerProps, SchedulerState> {
         }
 
         for (i = 0; i < this.props.schedulers; i++) {
+            if (i === this.props.randomScheduler) {
+                backgroundStyle = { backgroundColor: 'red' };
+            }
             schedulerNodes.push(
                 <div className="Scheduler" key={i} style={backgroundStyle}>
                     <div className="Scheduler-label">Scheduler</div>
