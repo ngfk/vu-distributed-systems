@@ -1,19 +1,18 @@
 import * as React from 'react';
 
-import { Counter } from '../components/Counter';
+import { User } from '../components/User';
+import { Cluster } from '../components/Cluster';
+import { Scheduler } from '../components/Scheduler';
 
 const logo = require('./logo.svg');
 
 export interface AppProps {}
 
-export interface AppState {
-    counter: number;
-}
+export interface AppState {}
 
 class App extends React.Component<AppProps, AppState> {
     constructor(props: AppProps) {
         super(props);
-        this.state = { counter: 0 };
     }
 
     public render(): JSX.Element {
@@ -27,7 +26,9 @@ class App extends React.Component<AppProps, AppState> {
                     To get started, edit
                     <code>src/App.tsx</code> and save to reload.
                 </p>
-                <Counter />
+                <User />
+                <Scheduler />
+                <Cluster workers={10} />
             </div>
         );
     }

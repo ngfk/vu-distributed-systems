@@ -4,6 +4,44 @@ body {
     font-family: sans-serif;
 }
 
+.Cluster {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    width: 140px;
+    border: 1px solid black;
+    padding: 5px;
+    margin-left: 45%;
+}
+
+.Cluster-label {
+    align-self: center;
+}
+
+.Worker {
+    margin-left: 5px;
+    width: 60px;
+    height: 60px;
+    border: 1px solid black;
+    margin-top: 5px;
+}
+
+.Worker-label {
+    margin-top: 35%;
+}
+
+.ResourceManager {
+    margin-left: 5px;
+    width: 125px;
+    height: 60px;
+    border: 1px solid black;
+    margin-top: 5px;
+}
+
+.ResourceManager-label {
+    margin-top: 35%;
+}
+
 .App {
     text-align: center;
 }
