@@ -17,6 +17,13 @@ public class Simulation {
 	private ArrayList<ResourceManager> resourceManagers;
 	private ArrayList<User> users;
 
+	
+	
+	/**
+	 * TODO this should not happen here..
+	 * there will be a front-end interface where you can create all of these.
+	 * And whenver you press run, the users will start sending jobs to the clusters.
+	 */
 	Simulation() {
 		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
 		
