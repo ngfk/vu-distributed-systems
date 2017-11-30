@@ -32,11 +32,11 @@ grid.subscribe(message => {
             store.dispatch('GRID_SETUP', message.grid);
             console.log('setup', message);
             break;
+        case 'state':
+            console.log('state', message);
+            break;
         case 'data':
             console.log('data', message);
-            break;
-        case 'toggle':
-            console.log('toggle', message);
             break;
     }
 });
