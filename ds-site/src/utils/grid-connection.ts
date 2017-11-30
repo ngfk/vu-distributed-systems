@@ -91,16 +91,16 @@ export class GridConnection {
         }
 
         // Throw error on messages with invalid structure.
-        if (!data || typeof data.type === 'string') {
+        const accept = ['setup', 'state', 'data'];
+        if (
+            !data ||
+            typeof data.type !== 'string' ||
+            accept.indexOf(data.type) < 0
+        ) {
             const json = JSON.stringify(data, undefined, 4);
             throw new Error(invalidMessageErr + json);
         }
 
-        // Only messages that are meant for this interface instance are passed
-        // to the subscribed observers.
-        const accept = ['setup', 'toggle', 'data'];
-        if (accept.indexOf(data.type) >= 0) {
-            this.observers.forEach(observer => observer(data));
-        }
+        this.observers.forEach(observer => observer(data));
     }
 }

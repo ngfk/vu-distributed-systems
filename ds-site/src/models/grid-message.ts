@@ -20,8 +20,8 @@ export interface GridMessageSetup extends GridMessage {
     readonly grid: GridSetup;
 }
 
-export interface GridMessageToggle extends GridMessage {
-    readonly type: 'toggle';
+export interface GridMessageState extends GridMessage {
+    readonly type: 'state';
     readonly nodeId: number;
     readonly nodeType: NodeType;
     readonly nodeState: NodeState;
@@ -38,12 +38,12 @@ export interface GridMessageStart extends GridMessage {
     readonly type: 'start';
 }
 
-export interface GridMessageKill extends GridMessage {
-    readonly type: 'kill';
+export interface GridMessagStop extends GridMessage {
+    readonly type: 'stop';
 }
 
-export interface GridMessageSilence extends GridMessage {
-    readonly type: 'silence';
+export interface GridMessageToggle extends GridMessage {
+    readonly type: 'toggle';
     readonly nodeId: number;
     readonly nodeType: NodeType;
 }
@@ -54,13 +54,13 @@ export interface GridMessageSilence extends GridMessage {
 export type OutgoingGridMessage =
     | GridMessageInit
     | GridMessageStart
-    | GridMessageKill
-    | GridMessageSilence;
+    | GridMessagStop
+    | GridMessageToggle;
 
 /**
  * Only includes the grid messages that are from the grid back-end.
  */
 export type IncomingGridMessage =
     | GridMessageSetup
-    | GridMessageToggle
+    | GridMessageState
     | GridMessageData;
