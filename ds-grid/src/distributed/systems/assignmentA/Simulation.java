@@ -16,8 +16,9 @@ public class Simulation {
 	private ArrayList<Scheduler> schedulers;
 	private ArrayList<ResourceManager> resourceManagers;
 	private ArrayList<User> users;
-
 	
+	/* WebSocket Server */
+	private Thread webSocketServerThread;
 	
 	/**
 	 * TODO this should not happen here..
@@ -59,6 +60,10 @@ public class Simulation {
 			// TODO: fix this.
 			users.add(new User(i, schedulers.get(0).getSocket(), schedulers.get(1).getSocket()));
 		}
+		
+		/* Create the WebSocketServer thread */
+		webSocketServerThread = new Thread(new WebSocketServer());
+		webSocketServerThread.start();
 	}
 
 	public static void main(String[] args) {
