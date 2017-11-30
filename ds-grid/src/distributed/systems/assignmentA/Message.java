@@ -1,22 +1,29 @@
 package distributed.systems.assignmentA;
 
+import java.util.ArrayList;
 
 /**
  * The messages that travel over the sockets
  * 
- *	The meaning of the messages can be found below:
- *	SENDER    | TYPE         | VALUE     | MEANING
- *	worker 	  | status       |    x		| this worker is updating its status to the ResourceManager (also used to register a worker with the resourceManager)
- *  worker 	  | confirmation |    x	    | this worker is confirming the retrieval of Job with id <value>
- *  worker 	  | result       |    x   	| this worker is returning the result of the Job it was completing 
+ *  The meaning of the messages can be found below:
+ *	SENDER	| TYPE			| VALUE	| MEANING
+ *	worker	| status			| x		| this worker is updating its status to the ResourceManager (also used to register a worker with the resourceManager)
+ *	worker	| confirmation	| x		| this worker is confirming the retrieval of Job with id <value>
+ *	worker	| result			| x		| this worker is returning the result of the Job it was completing 
  *  - - - --- --- --- - - -
- *
+ *	user		| request		| 0		| the user is requesting the list of schedulers from a scheduler
+ *	user		| request		| x > 1	| the user is requesting computation of job with jobId x
+ *	user		| confirmation	| 0		| the user is confirms that it received the scheduler list
+ *	user		| confirmation	| x > 1	| the user is confirms that it received reply belonging to job with jobId x
+ *	- - - --- --- --- - - -
+ *	
  */
 public class Message {
 	public static enum SENDER {
 		WORKER,
 		MANAGER,
-		SCHEDULER
+		SCHEDULER,
+		USER
 	}
 	
 	public static enum TYPE {
@@ -27,7 +34,8 @@ public class Message {
 	}
 	
 	public Socket senderSocket; // socket that the receiver can use, to reply to the sender. 
-	private Job job; // a message can just contain an entire job object. cuz why not.
+	private Job job; // jobs can be send over sockets
+	private ArrayList<Socket> sockets; // socket lists can be send in a message 
 	
 	private SENDER sender; // ubink
 	private TYPE type;
@@ -43,9 +51,12 @@ public class Message {
 		this.senderSocket = senderSocket;
 	}
 	
-	/* go-setter bellow */
+	/* go-setter bellow (copies because we cannot send pointers over the network) */
 	public void attachJob(Job job) {
 		this.job = job.copy();
+	}
+	public void attachSockets(ArrayList<Socket> sockets) {
+		this.sockets = new ArrayList<>(sockets); // copy
 	}
 	/* go-getters bellow */
 	public String toString() {

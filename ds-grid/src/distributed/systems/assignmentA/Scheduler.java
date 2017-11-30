@@ -1,19 +1,25 @@
 package distributed.systems.assignmentA;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * A scheduler know where to find all resource managers, other schedulers, and users?
  * 
- * Requirements
- * - All scheduler communication should go through sockets 
- *
+ * The list of other schedulers is hard-coded
+ * The list of resourceManagers is flexible
+ * The list of users is flexible
  */
 public class Scheduler implements ISocketCommunicator{
+	public static enum STATUS {
+		RUNNING,
+		DEAD
+	}
 	private int id;
 	private Socket socket;
 	private ArrayList <Job> activeJobs;
-	private ArrayList <Socket> otherSchedulers;
+	
+	private HashMap<Socket, Scheduler.STATUS> schedulers;
 	
 	
 	Scheduler(int id){
@@ -30,14 +36,16 @@ public class Scheduler implements ISocketCommunicator{
 	}
 	
 	/* a scheduler should know about all other schedulers */
-	public void registerScheduler(Socket socket) {
-		// it should not be able to register its own socket..
-		assert(this.socket != socket);
-		otherSchedulers.add(socket);
+	public void setSchedulers(ArrayList<Socket> schedulerSockets) {
+		schedulers = new HashMap<Socket,Scheduler.STATUS>();
+		schedulers.put(socket, STATUS.RUNNING);
 	}
 	
 	public ArrayList<Socket> getSchedulers(){
-		return otherSchedulers;
+		ArrayList<Socket> list = new ArrayList<Socket>();
+		list.addAll(schedulers.keySet());
+		list.add(socket); // add self
+		return list;
 	}
 	
 	public Socket getSocket() {

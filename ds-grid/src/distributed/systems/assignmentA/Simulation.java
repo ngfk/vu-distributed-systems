@@ -8,8 +8,8 @@ import java.util.ArrayList;
  */
 public class Simulation {
 	private static final int NUMBER_OF_SCHEDULERS = 5;
-	private static final int NUMBER_OF_RESOURCE_MANAGERS = 20;
-	private static final int NUMBER_OF_WORKERS = 50; /* per resource manager */
+	private static final int NUMBER_OF_RESOURCE_MANAGERS = 2;
+	private static final int NUMBER_OF_WORKERS = 5; /* per resource manager */
 	private static final int NUMBER_OF_USERS = 10; /* the guys that are going to use our system */
 
 	/* keep this info to make debug-life slightly easier */
@@ -18,10 +18,18 @@ public class Simulation {
 	private ArrayList<User> users;
 
 	Simulation() {
+		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
+		
 		schedulers = new ArrayList<Scheduler>();
-		/* create all instances */
 		for (int i = 0; i < NUMBER_OF_SCHEDULERS; i++) {
-			schedulers.add(new Scheduler(i));
+			Scheduler newScheduler = new Scheduler(i);
+			schedulers.add(newScheduler);
+			schedulerSockets.add(newScheduler.getSocket());
+		}
+		/* let the schedulers know about eachother */
+		for (int i = 0; i < schedulers.size(); i++) {
+			schedulers.get(i).setSchedulers(schedulerSockets);
+			
 		}
 
 		resourceManagers = new ArrayList<ResourceManager>();

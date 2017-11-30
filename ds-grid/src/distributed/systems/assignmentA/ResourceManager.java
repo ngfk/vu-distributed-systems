@@ -24,12 +24,14 @@ public class ResourceManager implements ISocketCommunicator {
 	 *  We store the socket (which we use to communicate with the workers) and the status of that worker node
 	 *   The resourceManager now knows at all times how to communicate with the workers, and what their status is.   
 	 */
-	private HashMap<Socket, Worker.STATUS> workers=new HashMap<Socket,Worker.STATUS>();
+	private HashMap<Socket, Worker.STATUS> workers;
 	
 	
 	ResourceManager(int id, int numberOfWorkers){
 		this.id = id;
 		socket = new Socket(this);
+		
+		workers = new HashMap<Socket,Worker.STATUS>();
 	}
 		
 	/**
