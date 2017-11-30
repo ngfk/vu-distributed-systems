@@ -1,13 +1,21 @@
 import * as React from 'react';
 
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { Cluster } from '../components/Cluster';
 import { Scheduler } from '../components/Scheduler';
 import { User } from '../components/User';
+import { State } from '../reducers/reducer';
+import { actionCreators, ActionCreators } from '../actions/actions';
+import { Grid } from '../models/grid';
 
 // tslint:disable-next-line
 const logo = require('./ludwig.jpg');
 
-export interface AppProps {}
+export interface AppProps {
+    grid: Grid;
+    actions: ActionCreators;
+}
 
 export interface AppState {
     active: number;
@@ -110,4 +118,13 @@ class App extends React.Component<AppProps, AppState> {
     }
 }
 
-export default App;
+const mapStateToProps = (state: State) => ({
+    grid: state.grid
+});
+
+const mapDispatchToProps = (dispatch: any) => ({
+    actions: bindActionCreators(actionCreators, dispatch)
+});
+
+// tslint:disable-next-line variable-name
+export default connect(mapStateToProps, mapDispatchToProps)(App);
