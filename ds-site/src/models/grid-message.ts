@@ -38,7 +38,7 @@ export interface GridMessageStart extends GridMessage {
     readonly type: 'start';
 }
 
-export interface GridMessagStop extends GridMessage {
+export interface GridMessageStop extends GridMessage {
     readonly type: 'stop';
 }
 
@@ -54,7 +54,7 @@ export interface GridMessageToggle extends GridMessage {
 export type OutgoingGridMessage =
     | GridMessageInit
     | GridMessageStart
-    | GridMessagStop
+    | GridMessageStop
     | GridMessageToggle;
 
 /**
