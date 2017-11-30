@@ -5,7 +5,7 @@ import { GridSetup } from '../models/grid';
 
 export interface GridActionMap {
     GRID_SETUP: GridSetup;
-    GRID_TOGGLE: { id: string; type: NodeType; state: NodeState };
+    GRID_TOGGLE: { id: number; type: NodeType; state: NodeState };
 }
 
 const factory = new ActionFactory<GridActionMap>();
