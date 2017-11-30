@@ -5,7 +5,6 @@ import {
 
 const DEFAULT_URL = 'ws://localhost:4000/connection';
 const BASE_DELAY = 200;
-const REGISTER_MESSAGE = 'register';
 
 export type OnMessageHandler = (message: IncomingGridMessage) => void;
 
@@ -19,7 +18,6 @@ export type Unsubscribe = () => void;
  * to connect this class will retry with an exponential delay.
  */
 export class GridConnection {
-    private id: string;
     private websocket: WebSocket;
     private reconnectDelay = BASE_DELAY;
     private observers = new Set<OnMessageHandler>();
@@ -49,12 +47,8 @@ export class GridConnection {
      * @param message The message to send.
      */
     public send(message: OutgoingGridMessage): void {
-        // Create new object with copied properties from message and append the
-        // interface id to the message.
-        const msg = { ...message, id: this.id };
-
         // Send message to the back-end.
-        this.websocket.send(msg);
+        this.websocket.send(JSON.stringify(message));
     }
 
     /**
@@ -64,7 +58,7 @@ export class GridConnection {
     private connect(url: string): void {
         this.websocket = new WebSocket(url);
         this.websocket.onclose = () => this.reconnect(url);
-        this.websocket.onopen = () => this.register();
+        this.websocket.onopen = () => (this.reconnectDelay = BASE_DELAY);
         this.websocket.onmessage = message => this.onMessage(message);
     }
 
@@ -78,18 +72,6 @@ export class GridConnection {
             this.reconnectDelay *= 1.2;
             this.connect(url);
         }, this.reconnectDelay);
-    }
-
-    /**
-     * Registers this interface at the back-end, requesting an interface id.
-     */
-    private register(): void {
-        this.websocket.send(
-            JSON.stringify({ type: REGISTER_MESSAGE, id: this.id })
-        );
-
-        // Web socket connection is open, reset the re-connection delay.
-        this.reconnectDelay = BASE_DELAY;
     }
 
     /**
@@ -114,16 +96,10 @@ export class GridConnection {
             throw new Error(invalidMessageErr + json);
         }
 
-        // Register messages are handled internally.
-        if (data.type === REGISTER_MESSAGE) {
-            this.id = data.id;
-            return;
-        }
-
         // Only messages that are meant for this interface instance are passed
         // to the subscribed observers.
         const accept = ['setup', 'toggle', 'data'];
-        if (data.id === this.id && accept.indexOf(data.type) >= 0) {
+        if (accept.indexOf(data.type) >= 0) {
             this.observers.forEach(observer => observer(data));
         }
     }
