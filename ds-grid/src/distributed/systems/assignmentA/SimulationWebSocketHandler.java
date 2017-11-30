@@ -10,10 +10,20 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.MalformedJsonException;
+
+import distributed.systems.assignmentA.types.GridMessageInit;
+
 @WebSocket
 public class SimulationWebSocketHandler {
 	/// Holds all connected WebSocket connections
 	private static ArrayList<Session> sessions = new ArrayList<Session>();
+	private static Gson gson = new Gson();
+	private static JsonParser jsonParser = new JsonParser();
 
 	/**
 	 * Called if a Websocket connection closes
@@ -63,6 +73,30 @@ public class SimulationWebSocketHandler {
 	@OnWebSocketMessage
 	public void onMessage(String message) {
 		System.out.println("WebSocket Message received: " + message);
+		
+		try {
+			JsonObject jsonObj = (JsonObject)jsonParser.parse(message);
+			String messageType = jsonObj.get("type").toString().replaceAll("\"", "");
+			
+			switch(messageType) {
+			case "init":
+				GridMessageInit initMessage = gson.fromJson(message, GridMessageInit.class);
+				
+				// TODO create new Simulation object with the following cluster, scheduler, worker size? or at least change the sizes.
+				System.out.println("clusters: " + initMessage.sizes.clusters);
+				System.out.println("schedulers: " + initMessage.sizes.schedulers);
+				System.out.println("workers: " + initMessage.sizes.workers);
+				break;
+			case "setup":
+				System.out.println("setup message received");
+				break;
+			default:
+				break;
+			}
+		} catch(JsonSyntaxException e) {
+			System.out.println("Incorrect JSON received.");
+		} 
+		
 	}
 
 	/**

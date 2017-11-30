@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="lib/websocket/jetty-http-9.4.8.v20171121.jar"/>
 	<classpathentry kind="lib" path="lib/websocket/jetty-io-9.4.8.v20171121.jar"/>
 	<classpathentry kind="lib" path="lib/websocket/websocket-common-9.4.8.v20171121.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.8.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
