@@ -96,12 +96,20 @@ export class GridConnection {
      * @param message The web socket message event.
      */
     private onMessage(message: MessageEvent): void {
-        const data = message.data;
+        const invalidMessageErr = 'Invalid message received from grid:\n';
+
+        // Attempt to parse the JSON data
+        let data: any;
+        try {
+            data = JSON.parse(message.data);
+        } catch {
+            throw new Error(invalidMessageErr + message.data);
+        }
 
         // Throw error on messages with invalid structure.
         if (!data || typeof data.type === 'string') {
-            const json = JSON.stringify(message.data, undefined, 4);
-            throw new Error('Invalid message received from grid:\n' + json);
+            const json = JSON.stringify(data, undefined, 4);
+            throw new Error(invalidMessageErr + json);
         }
 
         // Register messages are handled internally.
@@ -114,7 +122,7 @@ export class GridConnection {
         // to the subscribed observers.
         const accept = ['setup', 'toggle', 'data'];
         if (data.id === this.id && accept.indexOf(data.type) >= 0) {
-            this.observers.forEach(observer => observer(message.data));
+            this.observers.forEach(observer => observer(data));
         }
     }
 }
