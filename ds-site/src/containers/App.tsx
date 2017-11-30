@@ -43,12 +43,12 @@ class App extends React.Component<AppProps, AppState> {
     public render(): JSX.Element {
         let clusters = [];
 
-        for (let i = 0; i < 20; i++) {
+        for (let i = 1; i < 10; i++) {
             if (i === this.state.randomResource)
                 clusters.push(
                     <Cluster
                         workers={50}
-                        key={i}
+                        key={'ResourceDown' + i.toString()}
                         resourceActive={1}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={51}
@@ -58,7 +58,7 @@ class App extends React.Component<AppProps, AppState> {
                 clusters.push(
                     <Cluster
                         workers={50}
-                        key={i}
+                        key={'ResourceUp' + i.toString()}
                         resourceActive={2}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={51}
@@ -69,7 +69,7 @@ class App extends React.Component<AppProps, AppState> {
                 clusters.push(
                     <Cluster
                         workers={50}
-                        key={i}
+                        key={'WorkerDown' + i.toString()}
                         resourceActive={2}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={this.state.randomWorker}
@@ -79,7 +79,7 @@ class App extends React.Component<AppProps, AppState> {
                 clusters.push(
                     <Cluster
                         workers={50}
-                        key={i}
+                        key={'WorkerUp' + i.toString()}
                         resourceActive={2}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={51}
