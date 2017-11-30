@@ -1,5 +1,6 @@
+import { NodeState, NodeType } from './node';
+
 import { GridSetup } from './grid';
-import { NodeType } from './node';
 
 export interface GridMessage {
     readonly type: string;
@@ -21,13 +22,14 @@ export interface GridMessageSetup extends GridMessage {
 
 export interface GridMessageToggle extends GridMessage {
     readonly type: 'toggle';
-    readonly nodeId: string;
+    readonly nodeId: number;
     readonly nodeType: NodeType;
+    readonly nodeState: NodeState;
 }
 
 export interface GridMessageData extends GridMessage {
     readonly type: 'data';
-    readonly nodeId: string;
+    readonly nodeId: number;
     readonly nodeType: NodeType;
     readonly data: any;
 }
@@ -42,7 +44,7 @@ export interface GridMessageKill extends GridMessage {
 
 export interface GridMessageSilence extends GridMessage {
     readonly type: 'silence';
-    readonly nodeId: string;
+    readonly nodeId: number;
     readonly nodeType: NodeType;
 }
 

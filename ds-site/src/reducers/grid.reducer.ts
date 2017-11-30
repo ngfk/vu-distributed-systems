@@ -5,7 +5,7 @@ import { GridActionMap } from '../actions/grid.actions';
 import { createReducer } from '@ngfk/ts-redux';
 
 const initial: Grid = {
-    user: '',
+    user: 0,
     schedulers: [],
     clusters: []
 };
