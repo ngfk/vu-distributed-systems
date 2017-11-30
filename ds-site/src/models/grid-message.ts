@@ -1,4 +1,5 @@
-import { NodeType } from './node-type';
+import { GridSetup } from './grid';
+import { NodeType } from './node';
 
 export interface GridMessage {
     readonly type: string;
@@ -11,6 +12,11 @@ export interface GridMessageInit extends GridMessage {
         readonly clusters: number;
         readonly workers: number;
     };
+}
+
+export interface GridMessageSetup extends GridMessage {
+    readonly type: 'setup';
+    readonly grid: GridSetup;
 }
 
 export interface GridMessageToggle extends GridMessage {
@@ -52,4 +58,7 @@ export type OutgoingGridMessage =
 /**
  * Only includes the grid messages that are from the grid back-end.
  */
-export type IncomingGridMessage = GridMessageToggle | GridMessageData;
+export type IncomingGridMessage =
+    | GridMessageSetup
+    | GridMessageToggle
+    | GridMessageData;

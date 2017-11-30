@@ -84,7 +84,9 @@ export class GridConnection {
      * Registers this interface at the back-end, requesting an interface id.
      */
     private register(): void {
-        this.websocket.send({ type: REGISTER_MESSAGE, id: this.id });
+        this.websocket.send(
+            JSON.stringify({ type: REGISTER_MESSAGE, id: this.id })
+        );
 
         // Web socket connection is open, reset the re-connection delay.
         this.reconnectDelay = BASE_DELAY;

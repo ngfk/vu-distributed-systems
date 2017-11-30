@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import { User } from '../components/User';
 import { Cluster } from '../components/Cluster';
 import { Scheduler } from '../components/Scheduler';
+import { User } from '../components/User';
 
 // tslint:disable-next-line
 const logo = require('./ludwig.jpg');
@@ -28,16 +28,16 @@ class App extends React.Component<AppProps, AppState> {
             randomScheduler: 0
         };
 
-        setInterval(() => {
-            this.setState(state => ({
-                ...state,
-                active: (this.state.active + 1) % 3,
-                randomCluster: Math.floor(Math.random() * 20),
-                randomResource: Math.floor(Math.random() * 20),
-                randomWorker: Math.floor(Math.random() * 50),
-                randomScheduler: Math.floor(Math.random() * 10)
-            }));
-        }, 500);
+        // setInterval(() => {
+        //     this.setState(state => ({
+        //         ...state,
+        //         active: (this.state.active + 1) % 3,
+        //         randomCluster: Math.floor(Math.random() * 20),
+        //         randomResource: Math.floor(Math.random() * 20),
+        //         randomWorker: Math.floor(Math.random() * 50),
+        //         randomScheduler: Math.floor(Math.random() * 10)
+        //     }));
+        // }, 500);
     }
 
     public render(): JSX.Element {
