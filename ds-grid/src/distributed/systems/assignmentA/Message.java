@@ -23,6 +23,7 @@ import java.util.ArrayList;
  * 	- - - --- --- --- - - -
  * resourceM	| confirmation	| x > 1	| the rm confirms to the scheduler that it has received jobId: x
  * resourceM	| request		| x > 1	| the rm requests to a worker to compute job with jobId: x
+ * resourceM	| confirmation	| x > 1	| the rm confirms to the worker that it has received the results of jobId: x
  * 	- - - --- --- --- - - -
  *	worker	| confirmation	| x > 1	| the worker confirms the request to the RM of jobId: x
  *	worker	| result			| x > 1	| the worker returns result of the job to the resourceManager

@@ -12,7 +12,7 @@ package distributed.systems.assignmentA;
  */
 public class Worker implements ISocketCommunicator, Runnable {
 	public static enum STATUS {
-		AVAILABLE, BUSY, DEAD
+		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
 
 	private Socket rmSocket; // socket to access the resource manager that belongs to the worker
@@ -21,7 +21,7 @@ public class Worker implements ISocketCommunicator, Runnable {
 	private int id; // relative to each resource manager
 	STATUS status;
 	private int totalExecutionTime;
-	private ActiveJob activeJob; 
+	private ActiveJob activeJob;
 
 	Worker(int id, Socket rmSocket) {
 		this.id = id;
@@ -33,51 +33,61 @@ public class Worker implements ISocketCommunicator, Runnable {
 		rmSocket.sendMessage(getAliveMessage());
 	}
 
-	/* ========================================================================
-	 * 	Send messages below
-	 * ===================================================================== */
+	/*
+	 * ======================================================================== Send
+	 * messages below
+	 * =====================================================================
+	 */
 	/**
 	 * send job confirm message to RM
 	 */
 	private void sendJobConfirmationToRM(Socket rmSocket, int value) {
-		assert(rmSocket == this.rmSocket); // workers cannot serve another RM (should never trigger tho)
+		assert (rmSocket == this.rmSocket); // workers cannot serve another RM (should never trigger tho)
 		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.CONFIRMATION, value, socket);
 		rmSocket.sendMessage(message);
 	}
-	
+
 	/**
 	 * send job result back to the RM
 	 */
 	private void sendJobResultToRM() {
-		assert(activeJob != null);
+		assert (activeJob != null);
 		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.RESULT, activeJob.job.getId(), socket);
 		message.attachJob(activeJob.job);
 		activeJob.scheduler.sendMessage(message);
-	}	
-	/* ========================================================================
-	 * 	Receive messages below
-	 * ===================================================================== */
+	}
+
+	/*
+	 * ========================================================================
+	 * Receive messages below
+	 * =====================================================================
+	 */
 	/**
-	 * if we receive a jobresult confirmation
-	 *  - The worker node is done with the calculation
-	 *  - update its status to the RM
+	 * if we receive a jobresult confirmation 
+	 * - The worker node is officially done with the calculation 
+	 * - update its status to the RM 
+	 * - remove active job 
 	 */
 	private void jobResultConfirmationHandler(Message message) {
+		activeJob = null;
 		status = Worker.STATUS.AVAILABLE;
-		rmSocket.sendMessage(getAliveMessage()); // also updates status
+		rmSocket.sendMessage(getAliveMessage()); // update status to RM
 	}
+
 	/**
-	 * whenever a jobrequest arives at this node
-	 *  - CHECK if we already have a job
-	 *  		. if we were done with that job, and we're done calculating, re-send result
-	 *  		. if its another job discard it and continue
-	 * 	- set status to BUSY
-	 *  - send confirmation to RM
-	 *  TODO:
-	 *  - start executing ... -> after x seconds send result to RM
+	 * whenever a jobrequest arives at this node 
+	 * - CHECK if we already have a job
+	 * 	. if we were done with that job, and we're done calculating, re-send result
+	 * 	. if its another job discard it and continue 
+	 * - set status to BUSY 
+	 * - send confirmation to RM 
+	 * TODO: 
+	 * 	- start executing ... -> after x seconds send result to RM
 	 */
 	private void jobRequestHandler(Message message) {
-		if (activeJob != null) {
+		status = STATUS.BUSY;
+		
+		if (activeJob != null) { // edge case where the RM dies? and tries to do the same job again or so..
 			if (message.getJob().getId() == activeJob.job.getId()) {
 				if (activeJob.status == Job.STATUS.CLOSED) {
 					sendJobResultToRM();
@@ -85,18 +95,17 @@ public class Worker implements ISocketCommunicator, Runnable {
 				return; // do not need to recalculate
 			}
 		}
-		
-		status = STATUS.BUSY;
+
 		sendJobConfirmationToRM(message.senderSocket, message.getValue());
 		activeJob = new ActiveJob(message.getJob(), message.senderSocket, null); // activeJob.scheduler here is a resourceManager
-		jobDoneHandler(); // send result back 
+		executeActiveJob();
 	}
-	
+
 	/**
 	 * Types of messages we expect here:
 	 * 
-	 * - From a resourceManager requesting a job computation - From a
-	 * resourceManager confirmation of a job result
+	 * - From a resourceManager requesting a job computation 
+	 * - From a resourceManager confirmation of a job result
 	 */
 	public void onMessageReceived(Message message) {
 		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
@@ -104,39 +113,45 @@ public class Worker implements ISocketCommunicator, Runnable {
 				jobRequestHandler(message);
 			}
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
-
+				jobResultConfirmationHandler(message);
 			}
 		}
 	}
 
-	/* ========================================================================
-	 * 	Class messages below
-	 * ===================================================================== */
+	/*
+	 * ========================================================================
+	 * Class messages below
+	 * =====================================================================
+	 */
 	
 	/**
-	 * Whenever a job is finished
-	 *  - set jobstatus to closed
-	 *  - send result to RM
-	 *  - ..await result confirmation
+	 * TODO
+	 */
+	private void executeActiveJob() {
+		activeJob.job.setResult(17);
+		totalExecutionTime += 17;
+		jobDoneHandler();
+	}
+
+	/**
+	 * Whenever a job is finished 
+	 * - set jobstatus to closed 
+	 * - send result to RM 
+	 * - ..await result confirmation
 	 */
 	private void jobDoneHandler() {
-		assert(activeJob != null);
-		activeJob.job.setResult(17);
 		activeJob.status = Job.STATUS.CLOSED;
 		sendJobResultToRM();
 	}
-	
+
 	private Message getAliveMessage() {
-		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.STATUS, status.ordinal(), socket); // enum ->
-																												// int
+		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.STATUS, status.ordinal(), socket); // enum -> int
 		return message;
 	}
 
 	public Socket getSocket() {
 		return socket;
 	}
-	
-	
 
 	/**
 	 * this thread should send the aliveMessages to the RM
