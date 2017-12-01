@@ -22,6 +22,10 @@ import java.util.ArrayList;
  * scheduler	| request		| x > 1	| the scheduler sends a messag to the resourceManager, asking it to execute this job.
  * 	- - - --- --- --- - - -
  * resourceM	| confirmation	| x > 1	| the rm confirms to the scheduler that it has received jobId: x
+ * resourceM	| request		| x > 1	| the rm requests to a worker to compute job with jobId: x
+ * 	- - - --- --- --- - - -
+ *	worker	| confirmation	| x > 1	| the worker confirms the request to the RM of jobId: x
+ *	worker	| result			| x > 1	| the worker returns result of the job to the resourceManager
  */
 public class Message {
 	public static enum SENDER {

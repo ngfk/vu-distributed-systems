@@ -34,9 +34,8 @@ public class ResourceManager implements ISocketCommunicator {
 	/**
 	 * This is an hashmap of the worker nodes
 	 *  The idea is that since we cannot access the worker just by referencing their object 
-	 *  (would be weird IMO since they possibly are at another physical location)
 	 *  We store the socket (which we use to communicate with the workers) and the status of that worker node
-	 *   The resourceManager now knows at all times how to communicate with the workers, and what their status is.   
+	 *    The resourceManager now knows at all times how to communicate with the workers, and what their status is.   
 	 */
 	private HashMap<Socket, Worker.STATUS> workers;
 	
@@ -48,12 +47,71 @@ public class ResourceManager implements ISocketCommunicator {
 		activeJobs = new ArrayList<ActiveJob>();
 	}
 		
+	/* ========================================================================
+	 * 	Send messages below
+	 * ===================================================================== */
 	/**
 	 * confirmation message to the scheduler that it received the job correctly
 	 */
-	private void sendJobConfirmationMessage(Job job) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, job.getId(), socket);
+	private void sendJobConfirmationToScheduler(Socket scheduler, int value) {
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
+		scheduler.sendMessage(message);
+	}
+	
+	/**
+	 * Request to a worker for it to start executing some code
+	 */
+	private void sendJobRequestToWorker(Socket worker, Job job) {
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.REQUEST, job.getId(), socket);
+		worker.sendMessage(message);
+	}
+	
+	/**
+	 * Confirmation to a worker that it received its result correctly
+	 */
+	private void sendJobResultConfirmationToWorker(Socket worker, int value) {
 		
+	}
+	
+	
+	/* ========================================================================
+	 * 	Receive messages below
+	 * ===================================================================== */
+	/**
+	 * whenever the RM receives a jobrequest:
+	 * 	- adds the job to the activeJobs list
+	 *  - it confirms the request to the scheduler
+	 *  - it sends the task to one of its available workers.
+	 */	
+	private void jobRequestHandler(Message message) {
+		activeJobs.add(new ActiveJob(message.getJob(), message.senderSocket, null));
+		sendJobConfirmationToScheduler(message.senderSocket, message.getValue());
+		Socket availableWorker = getAvailableWorker();
+		
+		if (availableWorker == null) {
+			// add to queue
+			return;
+		}
+		
+		sendJobRequestToWorker(availableWorker, message.getJob());
+	}
+	
+	/**
+	 * When the job gets confirmed by the worker (meaning that he is going to work on it)
+	 *  - update the jobstatus to RUNNING
+	 */
+	private void jobConfirmationHandler(Message message) {
+		// TODO
+	}
+	
+	/**
+	 * When we receive a jobresult from a worker node
+	 *  - confirm jobresult received.
+	 *  - check if there was an activejob with this data
+	 *  		. pass the result to the scheduler
+	 */
+	public void jobResultHandler(Message message){
+		// TODO
 	}
 	
 	/**
@@ -91,11 +149,11 @@ public class ResourceManager implements ISocketCommunicator {
 		// exception
 	}
 	
-	private void jobRequestHandler(Message message) {
-		// send confirmation to scheduler
-		// send job to available worker
-	}
 	
+	
+	/* ========================================================================
+	 * 	Class functions
+	 * ===================================================================== */
 	/**
 	 * onMessageReceive handler (1)
 	 * NOTE also adds the worker to the resourceManager if it was not already in there :-)

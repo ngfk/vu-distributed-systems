@@ -18,6 +18,7 @@ public class Job {
 	private int duration;
 	private Socket user; // where the job came from, and where to send the result to.
 	private int id;
+	private int result;
 	
 	Job(int duration){
 		this.duration = duration;
@@ -35,6 +36,10 @@ public class Job {
 	
 	public int getId() {
 		return id;
+	}
+	
+	public void setResult(int iresult) {
+		this.result = result;
 	}
 
 }
