@@ -1,6 +1,5 @@
-import { NodeState, NodeType } from './node';
-
 import { GridSetup } from './grid';
+import { NodeState, NodeType } from './node';
 
 export interface GridMessage {
     readonly type: string;
