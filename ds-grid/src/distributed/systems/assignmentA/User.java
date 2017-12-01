@@ -64,7 +64,7 @@ public class User implements ISocketCommunicator, Runnable {
 	 * should send a new job to a scheduler
 	 */
 	public void doJob(Job job) {
-		
+		// TODO. idk maybe just pick a random scheduler, and send the job there.
 	}
 	
 	

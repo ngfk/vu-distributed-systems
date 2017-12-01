@@ -1,5 +1,6 @@
 package distributed.systems.assignmentA;
 
+import java.util.Random;
 
 /**
  * Jobbuuahh
@@ -16,15 +17,24 @@ public class Job {
 	
 	private int duration;
 	private Socket user; // where the job came from, and where to send the result to.
+	private int id;
 	
 	Job(int duration){
 		this.duration = duration;
+		
+		Random ran = new Random();
+		this.id = ran.nextInt(Integer.MAX_VALUE);
 	}
 
 	// TODO fix.
 	public Job copy() {
 		Job copyJob = new Job(duration);
 		return copyJob;
+	}
+	
+	
+	public int getId() {
+		return id;
 	}
 
 }

@@ -30,10 +30,13 @@ public class Scheduler implements ISocketCommunicator{
 	}
 	
 	public void addJob(Job job) {
-		// TODO check if job is not in activeJobs
-		// TODO notify other Schedulers of activeJob
 		assert (!hasActiveJob(job)); // should maybe send an error to the user
+		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
+		schedulerSockets.addAll(schedulers.keySet());
 		
+		for (Socket ss : schedulerSockets) {
+			sendRequestJobConfirmationMessage(ss, job);
+		}
 	}
 	
 	/* a scheduler should know about all other schedulers */
@@ -48,11 +51,22 @@ public class Scheduler implements ISocketCommunicator{
 		list.add(socket); // add self
 		return list;
 	}
-	
-	public Socket getSocket() {
-		return socket;
-	}
 
+	/**
+	 * send a message to a scheduler, saying that we received a job.
+	 */
+	public void sendRequestJobConfirmationMessage(Socket scheduler, Job job) {
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, 0, socket);
+		message.attachJob(job);
+		scheduler.sendMessage(message);
+	}
+	
+	public void sendRequestJobExecutionMessage(Socket rm, Job job) {
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
+		message.attachJob(job);
+		rm.sendMessage(message);
+	}
+	
 	/**
 	 * Types of messages we expect here:
 	 * 
@@ -78,7 +92,11 @@ public class Scheduler implements ISocketCommunicator{
 			// send job to resource manager
 		}
 	}
-	
+		
+	public Socket getSocket() {
+		return socket;
+	}
+
 	public ActiveJob getActiveJob(Job job) {
 		for (int i = 0; i < activeJobs.size(); i++) {
 			if (activeJobs.get(i).job == job) {
