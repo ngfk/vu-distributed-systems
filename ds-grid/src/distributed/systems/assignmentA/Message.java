@@ -18,7 +18,6 @@ import java.util.ArrayList;
  *	user		| confirmation	| x > 1	| the user is confirms that it received reply belonging to job with jobId x
  *	- - - --- --- --- - - -
  * scheduler	| request		| 0		| the scheduler notifies other schedulers that it has received a job (job is attached on message), so that they can update their local activeJobs array
- * scheduler	| status			| 2		| the scheduler notifies other schedulers that it has received a job (job is attached on message), so that they can update their local activeJobs array
  * scheduler	| confirmation	| x		| the scheduler gets notified by another scheduler that it has acknowledged that he is going to do jobId: x
  * scheduler	| request		| x > 1	| the scheduler sends a messag to the resourceManager, asking it to execute this job.
  * 	- - - --- --- --- - - -
@@ -27,7 +26,7 @@ import java.util.ArrayList;
 public class Message {
 	public static enum SENDER {
 		WORKER,
-		MANAGER,
+		RESOURCE_MANAGER, 
 		SCHEDULER,
 		USER
 	}

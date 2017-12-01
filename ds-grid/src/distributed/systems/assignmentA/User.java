@@ -72,7 +72,13 @@ public class User implements ISocketCommunicator, Runnable {
 		return new Message(Message.SENDER.USER, Message.TYPE.REQUEST, 0, socket);
 	}
 
-	
+	/**
+	 * Types of messages we expect here:
+	 * 
+	 * - Message from a scheduler, saying that it has accepted the job and its going to start executing
+	 * - Message from a scheduler, saying that it has completed executing a job
+	 * - ...
+	 */
 	public void onMessageReceived(Message message) {
 		// TODO 
 		

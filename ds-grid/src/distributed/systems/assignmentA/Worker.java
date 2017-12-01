@@ -3,7 +3,13 @@ package distributed.systems.assignmentA;
 
 /**
  * Worker/Node does all the actual computations and returns the result to its resource manager.
- *
+ * Workers periodically send stillAlive messages to the resourceManagers to check if they did not die.
+ * 
+ * OnDie: 
+ * 	the stillAlive message will not arrive
+ *  
+ * OnResurrect:
+ * 	If a worker comes back to live, it can simply continues sending the stillAlive message to the resouceManager
  */
 public class Worker implements ISocketCommunicator {
 	public static enum STATUS {

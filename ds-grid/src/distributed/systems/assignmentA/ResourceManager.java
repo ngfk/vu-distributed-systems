@@ -3,19 +3,33 @@ package distributed.systems.assignmentA;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map.Entry;
+
+import distributed.systems.assignmentA.Scheduler.STATUS;
 
 /**
  * The entry point of a cluster
  *
  * Requirements:
- * 	Needs to hold the active jobs in some sort of way -> ?
+ * 	Needs to hold the active jobs in some sort of way -> activeJobs
  *  Needs to know which Workers are available at all times -> through the hashmap
  *  Needs to know how to communicate with the workers -> through sockets
+ *  
+ * OnDie:
+ * 	Whenever a resourceManager dies, no-one knows right away. I think that it is best that we detect this, in the schedulers. 
+ * 	And do that by noticing that it does not send the confirmation message whenever we ask it to execute a job.
+ *  Also this list of undead resourceManagers is scheduler dependent. 
+ *    A.K.A every scheduler should privately keep track of which resourceManagers are alive.
+ *    
+ * OnResurrect:
+ * 	If the resourceManager comes back to life, it might have an outdated / invalid workers list.
+ *  but this will be fixed whenever the workers start sending their I am alive message again.
  */
 public class ResourceManager implements ISocketCommunicator {
 	private int id;
 	
 	private Socket socket;
+	private ArrayList<ActiveJob> activeJobs; 
 	
 	/**
 	 * This is an hashmap of the worker nodes
@@ -26,42 +40,34 @@ public class ResourceManager implements ISocketCommunicator {
 	 */
 	private HashMap<Socket, Worker.STATUS> workers;
 	
-	
 	ResourceManager(int id, int numberOfWorkers){
 		this.id = id;
 		socket = new Socket(this);
 		
 		workers = new HashMap<Socket,Worker.STATUS>();
+		activeJobs = new ArrayList<ActiveJob>();
 	}
 		
 	/**
-	 * onMessageReceive handler (1)
-	 * NOTE also adds the worker to the resourceManager if it was not already in there :-)
+	 * confirmation message to the scheduler that it received the job correctly
 	 */
-	private void updateWorkerStatus(Message message) {
-		assert (message.getType() == Message.TYPE.STATUS);
-		assert (message.getSender() == Message.SENDER.WORKER);
+	private void sendJobConfirmationMessage(Job job) {
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, job.getId(), socket);
 		
-		Socket workerSocket = message.senderSocket; // we use the socket as identifier for the worker
-		Worker.STATUS newStatus = Worker.STATUS.values()[message.getValue()]; // hacky way to convert int -> enum
-		workers.put(workerSocket, newStatus);
-		
-		System.out.println(Arrays.toString(workers.values().toArray()));
 	}
+	
 	/**
 	 * Types of messages we expect here:
 	 * 
-	 * - Message from a worker saying that he is available (status message)
-	 * - Message from a worker saying that he received the Job and is going to start working on it. (confirmation message) 
-	 * - Message from a scheduler saying that he has a Job for the cluster (request message)
-	 * - Message from a scheduler saying that he received the result of the Job correctly (confirmation message)
+	 * - Message from a worker saying that he is available
+	 * - Message from a worker saying that he received the Job and is going to start working on it. 
+	 * - Message from a scheduler saying that he has a Job for the cluster
+	 * - Message from a scheduler saying that he received the result of the Job correctly 
 	 */
-	public void onMessageReceived(Message message) {
-		System.out.printf("RM [%d] Message received: %s\n", id, message.toString());
-		
+	public void onMessageReceived(Message message) {		
 		if (message.getSender() == Message.SENDER.WORKER) {
 			if (message.getType() == Message.TYPE.STATUS) {
-				updateWorkerStatus(message);
+				workerStatusHandler(message);
 				return;
 			}
 			
@@ -73,7 +79,7 @@ public class ResourceManager implements ISocketCommunicator {
 
 		if (message.getSender() == Message.SENDER.SCHEDULER) {
 			if (message.getType() == Message.TYPE.REQUEST) {
-				// do w/e is nessesarry
+				jobRequestHandler(message);
 				return;
 			}
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
@@ -83,10 +89,38 @@ public class ResourceManager implements ISocketCommunicator {
 		}
 		
 		// exception
+	}
+	
+	private void jobRequestHandler(Message message) {
+		// send confirmation to scheduler
+		// send job to available worker
+	}
+	
+	/**
+	 * onMessageReceive handler (1)
+	 * NOTE also adds the worker to the resourceManager if it was not already in there :-)
+	 */
+	private void workerStatusHandler(Message message) {
+		Socket workerSocket = message.senderSocket; // we use the socket as identifier for the worker
+		Worker.STATUS newStatus = Worker.STATUS.values()[message.getValue()]; // hacky way to convert int -> enum
+		workers.put(workerSocket, newStatus);
 		
+		System.out.println(Arrays.toString(workers.values().toArray()));
 	}
 	
 	public Socket getSocket() {
 		return socket;
+	}
+	
+	private Socket getAvailableWorker() {
+		ArrayList<Socket> workerSockets = new ArrayList<Socket>();
+		for (Entry<Socket, Worker.STATUS> entry : workers.entrySet()) {
+			Worker.STATUS status = entry.getValue();
+			if (status == Worker.STATUS.AVAILABLE) {
+				return entry.getKey();
+			}
+		}
+		
+		return null;
 	}
 }

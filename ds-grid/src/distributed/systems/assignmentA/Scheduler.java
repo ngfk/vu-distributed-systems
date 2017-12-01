@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 /**
  * A scheduler know where to find all resource managers, other schedulers, and users?
@@ -11,6 +12,7 @@ import java.util.Map.Entry;
  * The list of other schedulers is hard-coded
  * The list of resourceManagers is flexible
  * The list of users is flexible
+ *
  */
 public class Scheduler implements ISocketCommunicator{
 	public static enum STATUS {
@@ -19,7 +21,8 @@ public class Scheduler implements ISocketCommunicator{
 	}
 	private int id;
 	private Socket socket;
-	private ArrayList <ActiveJob> activeJobs; // this is a shared data-structure between schedulers
+	
+	private ArrayList <ActiveJob> activeJobs; // this is a shared data-structure between schedulers 
 	
 	private HashMap<Socket, Scheduler.STATUS> schedulers; // schedulers are identified in the system by their sockets
 	
@@ -90,6 +93,7 @@ public class Scheduler implements ISocketCommunicator{
 		if (aj.isReadyToStart()) {
 			// send confirmation to user
 			// send job to resource manager
+			 
 		}
 	}
 		
