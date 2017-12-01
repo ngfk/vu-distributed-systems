@@ -202,7 +202,6 @@ public class ResourceManager implements ISocketCommunicator {
 	}
 	
 	private Socket getAvailableWorker() {
-		ArrayList<Socket> workerSockets = new ArrayList<Socket>();
 		for (Entry<Socket, Worker.STATUS> entry : workers.entrySet()) {
 			Worker.STATUS status = entry.getValue();
 			if (status == Worker.STATUS.AVAILABLE) {

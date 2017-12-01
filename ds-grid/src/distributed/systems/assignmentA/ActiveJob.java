@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ActiveJob {
+	
 	public static enum STATUS {
 		UNCONFIRMED,
 		CONFIRMED
 	}
 	
-	Job.STATUS status;
+	Job.STATUS status; // waiting, running, closed
 	Job job;
 	Socket scheduler; // the scheduler that received the job
 	
