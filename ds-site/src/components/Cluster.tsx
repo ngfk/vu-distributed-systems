@@ -22,7 +22,7 @@ export class Cluster extends React.Component<ClusterProps> {
             else workerNodes.push(<Worker active={0} />);
         }
         let formatted = workerNodes.map((line, i) => (
-            <div key={i}> {line} </div>
+            <div key={'Worker' + i.toString()}> {line} </div>
         ));
 
         return (

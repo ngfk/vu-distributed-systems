@@ -1,13 +1,21 @@
 import * as React from 'react';
 
-import { User } from '../components/User';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { Cluster } from '../components/Cluster';
 import { Scheduler } from '../components/Scheduler';
+import { User } from '../components/User';
+import { State } from '../reducers/reducer';
+import { actionCreators, ActionCreators } from '../actions/actions';
+import { Grid } from '../models/grid';
 
 // tslint:disable-next-line
 const logo = require('./ludwig.jpg');
 
-export interface AppProps {}
+export interface AppProps {
+    grid: Grid;
+    actions: ActionCreators;
+}
 
 export interface AppState {
     active: number;
@@ -28,27 +36,27 @@ class App extends React.Component<AppProps, AppState> {
             randomScheduler: 0
         };
 
-        setInterval(() => {
-            this.setState(state => ({
-                ...state,
-                active: (this.state.active + 1) % 3,
-                randomCluster: Math.floor(Math.random() * 20),
-                randomResource: Math.floor(Math.random() * 20),
-                randomWorker: Math.floor(Math.random() * 50),
-                randomScheduler: Math.floor(Math.random() * 10)
-            }));
-        }, 500);
+        // setInterval(() => {
+        //     this.setState(state => ({
+        //         ...state,
+        //         active: (this.state.active + 1) % 3,
+        //         randomCluster: Math.floor(Math.random() * 20),
+        //         randomResource: Math.floor(Math.random() * 20),
+        //         randomWorker: Math.floor(Math.random() * 50),
+        //         randomScheduler: Math.floor(Math.random() * 10)
+        //     }));
+        // }, 500);
     }
 
     public render(): JSX.Element {
         let clusters = [];
 
-        for (let i = 0; i < 20; i++) {
+        for (let i = 1; i < 10; i++) {
             if (i === this.state.randomResource)
                 clusters.push(
                     <Cluster
                         workers={50}
-                        key={i}
+                        key={'ResourceDown' + i.toString()}
                         resourceActive={1}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={51}
@@ -58,7 +66,7 @@ class App extends React.Component<AppProps, AppState> {
                 clusters.push(
                     <Cluster
                         workers={50}
-                        key={i}
+                        key={'ResourceUp' + i.toString()}
                         resourceActive={2}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={51}
@@ -69,7 +77,7 @@ class App extends React.Component<AppProps, AppState> {
                 clusters.push(
                     <Cluster
                         workers={50}
-                        key={i}
+                        key={'WorkerDown' + i.toString()}
                         resourceActive={2}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={this.state.randomWorker}
@@ -79,7 +87,7 @@ class App extends React.Component<AppProps, AppState> {
                 clusters.push(
                     <Cluster
                         workers={50}
-                        key={i}
+                        key={'WorkerUp' + i.toString()}
                         resourceActive={2}
                         workerActive={(this.state.active + 3) % 3}
                         workerNode={51}
@@ -110,4 +118,13 @@ class App extends React.Component<AppProps, AppState> {
     }
 }
 
-export default App;
+const mapStateToProps = (state: State) => ({
+    grid: state.grid
+});
+
+const mapDispatchToProps = (dispatch: any) => ({
+    actions: bindActionCreators(actionCreators, dispatch)
+});
+
+// tslint:disable-next-line variable-name
+export default connect(mapStateToProps, mapDispatchToProps)(App);

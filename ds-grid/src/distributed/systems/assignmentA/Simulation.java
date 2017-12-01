@@ -7,8 +7,10 @@ import java.util.ArrayList;
  * simulation
  */
 public class Simulation {
-	
+
 	/* will fetch this information from the front-end in some way */
+	public static Simulation simulation;
+	
 	private static final int NUMBER_OF_SCHEDULERS = 5;
 	private static final int NUMBER_OF_RESOURCE_MANAGERS = 2;
 	private static final int NUMBER_OF_WORKERS = 5; /* per resource manager */
@@ -18,7 +20,9 @@ public class Simulation {
 	private ArrayList<Scheduler> schedulers;
 	private ArrayList<ResourceManager> resourceManagers;
 	private ArrayList<User> users;
-
+	
+	/* WebSocket Server */
+	private static Thread webSocketServerThread;
 	
 	/**
 	 * TODO this should not happen here..
@@ -62,6 +66,10 @@ public class Simulation {
 	}
 
 	public static void main(String[] args) {
-		new Simulation();
+		/* Create the WebSocketServer thread */
+		webSocketServerThread = new Thread(new WebSocketServer());
+		webSocketServerThread.start();
+		
+		simulation = new Simulation();
 	}
 }
