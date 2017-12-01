@@ -7,7 +7,6 @@ export interface SchedulerProps {
 }
 
 export class Scheduler extends React.Component<SchedulerProps> {
-
     public render(): JSX.Element {
         let i: number;
         let schedulerNodes = [];
@@ -26,7 +25,12 @@ export class Scheduler extends React.Component<SchedulerProps> {
                 backgroundStyle = { backgroundColor: 'red' };
             }
             schedulerNodes.push(
-                <div className="Scheduler"  onClick={this.toggleState}  key={i} style={backgroundStyle}>
+                <div
+                    className="Scheduler"
+                    onClick={this.toggleState}
+                    key={i}
+                    style={backgroundStyle}
+                >
                     <div className="Scheduler-label">Scheduler</div>
                 </div>
             );
@@ -34,7 +38,8 @@ export class Scheduler extends React.Component<SchedulerProps> {
 
         return <div className="Scheduler-box">{schedulerNodes}</div>;
     }
+
     private toggleState() {
-        
+        // TODO: toggle state of this scheduler
     }
 }
