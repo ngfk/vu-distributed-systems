@@ -9,26 +9,22 @@ package distributed.systems.assignmentA;
 public class Job {
 	
 	public static enum STATUS {
-		OPEN,
-		WAITING, // waiting until all schedulers have confirmed this job
-		TAKEN,
-		CLOSED
+		WAITING,	// waiting until all schedulers have confirmed this job
+		RUNNING,	// being computed
+		CLOSED	// done
 	}
 	
 	private int duration;
-	private STATUS status;
+	private Socket user; // where the job came from, and where to send the result to.
 	
 	Job(int duration){
 		this.duration = duration;
 	}
-	
+
+	// TODO fix.
 	public Job copy() {
 		Job copyJob = new Job(duration);
-		copyJob.setStatus(status);
 		return copyJob;
 	}
-	
-	public void setStatus(STATUS status) {
-		this.status = status;
-	}
+
 }

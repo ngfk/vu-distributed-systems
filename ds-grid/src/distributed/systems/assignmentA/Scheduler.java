@@ -2,6 +2,8 @@ package distributed.systems.assignmentA;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A scheduler know where to find all resource managers, other schedulers, and users?
@@ -17,9 +19,9 @@ public class Scheduler implements ISocketCommunicator{
 	}
 	private int id;
 	private Socket socket;
-	private ArrayList <ActiveJob> activeJobs; /* this is a shared datastructure between schedulers */
+	private ArrayList <ActiveJob> activeJobs; // this is a shared data-structure between schedulers
 	
-	private HashMap<Socket, Scheduler.STATUS> schedulers;
+	private HashMap<Socket, Scheduler.STATUS> schedulers; // schedulers are identified in the system by their sockets
 	
 	
 	Scheduler(int id){
@@ -30,7 +32,8 @@ public class Scheduler implements ISocketCommunicator{
 	public void addJob(Job job) {
 		// TODO check if job is not in activeJobs
 		// TODO notify other Schedulers of activeJob
-		assert (!hasActiveJob(job)); // should maybe send an error to the user		
+		assert (!hasActiveJob(job)); // should maybe send an error to the user
+		
 	}
 	
 	/* a scheduler should know about all other schedulers */
@@ -60,16 +63,20 @@ public class Scheduler implements ISocketCommunicator{
 	public void onMessageReceived(Message message) {
 		// TODO
 		if (message.getSender() == Message.SENDER.SCHEDULER) {
-			
+			if (message.getType() == Message.TYPE.CONFIRMATION) {
+				schedulerJobConfirmationHandler(message);
+			}
 		}
 	}
 	
-	
-	public void schedulerJobConfirmationHandler() {
-		// WAIT FOR CONFIRMATIONS
-		// SEND CONFIRMATION TO USER
-		
-		
+	public void schedulerJobConfirmationHandler(Message message) {
+		Socket scheduler = message.senderSocket;
+		ActiveJob aj = getActiveJob(message.getJob());
+		aj.confirmScheduler(scheduler);
+		if (aj.isReadyToStart()) {
+			// send confirmation to user
+			// send job to resource manager
+		}
 	}
 	
 	public ActiveJob getActiveJob(Job job) {
@@ -86,5 +93,17 @@ public class Scheduler implements ISocketCommunicator{
 			return false;
 		}
 		return true;
+	}
+	
+	public ArrayList<Socket> getActiveSchedulers(){
+		ArrayList<Socket> activeSchedulers = new ArrayList<Socket>();
+		for (Entry<Socket, STATUS> entry : schedulers.entrySet()) {
+			STATUS status = entry.getValue();
+			if (status == STATUS.RUNNING) {
+				activeSchedulers.add(entry.getKey());
+			}
+		}
+		assert (activeSchedulers.size() > 0);
+		return activeSchedulers;
 	}
 }

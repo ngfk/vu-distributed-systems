@@ -8,9 +8,9 @@ import java.util.ArrayList;
  */
 public class Simulation {
 
-	/* will fetch this information from the front-end in some way */
 	public static Simulation simulation;
 	
+	/* will fetch this information from the front-end in some way */
 	private static final int NUMBER_OF_SCHEDULERS = 5;
 	private static final int NUMBER_OF_RESOURCE_MANAGERS = 2;
 	private static final int NUMBER_OF_WORKERS = 5; /* per resource manager */
