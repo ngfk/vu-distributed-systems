@@ -10,6 +10,7 @@ public class Job {
 	
 	public static enum STATUS {
 		OPEN,
+		WAITING, // waiting until all schedulers have confirmed this job
 		TAKEN,
 		CLOSED
 	}

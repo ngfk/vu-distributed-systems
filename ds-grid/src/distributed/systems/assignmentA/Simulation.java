@@ -7,22 +7,23 @@ import java.util.ArrayList;
  * simulation
  */
 public class Simulation {
+	
+	/* will fetch this information from the front-end in some way */
 	private static final int NUMBER_OF_SCHEDULERS = 5;
 	private static final int NUMBER_OF_RESOURCE_MANAGERS = 2;
 	private static final int NUMBER_OF_WORKERS = 5; /* per resource manager */
-	private static final int NUMBER_OF_USERS = 10; /* the guys that are going to use our system */
+	private static final int NUMBER_OF_USERS = 1; /* the guys that are going to use our system */
 
-	/* keep this info to make debug-life slightly easier */
+	/* keep this info to make debug-life slightly easier, maybe also useful to send data to the GUI ? */
 	private ArrayList<Scheduler> schedulers;
 	private ArrayList<ResourceManager> resourceManagers;
 	private ArrayList<User> users;
 
 	
-	
 	/**
 	 * TODO this should not happen here..
 	 * there will be a front-end interface where you can create all of these.
-	 * And whenver you press run, the users will start sending jobs to the clusters.
+	 * And whenever you press run, the users will start sending jobs to the clusters.
 	 */
 	Simulation() {
 		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
@@ -56,8 +57,7 @@ public class Simulation {
 
 		users = new ArrayList<User>();
 		for (int i = 0; i < NUMBER_OF_USERS; i++) {
-			// TODO: fix this.
-			users.add(new User(i, schedulers.get(0).getSocket(), schedulers.get(1).getSocket()));
+			users.add(new User(i, schedulerSockets));
 		}
 	}
 

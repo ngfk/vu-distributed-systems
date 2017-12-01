@@ -21,15 +21,11 @@ public class User implements ISocketCommunicator, Runnable {
 	/**
 	 * Every user should at least know about 2 schedulers
 	 */
-	User(int id, Socket initialScheduler, Socket initialScheduler2){
+	User(int id, ArrayList<Socket> schedulers){
 		this.id = id;
 		socket = new Socket(this);
 		
-		schedulers = new ArrayList<Socket>();
-		schedulers.add(initialScheduler);
-		schedulers.add(initialScheduler2);
-		
-		updateSchedulers();
+		this.schedulers = schedulers;
 	}
 	
 	
@@ -39,12 +35,16 @@ public class User implements ISocketCommunicator, Runnable {
 	}
 	
 	/**
-	 * update the user schedulers
+	 * request new scheduler list
+	 *  asks to a scheduler a new list of schedulers
 	 */
 	private void updateSchedulers() {
-		schedulers = schedulers;
+		// TODO send request schedulers message to a scheduler.
 	}
+	
+	
 
+	/* loop that produces the jobs */
 	public void run() {
 		while (true) {
 			/* Add a new job to the system that take up random time */
