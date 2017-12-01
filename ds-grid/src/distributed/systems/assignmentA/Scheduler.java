@@ -32,16 +32,6 @@ public class Scheduler implements ISocketCommunicator{
 		socket = new Socket(this);
 	}
 	
-	public void addJob(Job job) {
-		assert (!hasActiveJob(job)); // should maybe send an error to the user
-		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
-		schedulerSockets.addAll(schedulers.keySet());
-		
-		for (Socket ss : schedulerSockets) {
-			sendRequestJobConfirmationMessage(ss, job);
-		}
-	}
-	
 	/* a scheduler should know about all other schedulers */
 	public void setSchedulers(ArrayList<Socket> schedulerSockets) {
 		schedulers = new HashMap<Socket,Scheduler.STATUS>();
@@ -58,16 +48,80 @@ public class Scheduler implements ISocketCommunicator{
 	/**
 	 * send a message to a scheduler, saying that we received a job.
 	 */
-	public void sendRequestJobConfirmationMessage(Socket scheduler, Job job) {
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, 0, socket);
+	public void sendJobConfirmationRequestMessage(Socket scheduler, Job job) {
+		if (scheduler == socket) { return; } // dont send to self
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
 		message.attachJob(job);
 		scheduler.sendMessage(message);
 	}
 	
+	/**
+	 * send a message to a scheduler, saying that we confirmed your received job
+	 */
+	public void sendJobConfirmationMessage(Socket scheduler, int jobId) {
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
+		scheduler.sendMessage(message);
+	}
+	
+	/**
+	 * send a request to execute a job to a resourcemanager(cluster) 
+	 */
 	public void sendRequestJobExecutionMessage(Socket rm, Job job) {
 		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
 		message.attachJob(job);
 		rm.sendMessage(message);
+	}
+	
+	/**
+	 * confirm to user that we have received the job
+	 */
+	public void sendJobConfirmationToUser(Socket user, int jobId) {
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
+		user.sendMessage(message);
+	}
+	/* ========================================================================
+	 * 	Receive messages below
+	 * ===================================================================== */
+	/**
+	 * whenever a job request from an user comes in
+	 */
+	public void jobRequestHandler(Job job) {
+		assert (!hasActiveJob(job.getId())); // job already present.. ?how why what
+		
+		ArrayList<Socket> schedulerSockets = getActiveSchedulers();
+		ActiveJob aj = new ActiveJob(job, socket, schedulerSockets);
+		activeJobs.add(aj);
+		
+		for (Socket ss : schedulerSockets) {
+			sendJobConfirmationRequestMessage(ss, job);
+		}
+	}
+	
+	/**
+	 * whenever another scheduler lets this scheduler know that it received a new job
+	 *  - add that job to local copy of activeJobs
+	 *  - sends confirmation message
+	 */
+	public void schedulerJobRequestHandler(Message message) {
+		Job job = message.getJob();
+		ActiveJob aj = new ActiveJob(job, message.senderSocket, null); // recognize that it  belongs to another scheduler, due to the socket
+		activeJobs.add(aj);
+		sendJobConfirmationMessage(message.senderSocket, job.getId());
+	}
+	
+	/**
+	 * when a job confirmation comes in from another scheduler
+	 *  - check if all schedulers now have seen this job,
+	 *   . if so send confirmation to the user
+	 *   . and send job to resourcemanager to start computing
+	 */
+	public void schedulerJobConfirmationHandler(Message message) {
+		Socket scheduler = message.senderSocket;
+		ActiveJob aj = getActiveJob(message.getValue());
+		aj.confirmScheduler(scheduler);
+		if (aj.isReadyToStart()) {
+			sendJobConfirmationToUser(message.senderSocket, aj.job.getId());
+		}
 	}
 	
 	/**
@@ -78,40 +132,40 @@ public class Scheduler implements ISocketCommunicator{
 	 * - ...
 	 */
 	public void onMessageReceived(Message message) {
-		// TODO
+		if (message.getSender() == Message.SENDER.USER) {
+			if (message.getType() == Message.TYPE.REQUEST) {
+			}
+			if (message.getType() == Message.TYPE.CONFIRMATION) {
+			}
+		}
 		if (message.getSender() == Message.SENDER.SCHEDULER) {
+			if (message.getType() == Message.TYPE.REQUEST) {
+				schedulerJobRequestHandler(message);
+			}
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
 				schedulerJobConfirmationHandler(message);
 			}
 		}
 	}
 	
-	public void schedulerJobConfirmationHandler(Message message) {
-		Socket scheduler = message.senderSocket;
-		ActiveJob aj = getActiveJob(message.getJob());
-		aj.confirmScheduler(scheduler);
-		if (aj.isReadyToStart()) {
-			// send confirmation to user
-			// send job to resource manager
-			 
-		}
-	}
-		
+	/* ========================================================================
+	 * 	Class functions
+	 * ===================================================================== */		
 	public Socket getSocket() {
 		return socket;
 	}
 
-	public ActiveJob getActiveJob(Job job) {
+	public ActiveJob getActiveJob(int jobId) {
 		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).job == job) {
+			if (activeJobs.get(i).job.getId() == jobId) {
 				return activeJobs.get(i);
 			}
 		}
 		return null;
 	}
 	
-	public boolean hasActiveJob(Job job) {
-		if (getActiveJob(job) == null) {
+	public boolean hasActiveJob(int jobId) {
+		if (getActiveJob(jobId) == null) {
 			return false;
 		}
 		return true;

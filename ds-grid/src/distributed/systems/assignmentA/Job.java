@@ -26,10 +26,15 @@ public class Job {
 		Random ran = new Random();
 		this.id = ran.nextInt(Integer.MAX_VALUE);
 	}
+	
+	Job(Job job){
+		this.duration = job.duration;
+		this.id = job.id;
+	}
 
 	// TODO fix.
 	public Job copy() {
-		Job copyJob = new Job(duration);
+		Job copyJob = new Job(this);
 		return copyJob;
 	}
 	
@@ -38,7 +43,7 @@ public class Job {
 		return id;
 	}
 	
-	public void setResult(int iresult) {
+	public void setResult(int result) {
 		this.result = result;
 	}
 
