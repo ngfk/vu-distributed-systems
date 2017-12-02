@@ -8,6 +8,8 @@
         "postinstall": "npm run install:site && npm run build:site",
         "install:site": "npm install --prefix ds-site",
         "build:site": "npm run --prefix ds-site build",
+        "build:grid":
+            "mkdir ds-grid/bin && node compile.js ds-grid/src/distributed/systems/assignmentA/Simulation.java",
         "start:site": "npm run --prefix ds-site start",
         "commit": "git-cz"
     },
@@ -44,6 +46,7 @@
         "useTabs": false
     },
     "dependencies": {
+        "glob": "^7.1.2",
         "http-server": "^0.10.0"
     }
 }
