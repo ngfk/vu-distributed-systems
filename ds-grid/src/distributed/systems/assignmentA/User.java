@@ -29,7 +29,6 @@ public class User implements ISocketCommunicator, Runnable {
 		this.schedulers = schedulers;
 	}
 	
-	
 	private void requestSchedulerList() {
 		// TODO it should actually first verify wether the scheduler is up.. and maybe store somewhere the statusses of these schedulers.
 		schedulers.get(0).sendMessage(getSchedulersMessage()); // the result will come in at the onMessageReceived function
@@ -43,7 +42,9 @@ public class User implements ISocketCommunicator, Runnable {
 		// TODO send request schedulers message to a scheduler.
 	}
 	
-	
+	public int getId() {
+		return this.id;
+	}
 
 	/* loop that produces the jobs */
 	public void run() {

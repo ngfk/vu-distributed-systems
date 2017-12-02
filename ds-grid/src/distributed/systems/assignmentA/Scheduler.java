@@ -32,6 +32,10 @@ public class Scheduler implements ISocketCommunicator{
 		socket = new Socket(this);
 	}
 	
+	public int getId() {
+		return this.id;
+	}
+	
 	/* a scheduler should know about all other schedulers */
 	public void setSchedulers(ArrayList<Socket> schedulerSockets) {
 		schedulers = new HashMap<Socket,Scheduler.STATUS>();

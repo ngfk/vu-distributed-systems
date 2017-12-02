@@ -220,4 +220,8 @@ public class ResourceManager implements ISocketCommunicator {
 		}
 		return null;
 	}
+
+	public int getId() {
+		return id;
+	}
 }
