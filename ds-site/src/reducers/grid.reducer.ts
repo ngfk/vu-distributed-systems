@@ -2,7 +2,8 @@ import { createReducer } from '@ngfk/ts-redux';
 
 import { GridActionMap } from '../actions/grid.actions';
 import { Cluster, Grid, Scheduler } from '../models/grid';
-import { NodeState, NodeType } from '../models/node';
+import { NodeState } from '../models/node';
+import { adjustNode } from '../utils/grid-adjuster';
 
 const initial: Grid = {
     user: 2,
@@ -44,111 +45,20 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
         };
     },
     GRID_STATE: (state, payload) => {
-        switch (payload.type) {
-            case NodeType.Scheduler: {
-                const schedulers = state.schedulers.map(scheduler => {
-                    if (scheduler.id === payload.id)
-                        return { ...scheduler, state: payload.state };
-
-                    return scheduler;
-                });
-
-                return { ...state, schedulers };
-            }
-            case NodeType.ResourceManager: {
-                const clusters = state.clusters.map(cluster => {
-                    if (cluster.resourceManager.id === payload.id) {
-                        const resourceManager = {
-                            ...cluster.resourceManager,
-                            state: payload.state
-                        };
-
-                        return { ...cluster, resourceManager };
-                    }
-
-                    return cluster;
-                });
-
-                return { ...state, clusters };
-            }
-            case NodeType.Worker: {
-                const clusters = state.clusters.map(cluster => {
-                    const workers = cluster.workers.map(worker => {
-                        if (worker.id === payload.id)
-                            return { ...worker, state: payload.state };
-
-                        return worker;
-                    });
-
-                    return { ...cluster, workers };
-                });
-
-                return { ...state, clusters };
-            }
-            default:
-                return state;
-        }
+        return adjustNode(state, payload.id, payload.type, node => ({
+            ...node,
+            state: payload.state
+        }));
     },
     GRID_STOP: state => state,
     GRID_TOGGLE: (state, payload) => {
-        switch (payload.type) {
-            case NodeType.Scheduler:
-                const schedulers = state.schedulers.map(scheduler => {
-                    if (scheduler.id === payload.id) {
-                        const nodeState =
-                            scheduler.state === NodeState.Offline
-                                ? NodeState.Online
-                                : NodeState.Offline;
+        return adjustNode(state, payload.id, payload.type, node => {
+            const nodeState =
+                node.state === NodeState.Offline
+                    ? NodeState.Online
+                    : NodeState.Offline;
 
-                        return { ...scheduler, state: nodeState };
-                    }
-
-                    return scheduler;
-                });
-
-                return { ...state, schedulers };
-            case NodeType.ResourceManager: {
-                const clusters = state.clusters.map(cluster => {
-                    if (cluster.resourceManager.id === payload.id) {
-                        const nodeState =
-                            cluster.resourceManager.state === NodeState.Offline
-                                ? NodeState.Online
-                                : NodeState.Offline;
-
-                        const resourceManager = {
-                            ...cluster.resourceManager,
-                            state: nodeState
-                        };
-
-                        return { ...cluster, resourceManager };
-                    }
-
-                    return cluster;
-                });
-
-                return { ...state, clusters };
-            }
-            case NodeType.Worker: {
-                const clusters = state.clusters.map(cluster => {
-                    const workers = cluster.workers.map(worker => {
-                        if (worker.id === payload.id) {
-                            const nodeState =
-                                worker.state === NodeState.Offline
-                                    ? NodeState.Online
-                                    : NodeState.Offline;
-                            return { ...worker, state: nodeState };
-                        }
-                        return worker;
-                    });
-
-                    return { ...cluster, workers };
-                });
-
-                return { ...state, clusters };
-            }
-
-            default:
-                return state;
-        }
+            return { ...node, state: nodeState };
+        });
     }
 });

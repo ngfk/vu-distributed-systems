@@ -38,3 +38,9 @@ export interface GridClusterSetup {
     readonly resourceManager: number;
     readonly workers: number[];
 }
+
+export interface GridNodeMap {
+    scheduler: Scheduler;
+    'resource-manager': ResourceManager;
+    worker: Worker;
+}
