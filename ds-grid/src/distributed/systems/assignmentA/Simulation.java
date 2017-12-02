@@ -42,7 +42,7 @@ public class Simulation {
 		}
 		/* let the schedulers know about eachother */
 		for (int i = 0; i < schedulers.size(); i++) {
-			schedulers.get(i).setSchedulers(schedulerSockets);
+			schedulers.get(i).setSchedulers(schedulerSockets); 
 		}
 		
 		System.out.printf(">> Done with initializing all nodes\n");
