@@ -4,13 +4,9 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "node start distributed.systems.assignmentA.Simulation",
-        "postinstall": "npm run install:site && npm run build",
-        "install:site": "npm install --prefix ds-site",
-        "build": "npm run build:site && npm run build:grid",
-        "build:site": "npm run --prefix ds-site build",
-        "build:grid":
-            "mkdir ds-grid/bin && node compile.js ds-grid/src/distributed/systems/assignmentA/Simulation.java",
+        "start": "http-server --port $PORT ds-site/build",
+        "postinstall": "npm install --prefix ds-site && npm run build",
+        "build": "npm run --prefix ds-site build",
         "commit": "git-cz"
     },
     "repository": {
@@ -46,7 +42,6 @@
         "useTabs": false
     },
     "dependencies": {
-        "glob": "^7.1.2",
         "http-server": "^0.10.0"
     }
 }
