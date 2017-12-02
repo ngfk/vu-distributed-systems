@@ -28,6 +28,7 @@ import distributed.systems.assignmentA.Scheduler.STATUS;
 public class ResourceManager implements ISocketCommunicator {
 	private int id;
 	
+	public ArrayList<Worker> workerObjects; // this is only to help drawing the interface!
 	private Socket socket;
 	private ArrayList<ActiveJob> activeJobs; 
 	
@@ -45,6 +46,8 @@ public class ResourceManager implements ISocketCommunicator {
 		
 		workers = new HashMap<Socket,Worker.STATUS>();
 		activeJobs = new ArrayList<ActiveJob>();
+		
+		workerObjects = new ArrayList<Worker>();
 	}
 		
 	/* ========================================================================
@@ -223,5 +226,16 @@ public class ResourceManager implements ISocketCommunicator {
 
 	public int getId() {
 		return id;
+	}
+	
+	
+	
+	
+	public void addWorker(Worker worker) {
+		workerObjects.add(worker);
+	}
+	
+	public ArrayList<Worker> getWorkers() {
+		return workerObjects;
 	}
 }

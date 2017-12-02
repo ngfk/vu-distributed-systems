@@ -16,7 +16,6 @@ public class Simulation {
 
 	Simulation(int schedulerCount, int clusterCount, int workerCount) {
 		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
-
 		ArrayList<Socket> rmSockets = new ArrayList<Socket>();
 	
 		resourceManagers = new ArrayList<ResourceManager>();
@@ -29,7 +28,8 @@ public class Simulation {
 			// We create all of the worker nodes here, On init, the worker
 			// nodes will let the resourceManager know that they're available
 			for (int j = 0; j < workerCount; j++) {
-				new Worker(j, rmSocket);
+				Worker worker = new Worker(j, rmSocket);
+				newResourceManager.addWorker(worker);
 			}
 		}
 		
@@ -59,6 +59,9 @@ public class Simulation {
 			ResourceManager rm = this.resourceManagers.get(i);
 			
 			// TODO Figure out how to retrieve the worker id's
+			// @Solution: 
+			ArrayList<Worker> workersOfThisResourceManager = rm.getWorkers(); // gives you the objects of the workers
+			
 			GridClusterSetup clusterId = new GridClusterSetup(rm.getId(), new int[0]);
 			clusterIds[i] = clusterId;
 		}
