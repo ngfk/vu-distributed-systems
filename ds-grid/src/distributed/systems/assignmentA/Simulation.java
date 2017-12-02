@@ -58,12 +58,14 @@ public class Simulation {
 		GridClusterSetup[] clusterIds = new GridClusterSetup[this.resourceManagers.size()];
 		for (int i = 0; i < this.resourceManagers.size(); i++) {
 			ResourceManager rm = this.resourceManagers.get(i);
+			ArrayList<Worker> workers = rm.getWorkers();
 			
-			// TODO Figure out how to retrieve the worker id's
-			// @Solution: 
-			ArrayList<Worker> workersOfThisResourceManager = rm.getWorkers(); // gives you the objects of the workers
+			int[] workerIds = new int[workers.size()];
+			for (int j = 0; j < workers.size(); j++) {
+				workerIds[j] = workers.get(j).getId();
+			}
 			
-			GridClusterSetup clusterId = new GridClusterSetup(rm.getId(), new int[0]);
+			GridClusterSetup clusterId = new GridClusterSetup(rm.getId(), workerIds);
 			clusterIds[i] = clusterId;
 		}
 		
