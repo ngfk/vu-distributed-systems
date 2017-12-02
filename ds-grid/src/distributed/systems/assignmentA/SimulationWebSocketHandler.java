@@ -17,6 +17,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.MalformedJsonException;
 
 import distributed.systems.assignmentA.types.GridMessageInit;
+import distributed.systems.assignmentA.types.GridMessageToggle;
 
 @WebSocket
 public class SimulationWebSocketHandler {
@@ -89,6 +90,12 @@ public class SimulationWebSocketHandler {
 				break;
 			case "setup":
 				System.out.println("setup message received");
+				break;
+			case "toggle":
+				System.out.println("toggle message received");
+				GridMessageToggle toggleMessage = gson.fromJson(message, GridMessageToggle.class);
+				
+				System.out.println("Toggling node id " + toggleMessage.nodeId + " of type " + toggleMessage.nodeType);
 				break;
 			default:
 				break;
