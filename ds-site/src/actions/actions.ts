@@ -1,4 +1,4 @@
-import { GridActionMap, gridActionCreators } from './grid.actions';
+import { gridActionCreators, GridActionMap } from './grid.actions';
 
 // Combine action maps by extending them
 export interface ActionMap extends GridActionMap {}

@@ -1,8 +1,8 @@
-import { Cluster, Grid, Scheduler } from '../models/grid';
-import { NodeState, NodeType } from '../models/node';
+import { createReducer } from '@ngfk/ts-redux';
 
 import { GridActionMap } from '../actions/grid.actions';
-import { createReducer } from '@ngfk/ts-redux';
+import { Cluster, Grid, Scheduler } from '../models/grid';
+import { NodeState, NodeType } from '../models/node';
 
 const initial: Grid = {
     user: 0,
@@ -11,6 +11,7 @@ const initial: Grid = {
 };
 
 export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
+    GRID_INIT: state => state,
     GRID_SETUP: (state, payload) => {
         const schedulers: Scheduler[] = payload.schedulers.map(id => ({
             id,
@@ -35,7 +36,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
             clusters
         };
     },
-    GRID_TOGGLE: (state, payload) => {
+    GRID_STATE: (state, payload) => {
         switch (payload.type) {
             case NodeType.Scheduler: {
                 const schedulers = state.schedulers.map(scheduler => {
@@ -80,5 +81,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
             default:
                 return state;
         }
-    }
+    },
+    GRID_STOP: state => state,
+    GRID_TOGGLE: state => state
 });
