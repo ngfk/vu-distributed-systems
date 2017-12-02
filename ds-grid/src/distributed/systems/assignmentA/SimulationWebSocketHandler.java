@@ -16,8 +16,11 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.MalformedJsonException;
 
+import distributed.systems.assignmentA.types.GridClusterSetup;
 import distributed.systems.assignmentA.types.GridMessageInit;
+import distributed.systems.assignmentA.types.GridMessageSetup;
 import distributed.systems.assignmentA.types.GridMessageToggle;
+import distributed.systems.assignmentA.types.GridSetup;
 
 @WebSocket
 public class SimulationWebSocketHandler {
@@ -87,6 +90,31 @@ public class SimulationWebSocketHandler {
 				System.out.println("clusters: " + initMessage.sizes.clusters);
 				System.out.println("schedulers: " + initMessage.sizes.schedulers);
 				System.out.println("workers: " + initMessage.sizes.workers);
+
+				int schedulerIds[] = new int[initMessage.sizes.schedulers];
+				
+				for(int i = 0; i < initMessage.sizes.schedulers; i++) {
+					schedulerIds[i] = i;
+				}
+				
+				int workerIds[] = new int[initMessage.sizes.workers];
+				
+				for(int i = 0; i < initMessage.sizes.workers; i++) {
+					workerIds[i] = i;
+				}
+				
+				GridClusterSetup gridClusters[] = new GridClusterSetup[initMessage.sizes.clusters];
+				
+				for(int i = 0; i < initMessage.sizes.clusters; i++) {
+					gridClusters[i] = new GridClusterSetup(i, workerIds);
+				}
+				
+				GridSetup gridSetup = new GridSetup(1, schedulerIds, gridClusters);
+				GridMessageSetup gridMessageSetup = new GridMessageSetup(gridSetup);
+				
+				System.out.println(gson.toJson(gridMessageSetup));
+				
+				Broadcast(gson.toJson(gridMessageSetup));
 				break;
 			case "setup":
 				System.out.println("setup message received");
