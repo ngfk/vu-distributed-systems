@@ -115,7 +115,8 @@ public class ResourceManager implements ISocketCommunicator {
 		Socket availableWorker = getAvailableWorker();
 		
 		if (availableWorker == null) {
-			// add to queue
+			// TODO create queue
+			System.out.println("<<<>>> This job should be queued");
 			return;
 		}
 		

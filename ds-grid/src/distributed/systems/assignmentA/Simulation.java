@@ -17,7 +17,7 @@ public class Simulation {
 	Simulation(int schedulerCount, int clusterCount, int workerCount) {
 		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
 		ArrayList<Socket> rmSockets = new ArrayList<Socket>();
-		int uniqueWorkerId = 1;
+		int uniqueWorkerId = 0;
 		
 		resourceManagers = new ArrayList<ResourceManager>();
 		for (int i = 0; i < clusterCount; i++) {

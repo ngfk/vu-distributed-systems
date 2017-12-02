@@ -127,7 +127,7 @@ public class Scheduler implements ISocketCommunicator{
 		assert (!hasActiveJob(job.getId())); // job already present.. ?how why what
 		
 		ArrayList<Socket> schedulerSockets = getActiveSchedulers();
-		System.out.printf(">> Scheduler has received job -> Waiting for %d scheduler confirmations\n", schedulerSockets.size());
+		System.out.printf(">> Scheduler has received job -> Waiting for %d scheduler confirmations\n", schedulerSockets.size()-1);
 		
 		ActiveJob aj = new ActiveJob(job, socket, schedulerSockets);
 		activeJobs.add(aj);

@@ -1,5 +1,6 @@
 package distributed.systems.assignmentA;
 
+import java.util.Random;
 
 /**
  * Not an actual socket.. 
@@ -18,12 +19,30 @@ public class Socket {
 	
 	/**
 	 * If we send a message using this socket, ensure that it ends up at the right receiver
-	 * 
-	 * TODO
-	 *  We could implement some delaying function here.. to simulate traffic on a network
 	 */
 	public void sendMessage(Message message) {
-		System.out.printf("[Socket -- %s(%d)->%s(%d) %s: %s]\n", message.getSender(), message.senderSocket.getId(), node.getType(), node.getId(), message.getType(), message.getValue());
-		node.onMessageReceived(message);
+		
+		new Thread(new Runnable() {
+			public void run() {
+				asyncSend(message);
+			}
+		}).start();
 	}
+	
+	public void asyncSend(Message message) {
+		Random rand = new Random();
+		int delay = rand.nextInt(50);
+		try        
+		{
+		    Thread.sleep(delay);
+		} 
+		catch(InterruptedException ex) 
+		{
+		    Thread.currentThread().interrupt();
+		}
+		
+		System.out.printf("[Socket(%d) -- %s(%d)->%s(%d) %s: %s]\n", delay, message.getSender(), message.senderSocket.getId(), node.getType(), node.getId(), message.getType(), message.getValue());
+		node.onMessageReceived(message);
+	}	
+	
 }
