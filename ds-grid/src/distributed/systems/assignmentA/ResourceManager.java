@@ -229,8 +229,6 @@ public class ResourceManager implements ISocketCommunicator {
 	}
 	
 	
-	
-	
 	public void addWorker(Worker worker) {
 		workerObjects.add(worker);
 	}
