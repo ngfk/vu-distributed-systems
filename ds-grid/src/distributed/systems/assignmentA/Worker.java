@@ -159,4 +159,8 @@ public class Worker implements ISocketCommunicator, Runnable {
 	public void run() {
 		// TODO
 	}
+	
+	public int getId() {
+		return this.id;
+	}
 }
