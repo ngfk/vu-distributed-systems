@@ -76,29 +76,16 @@ public class Worker implements ISocketCommunicator, Runnable {
 
 	/**
 	 * whenever a jobrequest arives at this node 
-	 * - CHECK if we already have a job
-	 * 	. if we were done with that job, and we're done calculating, re-send result
-	 * 	. if its another job discard it and continue 
 	 * - set status to BUSY 
 	 * - send confirmation to RM 
-	 * TODO: 
-	 * 	- start executing ... -> after x seconds send result to RM
+	 * - start executing ... -> after x seconds send result to RM
 	 */
 	private void jobRequestHandler(Message message) {
 		System.out.println(">> Worker received job -> starting to proces Job");
 		status = STATUS.BUSY;
-		
-		if (activeJob != null) { // edge case where the RM dies? and tries to do the same job again or so..
-			if (message.getJob().getId() == activeJob.job.getId()) {
-				if (activeJob.status == Job.STATUS.CLOSED) {
-					sendJobResultToRM();
-				}
-				return; // do not need to recalculate
-			}
-		}
-
 		sendJobConfirmationToRM(message.senderSocket, message.getValue());
 		activeJob = new ActiveJob(message.getJob(), message.senderSocket, null); // activeJob.scheduler here is a resourceManager
+		activeJob.status = Job.STATUS.RUNNING;
 		executeActiveJob();
 	}
 

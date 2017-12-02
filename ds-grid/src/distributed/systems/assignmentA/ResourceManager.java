@@ -99,6 +99,8 @@ public class ResourceManager implements ISocketCommunicator {
 		Socket workerSocket = message.senderSocket; // we use the socket as identifier for the worker
 		Worker.STATUS newStatus = Worker.STATUS.values()[message.getValue()]; // hacky way to convert int -> enum
 		workers.put(workerSocket, newStatus);
+		
+		dequeueJobHandler();
 	}
 	
 	
@@ -110,16 +112,17 @@ public class ResourceManager implements ISocketCommunicator {
 	 */	
 	private void jobRequestHandler(Message message) {
 		System.out.println(">> ResourceManager has received new job -> starting to process job");
-		activeJobs.add(new ActiveJob(message.getJob(), message.senderSocket, null));
+		ActiveJob aj = new ActiveJob(message.getJob(), message.senderSocket, null);
+		activeJobs.add(aj);
 		sendJobConfirmationToScheduler(message.senderSocket, message.getValue());
 		Socket availableWorker = getAvailableWorker();
 		
 		if (availableWorker == null) {
-			// TODO create queue
-			System.out.println("<<<>>> This job should be queued");
+			// status remains waiting -> whenever a node worker becomes available, give him this job.
 			return;
 		}
 		
+		aj.status = Job.STATUS.RUNNING;
 		workers.put(availableWorker, Worker.STATUS.RESERVED);
 		sendJobRequestToWorker(availableWorker, message.getJob());
 	}
@@ -201,6 +204,24 @@ public class ResourceManager implements ISocketCommunicator {
 	/* ========================================================================
 	 * 	Class functions
 	 * ===================================================================== */
+	/**
+	 * Whenever a worker becomes available, we should check if there is a job in queue that can be executed.
+	 */
+	private void dequeueJobHandler() {
+		ActiveJob aj = getQueuedJob();
+		if (aj == null) { return ; }
+		
+		Socket availableWorker = getAvailableWorker();
+		if (availableWorker == null) {
+			// status remains waiting -> whenever a node worker becomes available, give him this job.
+			return;
+		}
+		
+		aj.status = Job.STATUS.RUNNING;
+		workers.put(availableWorker, Worker.STATUS.RESERVED);
+		sendJobRequestToWorker(availableWorker, aj.job);
+	}
+	
 	public Socket getSocket() {
 		return socket;
 	}
@@ -224,6 +245,17 @@ public class ResourceManager implements ISocketCommunicator {
 		}
 		return null;
 	}
+	
+	public ActiveJob getQueuedJob() {
+		for (int i = 0; i < activeJobs.size(); i++) {
+			if (activeJobs.get(i).status == Job.STATUS.WAITING) {
+				return activeJobs.get(i);
+			}
+		}
+		return null;
+	}
+	
+	
 
 	public int getId() {
 		return id;
