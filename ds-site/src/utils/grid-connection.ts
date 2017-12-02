@@ -123,8 +123,6 @@ export const gridMiddleware: GridMiddleware = grid => store => next => action =>
     // safe, so this function simply uses a lot of casting.
     const p: any = (action as any).payload;
 
-    console.log(action);
-
     switch (action.type) {
         case 'GRID_INIT': {
             const payload = p as GridActionMap['GRID_INIT'];
