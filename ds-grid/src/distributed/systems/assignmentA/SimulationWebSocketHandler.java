@@ -84,7 +84,7 @@ public class SimulationWebSocketHandler {
 				
 				System.out.println(gson.toJson(gridMessageSetup));
 				
-				Broadcast(gson.toJson(gridMessageSetup));
+				session.getRemote().sendString(gson.toJson(gridMessageSetup));
 				break;
 			case "setup":
 				System.out.println("setup message received");
@@ -100,6 +100,8 @@ public class SimulationWebSocketHandler {
 			}
 		} catch(JsonSyntaxException e) {
 			System.out.println("Incorrect JSON received.");
+		} catch (IOException e) {
+			System.out.println("Error sending websocket packet.");
 		}
 	}
 }
