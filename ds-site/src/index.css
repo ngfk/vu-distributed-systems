@@ -4,6 +4,11 @@ body {
     font-family: sans-serif;
 }
 
+.inputForm {
+    display: flex;
+    justify-content: space-around;
+}
+
 .User-box {
     display: flex;
     margin: 10px 60px;

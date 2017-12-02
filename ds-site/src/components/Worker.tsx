@@ -1,25 +1,44 @@
 import * as React from 'react';
+import { NodeState } from '../models/node';
 
-export interface WorkerProps {
-    active: number;
+export interface WorkerProps {}
+
+export interface WorkerState {
+    backgroundStyle: {};
+    state: NodeState;
 }
 
-export interface WorkerState {}
-
 export class Worker extends React.Component<WorkerProps, WorkerState> {
+    constructor(props: WorkerProps) {
+        super(props);
+        this.state = {
+            state: NodeState.Online,
+            backgroundStyle: { backgroundColor: 'green' }
+        };
+    }
     public render(): JSX.Element {
-        let backgroundStyle = {};
-        if (this.props.active === 0) {
-            backgroundStyle = { backgroundColor: 'green' };
-        } else if (this.props.active === 1) {
-            backgroundStyle = { backgroundColor: 'orange' };
-        } else if (this.props.active === 2) {
-            backgroundStyle = { backgroundColor: 'red' };
-        }
         return (
-            <div className="Worker" style={backgroundStyle}>
+            <div
+                className="Worker"
+                onClick={this.handleClick}
+                style={this.state.backgroundStyle}
+            >
                 <div className="Worker-label"> W </div>
             </div>
         );
     }
+
+    private handleClick = () => {
+        if (
+            this.state.state === NodeState.Busy ||
+            this.state.state === NodeState.Online ||
+            this.state.state === NodeState.Unreachable
+        ) {
+            this.setState({ backgroundStyle: { backgroundColor: 'red' } });
+            this.setState({ state: NodeState.Offline });
+        } else if (this.state.state === NodeState.Offline) {
+            this.setState({ backgroundStyle: { backgroundColor: 'green' } });
+            this.setState({ state: NodeState.Online });
+        }
+    };
 }
