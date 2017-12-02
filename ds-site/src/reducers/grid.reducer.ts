@@ -6,8 +6,14 @@ import { NodeState, NodeType } from '../models/node';
 
 const initial: Grid = {
     user: 2,
-    schedulerJobs: 0,
-    schedulers: [{ id: 6, state: NodeState.Online }],
+    schedulerJobs: 6,
+    schedulers: [
+        { id: 1, state: NodeState.Online },
+        { id: 2, state: NodeState.Online },
+        { id: 3, state: NodeState.Online },
+        { id: 4, state: NodeState.Online },
+        { id: 5, state: NodeState.Online }
+    ],
     clusters: [
         {
             resourceManager: { id: 5, state: NodeState.Online, jobs: 4 },

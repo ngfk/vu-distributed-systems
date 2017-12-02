@@ -33,10 +33,6 @@ class App extends React.Component<AppProps, AppState> {
         this.handleChangeWorker = this.handleChangeWorker.bind(this);
     }
 
-    // private getClusterCount = () => {
-    //     return this.state.clusterCount.toString();
-    // };
-
     public render(): JSX.Element {
         let clusters: JSX.Element[] = [];
         let schedulers: JSX.Element[] = [];
@@ -63,15 +59,6 @@ class App extends React.Component<AppProps, AppState> {
                 />
             );
         });
-
-        // for (let i = 0; i < this.state.clusterCount; i++) {
-        //     clusters.push(
-        //         <Cluster
-        //             workers={this.state.workerCount}
-        //             key={'ResourceDown' + i.toString()}
-        //         />
-        //     );
-        // }
 
         return (
             <div className="App">
@@ -107,9 +94,12 @@ class App extends React.Component<AppProps, AppState> {
                     <div className="User-box">
                         <User />
                     </div>
-                    <div className="Scheduler-box"> {schedulers} </div>
-                    <div className="Cluster-box"> {clusters} </div>
+                    <div className="Scheduler-box">
+                        Waiting user jobs: {this.props.grid.schedulerJobs}
+                        <div className="Schedulers">{schedulers}</div>
+                    </div>
                 </div>
+                <div className="Cluster-box">{clusters}</div>
             </div>
         );
     }

@@ -40,7 +40,9 @@ export class ResourceManager extends React.Component<
                 onClick={this.handleClick}
                 style={backgroundStyle}
             >
-                <div className="ResourceManager-label"> Resource manager </div>
+                <div className="ResourceManager-label">
+                    Resource manager <br /> Job queue: {this.props.jobs}
+                </div>
             </div>
         );
     }
