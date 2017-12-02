@@ -48,6 +48,10 @@ public class Job {
 		return user;
 	}
 	
+	public void setUser(Socket user) {
+		this.user = user;
+	}
+	
 	public void setResult(int result) {
 		this.result = result;
 	}

@@ -29,9 +29,10 @@ public class User implements ISocketCommunicator, Runnable {
 		this.schedulers = schedulers;
 		activeJobs = new ArrayList<ActiveJob>();
 		
-		Job job = new Job(8000 + (int)(Math.random() * 5000));
-		executeJob(job);
-		System.out.println("done? ");
+		for (int i =0; i < 1; i++) {
+			Job job = new Job(8000 + (int)(Math.random() * 5000));
+			executeJob(job);
+		}
 	}
 
 	private void requestSchedulerList() {
@@ -86,6 +87,11 @@ public class User implements ISocketCommunicator, Runnable {
 	private Message getSchedulersMessage() {
 		return new Message(Message.SENDER.USER, Message.TYPE.REQUEST, 0, socket);
 	}
+	
+	private void sendJobResultConfirmation(Socket scheduler, int jobId) {
+		Message message = new Message(Message.SENDER.USER, Message.TYPE.CONFIRMATION, jobId, socket);
+		scheduler.sendMessage(message);
+	}
 
 	/**
 	 * whenever a scheduler confirms that it received a job from the user
@@ -93,7 +99,6 @@ public class User implements ISocketCommunicator, Runnable {
 	 */
 	private void jobConfirmationHandler(Message message) {
 		ActiveJob aj = getActiveJob(message.getValue());
-		assert(aj != null);
 		aj.status = Job.STATUS.RUNNING;
 	}
 	
@@ -107,6 +112,7 @@ public class User implements ISocketCommunicator, Runnable {
 	private void jobResultHandler(Message message) {
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
+		sendJobResultConfirmation(message.senderSocket, jobId);
 		activeJobs.remove(aj);
 	}
 	
@@ -121,7 +127,7 @@ public class User implements ISocketCommunicator, Runnable {
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
 				jobConfirmationHandler(message);
 			}
-			if (message.getType() == Message.TYPE.CONFIRMATION) {
+			if (message.getType() == Message.TYPE.RESULT) {
 				jobResultHandler(message);
 			}
 		}
@@ -140,6 +146,10 @@ public class User implements ISocketCommunicator, Runnable {
 			}
 		}
 		return null;
+	}
+	
+	public String getType() {
+		return "User";
 	}
 	
 }

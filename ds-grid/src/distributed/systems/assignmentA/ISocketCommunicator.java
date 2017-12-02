@@ -6,6 +6,8 @@ package distributed.systems.assignmentA;
  *
  */
 public interface ISocketCommunicator {
+	public int getId();
+	public String getType();
 	
 	public void onMessageReceived(Message message);
 

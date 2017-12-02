@@ -60,9 +60,27 @@ public class Scheduler implements ISocketCommunicator{
 	 */
 	public void sendJobConfirmationRequestMessage(Socket scheduler, Job job) {
 		if (scheduler == socket) { return; } // dont send to self
-		System.out.println("sending jobnotify");
 		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
 		message.attachJob(job);
+		scheduler.sendMessage(message);
+	}
+	
+	/**
+	 * send a message to a scheduler, saying that we received the job result
+	 */
+	public void sendJobResultConfirmationRequestMessage(Socket scheduler, Job job) {
+		if (scheduler == socket) { return; } // dont send to self
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
+		message.attachJob(job);
+		scheduler.sendMessage(message);
+	}
+	
+	/**
+	 * confirm to scheduler that we noted that he has received its jobresult
+	 */
+	public void sendJobResultConfirmationConfirmation(Socket scheduler, int jobId) {
+		if (scheduler == socket) { return; } // dont send to self
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.ACKNOWLEDGEMENT, jobId, socket);
 		scheduler.sendMessage(message);
 	}
 	
@@ -90,6 +108,12 @@ public class Scheduler implements ISocketCommunicator{
 		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
 		user.sendMessage(message);
 	}
+	
+	public void sendJobResultToUser(Socket user, Job job) {
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
+		message.attachJob(job);
+		user.sendMessage(message);
+	}
 	/* ========================================================================
 	 * 	Receive messages below
 	 * ===================================================================== */
@@ -97,16 +121,24 @@ public class Scheduler implements ISocketCommunicator{
 	 * whenever a job request from an user comes in
 	 */
 	public void jobRequestHandler(Message message) {
-		System.out.println("received Job");
 		Job job = message.getJob();
+		job.setUser(message.senderSocket); // sets user
+		
 		assert (!hasActiveJob(job.getId())); // job already present.. ?how why what
 		
 		ArrayList<Socket> schedulerSockets = getActiveSchedulers();
+		System.out.printf(">> Scheduler has received job -> Waiting for %d scheduler confirmations\n", schedulerSockets.size());
+		
 		ActiveJob aj = new ActiveJob(job, socket, schedulerSockets);
 		activeJobs.add(aj);
 		
 		for (Socket ss : schedulerSockets) {
 			sendJobConfirmationRequestMessage(ss, job);
+		}
+		
+		// edge case where there is only 1 socket here..
+		if (schedulerSockets.size() == 1) {
+			handleExecuteJob(aj);
 		}
 	}
 	
@@ -133,10 +165,66 @@ public class Scheduler implements ISocketCommunicator{
 		ActiveJob aj = getActiveJob(message.getValue());
 		aj.confirmScheduler(scheduler);
 		if (aj.isReadyToStart()) {
-			sendJobConfirmationToUser(aj.job.getUser(), aj.job.getId());
-			executeJob(aj.job);
+			handleExecuteJob(aj);
 		}
 	}
+	
+	/**
+	 * When the job result from the resourcemanager comes back to the scheduler
+	 */
+	public void schedulerJobResultHandler(Message message) {
+		ActiveJob aj = getActiveJob(message.getValue());
+		aj.markAsDone(socket);
+		sendJobResultToUser(aj.job.getUser(), aj.job);
+	}
+	
+	/**
+	 * Whenever the user confirms that it received the job result
+	 */
+	public void userJobResultConfirmationHandler(Message message) {
+		ActiveJob aj = getActiveJob(message.getValue());
+		aj.status = Job.STATUS.CLOSED;
+	
+		if (aj.isDone()) {
+			System.out.println("<< Scheduler done with job (since we're the only schedulre)");
+			activeJobs.remove(aj);
+			return;
+		}
+		
+		ArrayList<Socket> schedulerSockets = getActiveSchedulers();
+		for (Socket ss : schedulerSockets) {
+			sendJobResultConfirmationRequestMessage(ss, aj.job);
+		}
+		
+		
+	}
+	
+	/**
+	 * whenever a scheduler says that he has received the result of a job
+	 *  - remove active job (since it was not our job)
+	 *  - confirm to scheduler
+	 */
+	public void schedulerJobResultConfirmationHandler(Message message) {
+		System.out.println("<< Scheduler done tracking neighbours job");
+		int jobId = message.getValue();
+		ActiveJob aj = getActiveJob(jobId);
+		sendJobResultConfirmationConfirmation(message.senderSocket, jobId);
+		activeJobs.remove(aj);
+	}
+	
+	/**
+	 * Scheduler has acknowledged that we received the results
+	 */
+	public void schedulerJobResultAcknowledgementHandler(Message message) {
+		ActiveJob aj = getActiveJob(message.getValue());
+		aj.markAsDone(message.senderSocket);
+		
+		if (aj.isDone()) {
+			System.out.println("<< Schedulers done with job");
+			activeJobs.remove(aj);
+		}
+	}
+	
 	
 	/**
 	 * Types of messages we expect here:
@@ -151,6 +239,7 @@ public class Scheduler implements ISocketCommunicator{
 				jobRequestHandler(message);
 			}
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
+				userJobResultConfirmationHandler(message);
 			}
 		}
 		if (message.getSender() == Message.SENDER.SCHEDULER) {
@@ -160,12 +249,28 @@ public class Scheduler implements ISocketCommunicator{
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
 				schedulerJobConfirmationHandler(message);
 			}
+			if (message.getType() == Message.TYPE.RESULT) {
+				schedulerJobResultConfirmationHandler(message);
+			}
+			if (message.getType() == Message.TYPE.ACKNOWLEDGEMENT) {
+				schedulerJobResultAcknowledgementHandler(message);
+			}
+		}
+		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
+			if (message.getType() == Message.TYPE.RESULT) {
+				schedulerJobResultHandler(message);
+			}
 		}
 	}
 	
 	/* ========================================================================
 	 * 	Class functions
 	 * ===================================================================== */	
+	public void handleExecuteJob(ActiveJob aj) {
+		System.out.println(">> Scheduler got job confirmations from all other schedulers -> starting to process job");
+		sendJobConfirmationToUser(aj.job.getUser(), aj.job.getId());
+		executeJob(aj.job);
+	}
 	public void executeJob(Job job) {
 		Random rand = new Random();
 		int schedulerId = rand.nextInt(rmSockets.size());
@@ -207,5 +312,9 @@ public class Scheduler implements ISocketCommunicator{
 		}
 		assert (activeSchedulers.size() > 0);
 		return activeSchedulers;
+	}
+	
+	public String getType() {
+		return "Scheduler";
 	}
 }

@@ -10,12 +10,14 @@ import java.util.ArrayList;
  *	SENDER	| TYPE			| VALUE	| MEANING
  *	- - - --- --- --- - - -
  *	user		| request		| 0		| the user is requesting the list of schedulers from a scheduler
- *	user		| request		| x > 1	| the user is requesting computation of job with jobId x
  *	user		| confirmation	| 0		| the user is confirms that it received the scheduler list
+ *	user		| request		| x > 1	| the user is requesting computation of job with jobId x
  *	user		| confirmation	| x > 1	| the user is confirms that it received reply belonging to job with jobId x
  *	- - - --- --- --- - - -
- * scheduler	| request		| x		| the scheduler requests confirmation from all other schedulers that is going to work on jobId: x
- * scheduler	| confirmation	| x		| the scheduler gets notified by another scheduler that it has acknowledged that he is going to do jobId: x
+ * scheduler	| request		| x	> 1	| the scheduler requests confirmation from all other schedulers that is going to work on jobId: x
+ * scheduler	| confirmation	| x	> 1	| the scheduler gets notified by another scheduler that it has acknowledged that he is going to do jobId: x
+ * scheduler	| result			| x > 1	| the scheduler sends a message to another scheduler saying that it has received the result of jobId: x
+ * scheduler	|acknowledgement| x > 1	| the scheduler sends a confirmation to another scheduler saying that it noted that he had received the results of jobId: x
  * scheduler	| request		| x > 1	| the scheduler sends a message to the resourceManager, asking it to execute this job.
  * 	- - - --- --- --- - - -
  * resourceM	| confirmation	| x > 1	| the rm confirms to the scheduler that it has received jobId: x
@@ -38,7 +40,8 @@ public class Message {
 		STATUS,
 		REQUEST,
 		CONFIRMATION,
-		RESULT
+		RESULT,
+		ACKNOWLEDGEMENT
 	}
 	
 	public Socket senderSocket; // socket that the receiver can use, to reply to the sender. 

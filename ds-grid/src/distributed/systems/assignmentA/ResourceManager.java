@@ -82,7 +82,7 @@ public class ResourceManager implements ISocketCommunicator {
 	 * send job result back to the cluster
 	 */
 	private void sendJobResultToCluster(ActiveJob aj) {
-		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.RESULT, aj.job.getId(), socket);
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.RESULT, aj.job.getId(), socket);
 		message.attachJob(aj.job);
 		aj.scheduler.sendMessage(message);
 	}
@@ -109,6 +109,7 @@ public class ResourceManager implements ISocketCommunicator {
 	 *  - it sends the task to one of its available workers.
 	 */	
 	private void jobRequestHandler(Message message) {
+		System.out.println(">> ResourceManager has received new job -> starting to process job");
 		activeJobs.add(new ActiveJob(message.getJob(), message.senderSocket, null));
 		sendJobConfirmationToScheduler(message.senderSocket, message.getValue());
 		Socket availableWorker = getAvailableWorker();
@@ -140,14 +141,13 @@ public class ResourceManager implements ISocketCommunicator {
 	 *  		. pass the result to the scheduler
 	 */
 	public void jobResultHandler(Message message){
+		System.out.println("<< ResourceManager done with job");
 		int jobId = message.getValue();
 		sendJobResultConfirmationToWorker(message.senderSocket, jobId);
 		ActiveJob aj = getActiveJob(jobId);
 		
-		if (aj != null) {
-			aj.job = message.getJob();
-			sendJobResultToCluster(aj);
-		}
+		aj.job = message.getJob();
+		sendJobResultToCluster(aj);
 	}
 	
 	/**
@@ -226,6 +226,10 @@ public class ResourceManager implements ISocketCommunicator {
 
 	public int getId() {
 		return id;
+	}
+	
+	public String getType() {
+		return "ResourceManager";
 	}
 	
 	

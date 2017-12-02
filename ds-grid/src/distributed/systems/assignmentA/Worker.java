@@ -85,6 +85,7 @@ public class Worker implements ISocketCommunicator, Runnable {
 	 * 	- start executing ... -> after x seconds send result to RM
 	 */
 	private void jobRequestHandler(Message message) {
+		System.out.println(">> Worker received job -> starting to proces Job");
 		status = STATUS.BUSY;
 		
 		if (activeJob != null) { // edge case where the RM dies? and tries to do the same job again or so..
@@ -140,6 +141,7 @@ public class Worker implements ISocketCommunicator, Runnable {
 	 * - ..await result confirmation
 	 */
 	private void jobDoneHandler() {
+		System.out.println("<< Worker done with job");
 		activeJob.status = Job.STATUS.CLOSED;
 		sendJobResultToRM();
 	}
@@ -162,5 +164,9 @@ public class Worker implements ISocketCommunicator, Runnable {
 	
 	public int getId() {
 		return this.id;
+	}
+	
+	public String getType() {
+		return "Worker";
 	}
 }
