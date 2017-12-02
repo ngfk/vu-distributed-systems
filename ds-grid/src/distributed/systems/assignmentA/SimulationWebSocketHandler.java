@@ -14,7 +14,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
+import distributed.systems.assignmentA.types.GridClusterSetup;
 import distributed.systems.assignmentA.types.GridMessageInit;
+import distributed.systems.assignmentA.types.GridMessageSetup;
 import distributed.systems.assignmentA.types.GridMessageToggle;
 import distributed.systems.assignmentA.types.GridSetup;
 
@@ -77,10 +79,12 @@ public class SimulationWebSocketHandler {
 				GridMessageInit initMessage = gson.fromJson(message, GridMessageInit.class);
 				
 				this.simulation = new Simulation(initMessage.sizes.schedulers, initMessage.sizes.clusters, initMessage.sizes.workers);
-				GridSetup setup = this.simulation.getGridSetup();
+				GridSetup gridSetup = this.simulation.getGridSetup();				
+				GridMessageSetup gridMessageSetup = new GridMessageSetup(gridSetup);
 				
-				// TODO send grid setup to interface
+				System.out.println(gson.toJson(gridMessageSetup));
 				
+				Broadcast(gson.toJson(gridMessageSetup));
 				break;
 			case "setup":
 				System.out.println("setup message received");
