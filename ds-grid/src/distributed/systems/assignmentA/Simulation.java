@@ -17,7 +17,8 @@ public class Simulation {
 	Simulation(int schedulerCount, int clusterCount, int workerCount) {
 		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
 		ArrayList<Socket> rmSockets = new ArrayList<Socket>();
-	
+		int uniqueWorkerId = 1;
+		
 		resourceManagers = new ArrayList<ResourceManager>();
 		for (int i = 0; i < clusterCount; i++) {
 			ResourceManager newResourceManager = new ResourceManager(i, workerCount);
@@ -28,7 +29,7 @@ public class Simulation {
 			// We create all of the worker nodes here, On init, the worker
 			// nodes will let the resourceManager know that they're available
 			for (int j = 0; j < workerCount; j++) {
-				Worker worker = new Worker(j, rmSocket);
+				Worker worker = new Worker(uniqueWorkerId++, rmSocket);
 				newResourceManager.addWorker(worker);
 			}
 		}
@@ -44,7 +45,7 @@ public class Simulation {
 			schedulers.get(i).setSchedulers(schedulerSockets);
 		}
 		
-		System.out.printf("Done with init\n");
+		System.out.printf(">> Done with initializing all nodes\n");
 
 		// TODO Might support multiple users in a simulation.
 		users = new ArrayList<User>();

@@ -57,6 +57,7 @@ public class Scheduler implements ISocketCommunicator{
 	 */
 	public void sendJobConfirmationRequestMessage(Socket scheduler, Job job) {
 		if (scheduler == socket) { return; } // dont send to self
+		System.out.println("sending jobnotify");
 		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
 		message.attachJob(job);
 		scheduler.sendMessage(message);
@@ -93,6 +94,7 @@ public class Scheduler implements ISocketCommunicator{
 	 * whenever a job request from an user comes in
 	 */
 	public void jobRequestHandler(Message message) {
+		System.out.println("received Job");
 		Job job = message.getJob();
 		assert (!hasActiveJob(job.getId())); // job already present.. ?how why what
 		
