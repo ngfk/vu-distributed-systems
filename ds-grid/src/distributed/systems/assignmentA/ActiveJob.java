@@ -22,9 +22,11 @@ public class ActiveJob {
 		this.scheduler = scheduler;
 		status = Job.STATUS.WAITING;
 		
-		this.schedulers = new HashMap<Socket, STATUS>();
-		for (int i = 0; i < schedulers.size(); i ++ ) {
-			this.schedulers.put(schedulers.get(i), STATUS.UNCONFIRMED);
+		if (schedulers != null) {
+			this.schedulers = new HashMap<Socket, STATUS>();
+			for (int i = 0; i < schedulers.size(); i ++ ) {
+				this.schedulers.put(schedulers.get(i), STATUS.UNCONFIRMED);
+			}
 		}
 	}
 	

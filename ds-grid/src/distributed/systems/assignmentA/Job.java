@@ -30,9 +30,10 @@ public class Job {
 	Job(Job job){
 		this.duration = job.duration;
 		this.id = job.id;
+		this.user = job.user;
+		this.result = job.result;
 	}
 
-	// TODO fix.
 	public Job copy() {
 		Job copyJob = new Job(this);
 		return copyJob;
@@ -41,6 +42,10 @@ public class Job {
 	
 	public int getId() {
 		return id;
+	}
+	
+	public Socket getUser() {
+		return user;
 	}
 	
 	public void setResult(int result) {

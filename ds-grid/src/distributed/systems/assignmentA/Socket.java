@@ -19,6 +19,7 @@ public class Socket {
 	 *  We could implement some delaying function here.. to simulate traffic on a network
 	 */
 	public void sendMessage(Message message) {
+		System.out.printf("message sending: %s %s %s %s\n", message.getSender(), message.getType(), message.getValue(), "l");
 		node.onMessageReceived(message);
 	}
 }

@@ -22,14 +22,17 @@ public class Scheduler implements ISocketCommunicator{
 	private int id;
 	private Socket socket;
 	
+	private ArrayList <Socket> rmSockets; // list of all resourceManagers
 	private ArrayList <ActiveJob> activeJobs; // this is a shared data-structure between schedulers 
-	
 	private HashMap<Socket, Scheduler.STATUS> schedulers; // schedulers are identified in the system by their sockets
 	
 	
-	Scheduler(int id){
+	Scheduler(int id, ArrayList<Socket> rmSockets){
 		this.id = id;
-		socket = new Socket(this);
+		this.socket = new Socket(this);
+		this.rmSockets = rmSockets;
+		
+		activeJobs = new ArrayList<ActiveJob>();
 	}
 	
 	/* a scheduler should know about all other schedulers */
@@ -85,7 +88,8 @@ public class Scheduler implements ISocketCommunicator{
 	/**
 	 * whenever a job request from an user comes in
 	 */
-	public void jobRequestHandler(Job job) {
+	public void jobRequestHandler(Message message) {
+		Job job = message.getJob();
 		assert (!hasActiveJob(job.getId())); // job already present.. ?how why what
 		
 		ArrayList<Socket> schedulerSockets = getActiveSchedulers();
@@ -120,7 +124,8 @@ public class Scheduler implements ISocketCommunicator{
 		ActiveJob aj = getActiveJob(message.getValue());
 		aj.confirmScheduler(scheduler);
 		if (aj.isReadyToStart()) {
-			sendJobConfirmationToUser(message.senderSocket, aj.job.getId());
+			sendJobConfirmationToUser(aj.job.getUser(), aj.job.getId());
+			executeJob(aj.job);
 		}
 	}
 	
@@ -134,6 +139,7 @@ public class Scheduler implements ISocketCommunicator{
 	public void onMessageReceived(Message message) {
 		if (message.getSender() == Message.SENDER.USER) {
 			if (message.getType() == Message.TYPE.REQUEST) {
+				jobRequestHandler(message);
 			}
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
 			}
@@ -150,7 +156,18 @@ public class Scheduler implements ISocketCommunicator{
 	
 	/* ========================================================================
 	 * 	Class functions
-	 * ===================================================================== */		
+	 * ===================================================================== */	
+	public void executeJob(Job job) {
+		Random rand = new Random();
+		int schedulerId = rand.nextInt(rmSockets.size());
+		
+		Socket rm = rmSockets.get(schedulerId);
+
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
+		message.attachJob(job);
+		
+		rm.sendMessage(message);
+	}
 	public Socket getSocket() {
 		return socket;
 	}

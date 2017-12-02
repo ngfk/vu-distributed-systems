@@ -27,22 +27,12 @@ public class User implements ISocketCommunicator, Runnable {
 		socket = new Socket(this);
 		
 		this.schedulers = schedulers;
+		activeJobs = new ArrayList<ActiveJob>();
+		
+		Job job = new Job(8000 + (int)(Math.random() * 5000));
+		executeJob(job);
+		System.out.println("done? ");
 	}
-	
-	
-	private void requestSchedulerList() {
-		// TODO it should actually first verify wether the scheduler is up.. and maybe store somewhere the statusses of these schedulers.
-		schedulers.get(0).sendMessage(getSchedulersMessage()); // the result will come in at the onMessageReceived function
-	}
-	
-	/**
-	 * request new scheduler list
-	 *  asks to a scheduler a new list of schedulers
-	 */
-	private void updateSchedulers() {
-		// TODO send request schedulers message to a scheduler.
-	}
-	
 	
 
 	/* loop that produces the jobs */
@@ -72,6 +62,8 @@ public class User implements ISocketCommunicator, Runnable {
 		activeJobs.add(new ActiveJob(job, scheduler, null));
 
 		Message message = new Message(Message.SENDER.USER, Message.TYPE.REQUEST, job.getId(), socket);
+		message.attachJob(job);
+		
 		scheduler.sendMessage(message);
 	}
 	

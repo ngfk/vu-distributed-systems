@@ -31,24 +31,14 @@ public class Simulation {
 	 */
 	Simulation() {
 		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
-		
-		schedulers = new ArrayList<Scheduler>();
-		for (int i = 0; i < NUMBER_OF_SCHEDULERS; i++) {
-			Scheduler newScheduler = new Scheduler(i);
-			schedulers.add(newScheduler);
-			schedulerSockets.add(newScheduler.getSocket());
-		}
-		/* let the schedulers know about eachother */
-		for (int i = 0; i < schedulers.size(); i++) {
-			schedulers.get(i).setSchedulers(schedulerSockets);
-			
-		}
-
+		ArrayList<Socket> rmSockets = new ArrayList<Socket>();
+	
 		resourceManagers = new ArrayList<ResourceManager>();
 		for (int i = 0; i < NUMBER_OF_RESOURCE_MANAGERS; i++) {
 			ResourceManager newResourceManager = new ResourceManager(i, NUMBER_OF_WORKERS);
 			resourceManagers.add(newResourceManager);
 			Socket rmSocket = newResourceManager.getSocket();
+			rmSockets.add(rmSocket);
 
 			/**
 			 * We create all of the worker nodes here, On init, the worker nodes will let
@@ -58,6 +48,19 @@ public class Simulation {
 				new Worker(j, rmSocket);
 			}
 		}
+		
+		schedulers = new ArrayList<Scheduler>();
+		for (int i = 0; i < NUMBER_OF_SCHEDULERS; i++) {
+			Scheduler newScheduler = new Scheduler(i, rmSockets);
+			schedulers.add(newScheduler);
+			schedulerSockets.add(newScheduler.getSocket());
+		}
+		/* let the schedulers know about eachother */
+		for (int i = 0; i < schedulers.size(); i++) {
+			schedulers.get(i).setSchedulers(schedulerSockets);
+		}
+		
+		System.out.printf("Done with init\n");
 
 		users = new ArrayList<User>();
 		for (int i = 0; i < NUMBER_OF_USERS; i++) {
