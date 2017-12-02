@@ -4,6 +4,11 @@ body {
     font-family: sans-serif;
 }
 
+.inputForm {
+    display: flex;
+    justify-content: space-around;
+}
+
 .User-box {
     display: flex;
     margin: 10px 60px;
@@ -60,7 +65,7 @@ body {
 .ResourceManager {
     margin: 1px;
     width: 115px;
-    height: 30px;
+    height: 50px;
     border: 1px solid black;
     border-radius: 5px;
     padding: 5px;
@@ -72,9 +77,17 @@ body {
 
 .Scheduler-box {
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: column;
     justify-content: space-around;
     border: 1px solid black;
+    border-radius: 5px;
+    margin: 10px 60px;
+}
+
+.Schedulers {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
     border-radius: 5px;
     margin: 10px 60px;
 }

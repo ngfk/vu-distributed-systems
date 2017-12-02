@@ -1,6 +1,5 @@
-import { NodeState, NodeType } from './node';
-
 import { GridSetup } from './grid';
+import { NodeState, NodeType } from './node';
 
 export interface GridMessage {
     readonly type: string;
@@ -27,15 +26,11 @@ export interface GridMessageState extends GridMessage {
     readonly nodeState: NodeState;
 }
 
-export interface GridMessageData extends GridMessage {
-    readonly type: 'data';
+export interface GridMessageQueue extends GridMessage {
+    readonly type: 'queue';
     readonly nodeId: number;
     readonly nodeType: NodeType;
-    readonly data: any;
-}
-
-export interface GridMessageStart extends GridMessage {
-    readonly type: 'start';
+    readonly jobs: number;
 }
 
 export interface GridMessageStop extends GridMessage {
@@ -53,7 +48,6 @@ export interface GridMessageToggle extends GridMessage {
  */
 export type OutgoingGridMessage =
     | GridMessageInit
-    | GridMessageStart
     | GridMessageStop
     | GridMessageToggle;
 
@@ -63,4 +57,4 @@ export type OutgoingGridMessage =
 export type IncomingGridMessage =
     | GridMessageSetup
     | GridMessageState
-    | GridMessageData;
+    | GridMessageQueue;

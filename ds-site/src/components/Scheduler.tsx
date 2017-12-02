@@ -1,40 +1,54 @@
 import * as React from 'react';
 
+import { GridActionCreators } from '../actions/grid.actions';
+import { NodeState, NodeType } from '../models/node';
+
 export interface SchedulerProps {
-    schedulers: number;
-    active: number;
-    randomScheduler: number;
+    id: number;
+    state: NodeState;
+    gridToggle: GridActionCreators['gridToggle'];
 }
 
-export class Scheduler extends React.Component<SchedulerProps> {
+export interface SchedulerState {}
 
+export class Scheduler extends React.Component<SchedulerProps, SchedulerState> {
+    constructor(props: SchedulerProps) {
+        super(props);
+    }
     public render(): JSX.Element {
-        let i: number;
-        let schedulerNodes = [];
         let backgroundStyle = {};
 
-        if (this.props.active === 0) {
+        if (this.props.state === NodeState.Online) {
+            backgroundStyle = {
+                backgroundColor: 'green'
+            };
+        } else if (this.props.state === NodeState.Busy) {
+            backgroundStyle = {
+                backgroundColor: 'orange'
+            };
+        } else if (this.props.state === NodeState.Unreachable) {
+            backgroundStyle = {
+                backgroundColor: 'grey'
+            };
+        } else {
             backgroundStyle = { backgroundColor: 'red' };
-        } else if (this.props.active === 1) {
-            backgroundStyle = { backgroundColor: 'green' };
-        } else if (this.props.active === 2) {
-            backgroundStyle = { backgroundColor: 'orange' };
         }
 
-        for (i = 0; i < this.props.schedulers; i++) {
-            if (i === this.props.randomScheduler) {
-                backgroundStyle = { backgroundColor: 'red' };
-            }
-            schedulerNodes.push(
-                <div className="Scheduler"  onClick={this.toggleState}  key={i} style={backgroundStyle}>
-                    <div className="Scheduler-label">Scheduler</div>
-                </div>
-            );
-        }
+        return (
+            <div
+                className="Scheduler"
+                onClick={this.handleClick}
+                style={backgroundStyle}
+            >
+                <div className="Scheduler-label"> Scheduler </div>
+            </div>
+        );
+    }
 
-        return <div className="Scheduler-box">{schedulerNodes}</div>;
-    }
-    private toggleState() {
-        
-    }
+    private handleClick = () => {
+        this.props.gridToggle({
+            id: this.props.id,
+            type: NodeType.Scheduler
+        });
+    };
 }

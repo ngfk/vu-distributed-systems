@@ -33,7 +33,23 @@ public class User implements ISocketCommunicator, Runnable {
 		executeJob(job);
 		System.out.println("done? ");
 	}
+
+	private void requestSchedulerList() {
+		// TODO it should actually first verify wether the scheduler is up.. and maybe store somewhere the statusses of these schedulers.
+		schedulers.get(0).sendMessage(getSchedulersMessage()); // the result will come in at the onMessageReceived function
+	}
 	
+	/**
+	 * request new scheduler list
+	 *  asks to a scheduler a new list of schedulers
+	 */
+	private void updateSchedulers() {
+		// TODO send request schedulers message to a scheduler.
+	}
+	
+	public int getId() {
+		return this.id;
+	}
 
 	/* loop that produces the jobs */
 	public void run() {

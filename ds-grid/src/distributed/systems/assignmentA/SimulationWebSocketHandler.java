@@ -1,7 +1,6 @@
 package distributed.systems.assignmentA;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -14,16 +13,20 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.MalformedJsonException;
 
+import distributed.systems.assignmentA.types.GridClusterSetup;
 import distributed.systems.assignmentA.types.GridMessageInit;
+import distributed.systems.assignmentA.types.GridMessageSetup;
+import distributed.systems.assignmentA.types.GridMessageToggle;
+import distributed.systems.assignmentA.types.GridSetup;
 
 @WebSocket
 public class SimulationWebSocketHandler {
-	/// Holds all connected WebSocket connections
-	private static ArrayList<Session> sessions = new ArrayList<Session>();
 	private static Gson gson = new Gson();
 	private static JsonParser jsonParser = new JsonParser();
+	
+	private Session session;
+	private Simulation simulation;
 
 	/**
 	 * Called if a Websocket connection closes
@@ -34,13 +37,6 @@ public class SimulationWebSocketHandler {
 	@OnWebSocketClose
 	public void onClose(int statusCode, String reason) {
 		System.out.println("WebSocket Closed: statusCode=" + statusCode + ", reason=" + reason);
-
-		// Remove all closed sessions.
-		for (Session session : sessions) {
-			if (!session.isOpen()) {
-				sessions.remove(session);
-			}
-		}
 	}
 
 	/**
@@ -61,7 +57,7 @@ public class SimulationWebSocketHandler {
 	@OnWebSocketConnect
 	public void onConnect(Session session) {
 		// Add new session to ArrayList.
-		sessions.add(session);
+		this.session = session;
 		System.out.println("WebSocket client connected: " + session.getRemoteAddress().getAddress());
 	}
 
@@ -82,36 +78,30 @@ public class SimulationWebSocketHandler {
 			case "init":
 				GridMessageInit initMessage = gson.fromJson(message, GridMessageInit.class);
 				
-				// TODO create new Simulation object with the following cluster, scheduler, worker size? or at least change the sizes.
-				System.out.println("clusters: " + initMessage.sizes.clusters);
-				System.out.println("schedulers: " + initMessage.sizes.schedulers);
-				System.out.println("workers: " + initMessage.sizes.workers);
+				this.simulation = new Simulation(initMessage.sizes.schedulers, initMessage.sizes.clusters, initMessage.sizes.workers);
+				GridSetup gridSetup = this.simulation.getGridSetup();				
+				GridMessageSetup gridMessageSetup = new GridMessageSetup(gridSetup);
+				
+				System.out.println(gson.toJson(gridMessageSetup));
+				
+				session.getRemote().sendString(gson.toJson(gridMessageSetup));
 				break;
 			case "setup":
 				System.out.println("setup message received");
+				break;
+			case "toggle":
+				System.out.println("toggle message received");
+				GridMessageToggle toggleMessage = gson.fromJson(message, GridMessageToggle.class);
+				
+				System.out.println("Toggling node id " + toggleMessage.nodeId + " of type " + toggleMessage.nodeType);
 				break;
 			default:
 				break;
 			}
 		} catch(JsonSyntaxException e) {
 			System.out.println("Incorrect JSON received.");
-		} 
-		
-	}
-
-	/**
-	 * Function to send a message to all open Websocket connections.
-	 * 
-	 * @param message the message to be sent
-	 */
-	public static void Broadcast(String message) {
-		// Only broadcast the message to connected WebSockets.
-		sessions.stream().filter(session -> session.isOpen()).forEach(session -> {
-			try {
-				session.getRemote().sendString(message);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		});
+		} catch (IOException e) {
+			System.out.println("Error sending websocket packet.");
+		}
 	}
 }

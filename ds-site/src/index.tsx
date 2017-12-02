@@ -1,19 +1,48 @@
 import './index.css';
 
+import { createStore } from '@ngfk/ts-redux';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-
-import { State, reducer } from './reducers/reducer';
+import { Provider } from 'react-redux';
+import { applyMiddleware, compose } from 'redux';
 
 import { ActionMap } from './actions/actions';
 import App from './containers/App';
-import { GridConnection } from './utils/grid-connection';
-import { Provider } from 'react-redux';
-import { createStore } from '@ngfk/ts-redux';
+import { reducer, State } from './reducers/reducer';
 import registerServiceWorker from './registerServiceWorker';
+import { GridConnection, gridMiddleware } from './utils/grid-connection';
 
-// Redux store
-const store = createStore<State, ActionMap>(reducer);
+// Grid connection & redux store
+const grid = new GridConnection();
+const enhancer = window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose;
+const middleware = applyMiddleware(gridMiddleware(grid));
+const store = createStore<State, ActionMap>(reducer, enhancer(middleware));
+
+// Forward messages from back-end to store
+grid.subscribe(message => {
+    switch (message.type) {
+        case 'setup':
+            store.dispatch('GRID_SETUP', message.grid);
+            console.log('setup', message);
+            break;
+        case 'queue':
+            store.dispatch('GRID_QUEUE', {
+                id: message.nodeId,
+                type: message.nodeType,
+                jobs: message.jobs
+            });
+            console.log('jobqueue', message);
+            break;
+        case 'state':
+            store.dispatch('GRID_STATE', {
+                id: message.nodeId,
+                type: message.nodeType,
+                state: message.nodeState
+            });
+            console.log('state', message);
+            break;
+    }
+});
 
 // Render React components
 ReactDOM.render(
@@ -23,20 +52,3 @@ ReactDOM.render(
     document.getElementById('root')
 );
 registerServiceWorker();
-
-// Setup grid connection
-const grid = new GridConnection();
-grid.subscribe(message => {
-    switch (message.type) {
-        case 'setup':
-            store.dispatch('GRID_SETUP', message.grid);
-            console.log('setup', message);
-            break;
-        case 'state':
-            console.log('state', message);
-            break;
-        case 'data':
-            console.log('data', message);
-            break;
-    }
-});

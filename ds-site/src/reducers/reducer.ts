@@ -1,5 +1,6 @@
-import { Grid } from '../models/grid';
 import { combineReducers } from '@ngfk/ts-redux';
+
+import { Grid } from '../models/grid';
 import { gridReducer } from './grid.reducer';
 
 export interface State {

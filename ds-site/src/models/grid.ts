@@ -2,6 +2,7 @@ import { NodeState } from './node';
 
 export interface Grid {
     readonly user: number;
+    readonly schedulerJobs: number;
     readonly schedulers: Scheduler[];
     readonly clusters: Cluster[];
 }
@@ -9,7 +10,6 @@ export interface Grid {
 export interface Scheduler {
     readonly id: number;
     readonly state: NodeState;
-    readonly jobs: number;
 }
 
 export interface Cluster {
@@ -20,6 +20,7 @@ export interface Cluster {
 export interface ResourceManager {
     readonly id: number;
     readonly state: NodeState;
+    readonly jobs: number;
 }
 
 export interface Worker {
@@ -36,4 +37,10 @@ export interface GridSetup {
 export interface GridClusterSetup {
     readonly resourceManager: number;
     readonly workers: number[];
+}
+
+export interface GridNodeMap {
+    scheduler: Scheduler;
+    'resource-manager': ResourceManager;
+    worker: Worker;
 }

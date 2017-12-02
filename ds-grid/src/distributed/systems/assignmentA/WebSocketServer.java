@@ -30,8 +30,13 @@ public class WebSocketServer implements Runnable {
 			server.start();
 			server.join();
 		} catch (Exception e) {
-			System.out.println("ERROR: Can't start Websocket Server, port " + PORT + " in use?");
+			System.out.println("ERROR: Can't start Websocket Server, is port " + PORT + " in use?");
 		}
 	}
 
+	public static void main(String[] args) {
+		/* Create the WebSocketServer thread */
+		Thread serverThread = new Thread(new WebSocketServer());
+		serverThread.start();
+	}
 }

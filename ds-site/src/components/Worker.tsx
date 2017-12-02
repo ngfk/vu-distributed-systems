@@ -1,25 +1,55 @@
 import * as React from 'react';
 
+import { GridActionCreators } from '../actions/grid.actions';
+import { NodeState, NodeType } from '../models/node';
+
 export interface WorkerProps {
-    active: number;
+    state: NodeState;
+    id: number;
+    gridToggle: GridActionCreators['gridToggle'];
 }
 
 export interface WorkerState {}
 
 export class Worker extends React.Component<WorkerProps, WorkerState> {
+    constructor(props: WorkerProps) {
+        super(props);
+    }
+
     public render(): JSX.Element {
         let backgroundStyle = {};
-        if (this.props.active === 0) {
-            backgroundStyle = { backgroundColor: 'green' };
-        } else if (this.props.active === 1) {
-            backgroundStyle = { backgroundColor: 'orange' };
-        } else if (this.props.active === 2) {
+
+        if (this.props.state === NodeState.Online) {
+            backgroundStyle = {
+                backgroundColor: 'green'
+            };
+        } else if (this.props.state === NodeState.Busy) {
+            backgroundStyle = {
+                backgroundColor: 'orange'
+            };
+        } else if (this.props.state === NodeState.Unreachable) {
+            backgroundStyle = {
+                backgroundColor: 'grey'
+            };
+        } else {
             backgroundStyle = { backgroundColor: 'red' };
         }
+
         return (
-            <div className="Worker" style={backgroundStyle}>
+            <div
+                className="Worker"
+                onClick={this.handleClick}
+                style={backgroundStyle}
+            >
                 <div className="Worker-label"> W </div>
             </div>
         );
     }
+
+    private handleClick = () => {
+        this.props.gridToggle({
+            id: this.props.id,
+            type: NodeType.Worker
+        });
+    };
 }

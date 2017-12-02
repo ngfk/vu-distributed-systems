@@ -4,11 +4,10 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "http-server ds-site/build --port $PORT",
-        "postinstall": "npm run install:site && npm run build:site",
-        "install:site": "npm install --prefix ds-site",
-        "build:site": "npm run --prefix ds-site build",
-        "start:site": "npm run --prefix ds-site start",
+        "start": "http-server --port $PORT ds-site/build",
+        "watch": "npm run --prefix=ds-site start",
+        "postinstall": "npm install --prefix ds-site && npm run build",
+        "build": "npm run --prefix ds-site build",
         "commit": "git-cz"
     },
     "repository": {

@@ -1,4 +1,10 @@
+import { Middleware } from 'redux';
+
+import { GridActionMap } from '../actions/grid.actions';
 import {
+    GridMessageInit,
+    GridMessageStop,
+    GridMessageToggle,
     IncomingGridMessage,
     OutgoingGridMessage
 } from '../models/grid-message';
@@ -104,3 +110,49 @@ export class GridConnection {
         this.observers.forEach(observer => observer(data));
     }
 }
+
+export type GridMiddleware = (grid: GridConnection) => Middleware;
+
+/**
+ * Redux middleware used to catch actions on the redux store and pass them to
+ * the back-end when required.
+ * @param grid The grid connection instance.
+ */
+export const gridMiddleware: GridMiddleware = grid => store => next => action => {
+    // Unfortunately it would be too much effort to make this function type
+    // safe, so this function simply uses a lot of casting.
+    const p: any = (action as any).payload;
+
+    switch (action.type) {
+        case 'GRID_INIT': {
+            const payload = p as GridActionMap['GRID_INIT'];
+            const message: GridMessageInit = {
+                type: 'init',
+                sizes: {
+                    schedulers: payload.schedulers,
+                    clusters: payload.clusters,
+                    workers: payload.workers
+                }
+            };
+            grid.send(message);
+            return next(action);
+        }
+        case 'GRID_STOP': {
+            const message: GridMessageStop = { type: 'stop' };
+            grid.send(message);
+            return next(action);
+        }
+        case 'GRID_TOGGLE': {
+            const payload = p as GridActionMap['GRID_TOGGLE'];
+            const message: GridMessageToggle = {
+                type: 'toggle',
+                nodeId: payload.id,
+                nodeType: payload.type
+            };
+            grid.send(message);
+            return next(action);
+        }
+        default:
+            return next(action);
+    }
+};
