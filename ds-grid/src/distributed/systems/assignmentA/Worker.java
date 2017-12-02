@@ -10,7 +10,7 @@ package distributed.systems.assignmentA;
  * OnResurrect: If a worker comes back to live, it can simply continues sending
  * the stillAlive message to the resouceManager
  */
-public class Worker implements ISocketCommunicator, Runnable {
+public class Worker implements ISocketCommunicator {
 	public static enum STATUS {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
@@ -62,6 +62,11 @@ public class Worker implements ISocketCommunicator, Runnable {
 	 * Receive messages below
 	 * =====================================================================
 	 */
+	
+	private void workerStatusHandler(Message message) {
+		
+	}
+	
 	/**
 	 * if we receive a jobresult confirmation 
 	 * - The worker node is officially done with the calculation 
@@ -103,6 +108,9 @@ public class Worker implements ISocketCommunicator, Runnable {
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
 				jobResultConfirmationHandler(message);
 			}
+			if (message.getType() == Message.TYPE.STATUS) {
+				workerStatusHandler(message);
+			}
 		}
 	}
 
@@ -140,13 +148,6 @@ public class Worker implements ISocketCommunicator, Runnable {
 
 	public Socket getSocket() {
 		return socket;
-	}
-
-	/**
-	 * this thread should send the aliveMessages to the RM
-	 */
-	public void run() {
-		// TODO
 	}
 	
 	public int getId() {

@@ -15,6 +15,8 @@ public class ActiveJob {
 	Job job;
 	Socket scheduler; // the scheduler that received the job
 	
+	Socket worker; // the worker that is currently responsible for this job
+	
 	HashMap<Socket, STATUS> schedulers;
 	
 	ActiveJob(Job job, Socket scheduler, ArrayList<Socket> schedulers){
@@ -41,6 +43,10 @@ public class ActiveJob {
 	
 	public void markAsDone(Socket scheduler) {
 		schedulers.put(scheduler, STATUS.DONE);
+	}
+	
+	public void setWorker(Socket worker) {
+		this.worker = worker;
 	}
 	
 	/* I think we can only start (for now) whenever all schedulers have seen the confirmation */

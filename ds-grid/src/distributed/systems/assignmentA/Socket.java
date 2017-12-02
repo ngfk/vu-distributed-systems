@@ -8,6 +8,7 @@ import java.util.Random;
  */
 public class Socket {
 	private ISocketCommunicator node;
+	private int lastReply;
 	
 	Socket(ISocketCommunicator node){
 		this.node = node; // the node where the message is going through

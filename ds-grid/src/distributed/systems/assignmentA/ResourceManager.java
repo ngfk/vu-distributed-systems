@@ -25,7 +25,7 @@ import distributed.systems.assignmentA.Scheduler.STATUS;
  * 	If the resourceManager comes back to life, it might have an outdated / invalid workers list.
  *  but this will be fixed whenever the workers start sending their I am alive message again.
  */
-public class ResourceManager implements ISocketCommunicator {
+public class ResourceManager implements ISocketCommunicator, Runnable {
 	private int id;
 	
 	public ArrayList<Worker> workerObjects; // this is only to help drawing the interface!
@@ -87,6 +87,13 @@ public class ResourceManager implements ISocketCommunicator {
 		aj.scheduler.sendMessage(message);
 	}
 
+	/**
+	 * request proof that worker did not die
+	 */
+	private void sendRequestStatusMessage(Socket worker) {
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
+		worker.sendMessage(message);
+	}
 	
 	/* ========================================================================
 	 * 	Receive messages below
@@ -108,23 +115,15 @@ public class ResourceManager implements ISocketCommunicator {
 	 * whenever the RM receives a jobrequest:
 	 * 	- adds the job to the activeJobs list
 	 *  - it confirms the request to the scheduler
-	 *  - it sends the task to one of its available workers.
+	 *  - try executing the job
 	 */	
 	private void jobRequestHandler(Message message) {
 		System.out.println(">> ResourceManager has received new job -> starting to process job");
 		ActiveJob aj = new ActiveJob(message.getJob(), message.senderSocket, null);
 		activeJobs.add(aj);
 		sendJobConfirmationToScheduler(message.senderSocket, message.getValue());
-		Socket availableWorker = getAvailableWorker();
 		
-		if (availableWorker == null) {
-			// status remains waiting -> whenever a node worker becomes available, give him this job.
-			return;
-		}
-		
-		aj.status = Job.STATUS.RUNNING;
-		workers.put(availableWorker, Worker.STATUS.RESERVED);
-		sendJobRequestToWorker(availableWorker, message.getJob());
+		tryExecuteJob(aj);
 	}
 	
 	/**
@@ -140,18 +139,25 @@ public class ResourceManager implements ISocketCommunicator {
 	
 	/**
 	 * When we receive a jobresult from a worker node
-	 *  - confirm jobresult received.
-	 *  - check if there was an activejob with this data
-	 *  		. pass the result to the scheduler
 	 */
 	public void jobResultHandler(Message message){
 		System.out.println("<< ResourceManager done with job");
 		int jobId = message.getValue();
-		sendJobResultConfirmationToWorker(message.senderSocket, jobId);
 		ActiveJob aj = getActiveJob(jobId);
-		
+		aj.status = Job.STATUS.CLOSED;
 		aj.job = message.getJob();
+		
+		sendJobResultConfirmationToWorker(message.senderSocket, jobId);
 		sendJobResultToCluster(aj);
+	}
+	
+	/**
+	 * When the scheduler confirms the result 
+	 */
+	public void jobResultConfirmationHandler(Message message) {
+		int jobId = message.getValue();
+		ActiveJob aj = getActiveJob(jobId);
+		activeJobs.remove(aj);
 	}
 	
 	/**
@@ -165,13 +171,7 @@ public class ResourceManager implements ISocketCommunicator {
 	 */
 	public void onMessageReceived(Message message) {		
 		if (message.getSender() == Message.SENDER.WORKER) {
-			if (message.getType() == Message.TYPE.STATUS) {
-				
-				// if worker is reserved, skip its status handler (fixes race condition)
-				if (workers.get(message.senderSocket) == Worker.STATUS.RESERVED) {
-					return; 
-				}
-				
+			if (message.getType() == Message.TYPE.STATUS) {				
 				workerStatusHandler(message);
 				return;
 			}
@@ -191,7 +191,7 @@ public class ResourceManager implements ISocketCommunicator {
 				return;
 			}
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
-				// do w/e is nessesarry
+				jobResultConfirmationHandler(message);
 				return;
 			}
 		}
@@ -211,7 +211,12 @@ public class ResourceManager implements ISocketCommunicator {
 		ActiveJob aj = getQueuedJob();
 		if (aj == null) { return ; }
 		
+		tryExecuteJob(aj);
+	}
+	
+	private void tryExecuteJob(ActiveJob aj) {
 		Socket availableWorker = getAvailableWorker();
+		
 		if (availableWorker == null) {
 			// status remains waiting -> whenever a node worker becomes available, give him this job.
 			return;
@@ -219,6 +224,7 @@ public class ResourceManager implements ISocketCommunicator {
 		
 		aj.status = Job.STATUS.RUNNING;
 		workers.put(availableWorker, Worker.STATUS.RESERVED);
+		aj.worker = availableWorker;
 		sendJobRequestToWorker(availableWorker, aj.job);
 	}
 	
@@ -272,5 +278,24 @@ public class ResourceManager implements ISocketCommunicator {
 	
 	public ArrayList<Worker> getWorkers() {
 		return workerObjects;
+	}
+	
+	
+	/**
+	 * The thread that checks if the workers are still alive
+	 *  - WorkerOnDie -> send active job to other worker.
+	 */
+	public void run() {
+		// for every active-unfinished job periodically check if the worker is still alive
+		for (int i = 0; i < activeJobs.size(); i++) {
+			if (activeJobs.get(i).status == Job.STATUS.RUNNING) {
+				sendRequestStatusMessage(activeJobs.get(i).worker);
+			}
+		}
+		try {
+			Thread.sleep(100L);
+		} catch (InterruptedException e) {
+			assert(false) : "Simulation runtread was interrupted";
+		}
 	}
 }
