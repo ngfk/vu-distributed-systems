@@ -25,11 +25,21 @@ grid.subscribe(message => {
             store.dispatch('GRID_SETUP', message.grid);
             console.log('setup', message);
             break;
-        case 'state':
-            console.log('state', message);
+        case 'queue':
+            store.dispatch('GRID_QUEUE', {
+                id: message.nodeId,
+                type: message.nodeType,
+                jobs: message.jobs
+            });
+            console.log('jobqueue', message);
             break;
-        case 'data':
-            console.log('data', message);
+        case 'state':
+            store.dispatch('GRID_STATE', {
+                id: message.nodeId,
+                type: message.nodeType,
+                state: message.nodeState
+            });
+            console.log('state', message);
             break;
     }
 });

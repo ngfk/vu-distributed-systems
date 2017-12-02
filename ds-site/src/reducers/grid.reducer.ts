@@ -2,8 +2,8 @@ import { createReducer } from '@ngfk/ts-redux';
 
 import { GridActionMap } from '../actions/grid.actions';
 import { Cluster, Grid, Scheduler } from '../models/grid';
-import { NodeState } from '../models/node';
-import { adjustNode } from '../utils/grid-adjuster';
+import { NodeState, NodeType } from '../models/node';
+import { adjustNode, adjustResourceManager } from '../utils/grid-adjuster';
 
 const initial: Grid = {
     user: 2,
@@ -49,6 +49,25 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
             ...node,
             state: payload.state
         }));
+    },
+    GRID_QUEUE: (state, payload) => {
+        if (payload.type === NodeType.Scheduler) {
+            return { ...state, schedulerJobs: payload.jobs };
+        }
+
+        if (payload.type === NodeType.ResourceManager) {
+            const clusters = adjustResourceManager(
+                state.clusters,
+                payload.id,
+                resourceManager => ({
+                    ...resourceManager,
+                    jobs: payload.jobs
+                })
+            );
+            return { ...state, clusters };
+        }
+
+        return state;
     },
     GRID_STOP: state => state,
     GRID_TOGGLE: (state, payload) => {
