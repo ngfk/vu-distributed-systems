@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { NodeState, NodeType } from '../models/node';
+
 import { GridActionCreators } from '../actions/grid.actions';
+import { NodeState, NodeType } from '../models/node';
 
 export interface SchedulerProps {
     id: number;
     state: NodeState;
-    jobs: number;
     gridToggle: GridActionCreators['gridToggle'];
 }
 

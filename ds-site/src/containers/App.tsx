@@ -46,7 +46,8 @@ class App extends React.Component<AppProps, AppState> {
             schedulers.push(
                 <Scheduler
                     key={scheduler.id}
-                    {...scheduler}
+                    id={scheduler.id}
+                    state={scheduler.state}
                     gridToggle={gridToggle}
                 />
             );

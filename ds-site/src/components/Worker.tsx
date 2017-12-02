@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { NodeState, NodeType } from '../models/node';
+
 import { GridActionCreators } from '../actions/grid.actions';
+import { NodeState, NodeType } from '../models/node';
 
 export interface WorkerProps {
     state: NodeState;
@@ -14,6 +15,7 @@ export class Worker extends React.Component<WorkerProps, WorkerState> {
     constructor(props: WorkerProps) {
         super(props);
     }
+
     public render(): JSX.Element {
         let backgroundStyle = {};
 
