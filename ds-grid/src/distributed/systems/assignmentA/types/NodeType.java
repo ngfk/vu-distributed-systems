@@ -1,7 +1,7 @@
 package distributed.systems.assignmentA.types;
 
 public enum NodeType {
-	Scheduler,
-	ResourceManager,
-	Worker
+	SCHEDULER,
+	RESOURCE_MANAGER,
+	WORKER
 }
