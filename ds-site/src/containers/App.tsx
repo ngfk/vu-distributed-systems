@@ -1,13 +1,13 @@
 import * as React from 'react';
-
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
+import { ActionCreators, actionCreators } from '../actions/actions';
 import { Cluster } from '../components/Cluster';
-import { User } from '../components/User';
-import { State } from '../reducers/reducer';
-import { actionCreators, ActionCreators } from '../actions/actions';
-import { Grid } from '../models/grid';
 import { Scheduler } from '../components/Scheduler';
+import { User } from '../components/User';
+import { Grid } from '../models/grid';
+import { State } from '../reducers/reducer';
 
 // tslint:disable-next-line
 const logo = require('./ludwig.jpg');
@@ -124,12 +124,14 @@ class App extends React.Component<AppProps, AppState> {
         this.setState({ schedulerCount: parseInt(e.target.value, 10) });
     }
 
-    private handleSubmit() {
+    private handleSubmit(event: React.FormEvent<any>) {
         this.props.actions.gridInit({
             schedulers: this.state.schedulerCount,
             clusters: this.state.clusterCount,
             workers: this.state.workerCount
         });
+
+        event.preventDefault();
     }
 }
 
