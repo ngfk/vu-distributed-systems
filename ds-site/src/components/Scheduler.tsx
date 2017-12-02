@@ -1,27 +1,40 @@
 import * as React from 'react';
-import { NodeState } from '../models/node';
+import { NodeState, NodeType } from '../models/node';
+import { GridActionCreators } from '../actions/grid.actions';
 
-export interface SchedulerProps {}
-
-export interface SchedulerState {
-    backgroundStyle: {};
+export interface SchedulerProps {
+    id: number;
     state: NodeState;
+    jobs: number;
+    gridToggle: GridActionCreators['gridToggle'];
 }
+
+export interface SchedulerState {}
 
 export class Scheduler extends React.Component<SchedulerProps, SchedulerState> {
     constructor(props: SchedulerProps) {
         super(props);
-        this.state = {
-            state: NodeState.Online,
-            backgroundStyle: { backgroundColor: 'green' }
-        };
     }
     public render(): JSX.Element {
+        let backgroundStyle = {};
+
+        if (
+            this.props.state === NodeState.Busy ||
+            this.props.state === NodeState.Online ||
+            this.props.state === NodeState.Unreachable
+        ) {
+            backgroundStyle = {
+                backgroundColor: 'green'
+            };
+        } else {
+            backgroundStyle = { backgroundColor: 'red' };
+        }
+
         return (
             <div
                 className="Scheduler"
                 onClick={this.handleClick}
-                style={this.state.backgroundStyle}
+                style={backgroundStyle}
             >
                 <div className="Scheduler-label"> Scheduler </div>
             </div>
@@ -29,16 +42,9 @@ export class Scheduler extends React.Component<SchedulerProps, SchedulerState> {
     }
 
     private handleClick = () => {
-        if (
-            this.state.state === NodeState.Busy ||
-            this.state.state === NodeState.Online ||
-            this.state.state === NodeState.Unreachable
-        ) {
-            this.setState({ backgroundStyle: { backgroundColor: 'red' } });
-            this.setState({ state: NodeState.Offline });
-        } else if (this.state.state === NodeState.Offline) {
-            this.setState({ backgroundStyle: { backgroundColor: 'green' } });
-            this.setState({ state: NodeState.Online });
-        }
+        this.props.gridToggle({
+            id: this.props.id,
+            type: NodeType.Scheduler
+        });
     };
 }

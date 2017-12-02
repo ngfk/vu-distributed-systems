@@ -1,12 +1,14 @@
 import * as React from 'react';
-import { NodeState } from '../models/node';
+import { NodeState, NodeType } from '../models/node';
+import { GridActionCreators } from '../actions/grid.actions';
 
-export interface ResourceManagerProps {}
-
-export interface ResourceManagerState {
-    backgroundStyle: {};
+export interface ResourceManagerProps {
+    id: number;
     state: NodeState;
+    gridToggle: GridActionCreators['gridToggle'];
 }
+
+export interface ResourceManagerState {}
 
 export class ResourceManager extends React.Component<
     ResourceManagerProps,
@@ -14,17 +16,27 @@ export class ResourceManager extends React.Component<
 > {
     constructor(props: ResourceManagerProps) {
         super(props);
-        this.state = {
-            state: NodeState.Online,
-            backgroundStyle: { backgroundColor: 'green' }
-        };
     }
     public render(): JSX.Element {
+        let backgroundStyle = {};
+
+        if (
+            this.props.state === NodeState.Busy ||
+            this.props.state === NodeState.Online ||
+            this.props.state === NodeState.Unreachable
+        ) {
+            backgroundStyle = {
+                backgroundColor: 'green'
+            };
+        } else {
+            backgroundStyle = { backgroundColor: 'red' };
+        }
+
         return (
             <div
                 className="ResourceManager"
                 onClick={this.handleClick}
-                style={this.state.backgroundStyle}
+                style={backgroundStyle}
             >
                 <div className="ResourceManager-label"> Resource manager </div>
             </div>
@@ -32,16 +44,9 @@ export class ResourceManager extends React.Component<
     }
 
     private handleClick = () => {
-        if (
-            this.state.state === NodeState.Busy ||
-            this.state.state === NodeState.Online ||
-            this.state.state === NodeState.Unreachable
-        ) {
-            this.setState({ backgroundStyle: { backgroundColor: 'red' } });
-            this.setState({ state: NodeState.Offline });
-        } else if (this.state.state === NodeState.Offline) {
-            this.setState({ backgroundStyle: { backgroundColor: 'green' } });
-            this.setState({ state: NodeState.Online });
-        }
+        this.props.gridToggle({
+            id: this.props.id,
+            type: NodeType.ResourceManager
+        });
     };
 }

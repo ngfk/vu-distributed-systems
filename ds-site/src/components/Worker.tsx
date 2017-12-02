@@ -1,27 +1,42 @@
 import * as React from 'react';
-import { NodeState } from '../models/node';
+import { NodeState, NodeType } from '../models/node';
+import { GridActionCreators } from '../actions/grid.actions';
 
-export interface WorkerProps {}
-
-export interface WorkerState {
-    backgroundStyle: {};
+export interface WorkerProps {
     state: NodeState;
+    id: number;
+    gridToggle: GridActionCreators['gridToggle'];
 }
+
+export interface WorkerState {}
 
 export class Worker extends React.Component<WorkerProps, WorkerState> {
     constructor(props: WorkerProps) {
         super(props);
-        this.state = {
-            state: NodeState.Online,
-            backgroundStyle: { backgroundColor: 'green' }
-        };
     }
     public render(): JSX.Element {
+        let backgroundStyle = {};
+
+        if (
+            this.props.state === NodeState.Busy ||
+            this.props.state === NodeState.Online
+        ) {
+            backgroundStyle = {
+                backgroundColor: 'green'
+            };
+        } else if (this.props.state === NodeState.Unreachable) {
+            backgroundStyle = {
+                backgroundColor: 'grey'
+            };
+        } else {
+            backgroundStyle = { backgroundColor: 'red' };
+        }
+
         return (
             <div
                 className="Worker"
                 onClick={this.handleClick}
-                style={this.state.backgroundStyle}
+                style={backgroundStyle}
             >
                 <div className="Worker-label"> W </div>
             </div>
@@ -29,16 +44,9 @@ export class Worker extends React.Component<WorkerProps, WorkerState> {
     }
 
     private handleClick = () => {
-        if (
-            this.state.state === NodeState.Busy ||
-            this.state.state === NodeState.Online ||
-            this.state.state === NodeState.Unreachable
-        ) {
-            this.setState({ backgroundStyle: { backgroundColor: 'red' } });
-            this.setState({ state: NodeState.Offline });
-        } else if (this.state.state === NodeState.Offline) {
-            this.setState({ backgroundStyle: { backgroundColor: 'green' } });
-            this.setState({ state: NodeState.Online });
-        }
+        this.props.gridToggle({
+            id: this.props.id,
+            type: NodeType.Worker
+        });
     };
 }
