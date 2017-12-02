@@ -8,7 +8,7 @@ const initial: Grid = {
     user: 2,
     schedulerJobs: 6,
     schedulers: [
-        { id: 1, state: NodeState.Online },
+        { id: 1, state: NodeState.Busy },
         { id: 2, state: NodeState.Online },
         { id: 3, state: NodeState.Online },
         { id: 4, state: NodeState.Online },
@@ -17,6 +17,10 @@ const initial: Grid = {
     clusters: [
         {
             resourceManager: { id: 5, state: NodeState.Online, jobs: 4 },
+            workers: [{ id: 2, state: NodeState.Online }]
+        },
+        {
+            resourceManager: { id: 6, state: NodeState.Offline, jobs: 4 },
             workers: [{ id: 2, state: NodeState.Online }]
         }
     ]

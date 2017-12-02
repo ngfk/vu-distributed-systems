@@ -19,12 +19,13 @@ export class Worker extends React.Component<WorkerProps, WorkerState> {
     public render(): JSX.Element {
         let backgroundStyle = {};
 
-        if (
-            this.props.state === NodeState.Busy ||
-            this.props.state === NodeState.Online
-        ) {
+        if (this.props.state === NodeState.Online) {
             backgroundStyle = {
                 backgroundColor: 'green'
+            };
+        } else if (this.props.state === NodeState.Busy) {
+            backgroundStyle = {
+                backgroundColor: 'orange'
             };
         } else if (this.props.state === NodeState.Unreachable) {
             backgroundStyle = {
