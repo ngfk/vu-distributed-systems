@@ -42,7 +42,10 @@ public class Scheduler implements ISocketCommunicator{
 	/* a scheduler should know about all other schedulers */
 	public void setSchedulers(ArrayList<Socket> schedulerSockets) {
 		schedulers = new HashMap<Socket,Scheduler.STATUS>();
-		schedulers.put(socket, STATUS.RUNNING);
+		
+		for (int i = 0; i < schedulerSockets.size(); i++) {
+			schedulers.put(schedulerSockets.get(i), STATUS.RUNNING);
+		}
 	}
 	
 	public ArrayList<Socket> getSchedulers(){
