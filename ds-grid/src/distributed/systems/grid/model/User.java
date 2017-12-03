@@ -3,7 +3,6 @@ package distributed.systems.grid.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
@@ -11,22 +10,13 @@ import distributed.systems.grid.simulation.SimulationContext;
 /**
  * The computer that is pushing jobs to our System
  */
-public class User implements ISocketCommunicator, Runnable {
+public class User extends GridNode implements Runnable {
 	public static enum STATUS {
 		IDLE, RUNNING
 	}
 	
-	private static int NR = 0;
-	
-	private final String id;
-	private final int nr;
-	
-	@SuppressWarnings("unused")
-	private SimulationContext context;
-
 	private STATUS status;
-	private Socket socket;
-
+	
 	private List<ActiveJob> activeJobs;
 	private List<Socket> schedulers; // this should only store the active schedulers
 
@@ -34,10 +24,7 @@ public class User implements ISocketCommunicator, Runnable {
 	 * Every user should at least know about 2 schedulers
 	 */
 	public User(SimulationContext context, List<Socket> schedulers) {
-		this.id = UUID.randomUUID().toString();
-		this.nr = User.NR++;
-		this.context = context.register(this);
-		socket = new Socket(this);
+		super(context, GridNode.TYPE.SCHEDULER);
 
 		this.schedulers = schedulers;
 		activeJobs = new ArrayList<ActiveJob>();
@@ -46,14 +33,6 @@ public class User implements ISocketCommunicator, Runnable {
 			Job job = new Job(8000 + (int) (Math.random() * 5000));
 			executeJob(job);
 		}
-	}
-
-	public String getId() {
-		return this.id;
-	}
-	
-	public int getNr() {
-		return this.nr;
 	}
 
 	/* loop that produces the jobs */
@@ -146,9 +125,5 @@ public class User implements ISocketCommunicator, Runnable {
 			}
 		}
 		return null;
-	}
-
-	public String getType() {
-		return "User";
 	}
 }

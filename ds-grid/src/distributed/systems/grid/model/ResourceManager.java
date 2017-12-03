@@ -3,7 +3,6 @@ package distributed.systems.grid.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.UUID;
 
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
@@ -26,26 +25,16 @@ import distributed.systems.grid.simulation.SimulationContext;
  * 	If the resourceManager comes back to life, it might have an outdated / invalid workers list.
  *  but this will be fixed whenever the workers start sending their I am alive message again.
  */
-public class ResourceManager implements ISocketCommunicator, Runnable {
+public class ResourceManager extends GridNode implements Runnable {
 	public static enum STATUS {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
 	
-	private static int NR = 0;
-	
-	private final String id;
-	private final int nr;
 	private static boolean aliveConfirmation = false;
-
-	@SuppressWarnings("unused")
-	private SimulationContext context;
-	
-
 	public ArrayList<Worker> workerObjects; // this is only to help drawing the interface!
-	private Socket socket;
 	private ArrayList<ActiveJob> activeJobs;
 
-	STATUS status;
+	private STATUS status;
 	
 	/**
 	 * This is an hashmap of the worker nodes
@@ -56,17 +45,12 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	private HashMap<Socket, Worker.STATUS> workers;
 
 	public ResourceManager(SimulationContext context, int numberOfWorkers) {
-		this.id = UUID.randomUUID().toString();
-		this.nr = ResourceManager.NR++;
-		this.context = context.register(this);
+		super(context, GridNode.TYPE.RESOURCE_MANAGER);
+
 		this.status = STATUS.AVAILABLE;
-
-		socket = new Socket(this);
-
-		workers = new HashMap<Socket, Worker.STATUS>();
-		activeJobs = new ArrayList<ActiveJob>();
-
-		workerObjects = new ArrayList<Worker>();
+		this.workers = new HashMap<Socket, Worker.STATUS>();
+		this.activeJobs = new ArrayList<ActiveJob>();
+		this.workerObjects = new ArrayList<Worker>();
 	}
 
 	/* ========================================================================
@@ -247,10 +231,6 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		sendJobRequestToWorker(availableWorker, aj.getJob());
 	}
 
-	public Socket getSocket() {
-		return socket;
-	}
-
 	private Socket getAvailableWorker() {
 		for (Entry<Socket, Worker.STATUS> entry : workers.entrySet()) {
 			Worker.STATUS status = entry.getValue();
@@ -278,18 +258,6 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 			}
 		}
 		return null;
-	}
-
-	public String getId() {
-		return this.id;
-	}
-	
-	public int getNr() {
-		return this.nr;
-	}
-
-	public String getType() {
-		return "ResourceManager";
 	}
 
 	public void addWorker(Worker worker) {

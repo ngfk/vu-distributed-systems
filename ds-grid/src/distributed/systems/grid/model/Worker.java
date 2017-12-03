@@ -1,7 +1,5 @@
 package distributed.systems.grid.model;
 
-import java.util.UUID;
-
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
 
@@ -15,36 +13,22 @@ import distributed.systems.grid.simulation.SimulationContext;
  * OnResurrect: If a worker comes back to live, it can simply continues sending
  * the stillAlive message to the resouceManager
  */
-public class Worker implements ISocketCommunicator {
+public class Worker extends GridNode implements ISocketCommunicator {
 	public static enum STATUS {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
 	
-	private static int NR = 0;
-	
 	private Socket rmSocket; // socket to access the resource manager that belongs to the worker
-	private Socket socket;
 
-	private final String id;
-	private final int nr;
-	
-	@SuppressWarnings("unused")
-	private SimulationContext context;
-	
 	STATUS status;
 	private int totalExecutionTime;
 	private ActiveJob activeJob;
-	
 
-	public Worker(SimulationContext context, String parentId, Socket rmSocket) {
-		this.id = UUID.randomUUID().toString();
-		this.nr = Worker.NR++;
-		this.context = context.register(parentId, this);
+	public Worker(SimulationContext context, Socket rmSocket) {
+		super(context, GridNode.TYPE.WORKER);
 		this.rmSocket = rmSocket;
 		this.totalExecutionTime = 0;
 		this.status = STATUS.AVAILABLE;
-
-		socket = new Socket(this);
 		rmSocket.sendMessage(getAliveMessage());
 	}
 
@@ -169,21 +153,5 @@ public class Worker implements ISocketCommunicator {
 	private Message getAliveMessage() {
 		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.STATUS, status.ordinal(), socket); // enum -> int
 		return message;
-	}
-
-	public Socket getSocket() {
-		return socket;
-	}
-
-	public String getId() {
-		return this.id;
-	}
-	
-	public int getNr() {
-		return this.nr;
-	}
-
-	public String getType() {
-		return "Worker";
 	}
 }

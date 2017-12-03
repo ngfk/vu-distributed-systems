@@ -33,7 +33,7 @@ public class Simulation {
 			// We create all of the worker nodes here, On init, the worker
 			// nodes will let the resourceManager know that they're available
 			for (int j = 0; j < workerCount; j++) {
-				Worker worker = new Worker(this.context, newResourceManager.getId(), rmSocket);
+				Worker worker = new Worker(this.context, rmSocket);
 				newResourceManager.addWorker(worker);
 			}
 		}

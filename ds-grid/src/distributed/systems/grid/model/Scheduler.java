@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.UUID;
 
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
@@ -18,41 +17,20 @@ import distributed.systems.grid.simulation.SimulationContext;
  * The list of users is flexible
  *
  */
-public class Scheduler implements ISocketCommunicator {
+public class Scheduler extends GridNode {
 	public static enum STATUS {
 		RUNNING, DEAD
 	}
 	
-	private static int NR = 0;
-
-	private final String id;
-	private final int nr;
-	
-	@SuppressWarnings("unused")
-	private SimulationContext context;
-	
-	private Socket socket;
-
 	private List<Socket> rmSockets; // list of all resourceManagers
 	private List<ActiveJob> activeJobs; // this is a shared data-structure between schedulers 
 	private HashMap<Socket, Scheduler.STATUS> schedulers; // schedulers are identified in the system by their sockets
 
 	public Scheduler(SimulationContext context, List<Socket> rmSockets) {
-		this.id = UUID.randomUUID().toString();
-		this.nr = Scheduler.NR++;
-		this.context = context.register(this);
-		this.socket = new Socket(this);
+		super(context, GridNode.TYPE.SCHEDULER);
+
 		this.rmSockets = rmSockets;
-
-		activeJobs = new ArrayList<ActiveJob>();
-	}
-
-	public String getId() {
-		return this.id;
-	}
-	
-	public int getNr() {
-		return this.nr;
+		this.activeJobs = new ArrayList<ActiveJob>();
 	}
 
 	/* a scheduler should know about all other schedulers */
@@ -306,10 +284,6 @@ public class Scheduler implements ISocketCommunicator {
 		rm.sendMessage(message);
 	}
 
-	public Socket getSocket() {
-		return socket;
-	}
-
 	public ActiveJob getActiveJob(int jobId) {
 		for (int i = 0; i < activeJobs.size(); i++) {
 			if (activeJobs.get(i).getJob().getId() == jobId) {
@@ -336,9 +310,5 @@ public class Scheduler implements ISocketCommunicator {
 		}
 		assert (activeSchedulers.size() > 0);
 		return activeSchedulers;
-	}
-
-	public String getType() {
-		return "Scheduler";
 	}
 }

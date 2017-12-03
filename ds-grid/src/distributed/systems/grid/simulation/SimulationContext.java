@@ -8,6 +8,7 @@ import java.util.Map;
 import distributed.systems.grid.gui.GuiConnection;
 import distributed.systems.grid.gui.NodeState;
 import distributed.systems.grid.gui.NodeType;
+import distributed.systems.grid.model.GridNode;
 import distributed.systems.grid.model.ResourceManager;
 import distributed.systems.grid.model.Scheduler;
 import distributed.systems.grid.model.User;
@@ -76,16 +77,59 @@ public class SimulationContext {
 		this.workers.put(resourceManager.getId(), new ArrayList<Worker>());
 		return this;
 	}
-	
+
 	/**
-	 * Registers a Worker instance.
-	 * @param resourceManager The parent resource manager
+	 * Registers a Worker instance, the worker is added to the last resource
+	 * manager that was registered.
 	 * @param worker The worker
 	 * @return The simulation context
 	 */
-	public SimulationContext register(String resourceManagerId, Worker worker) {
-		this.workers.get(resourceManagerId).add(worker);
+	public SimulationContext register(Worker worker) {
+		int index = this.resourceManagers.size() - 1;
+		if (index < 0) return this;
+
+		ResourceManager rm = this.resourceManagers.get(index);
+		this.workers.get(rm.getId()).add(worker);
 		return this;
+	}
+
+	/**
+	 * Registers a GridNode instance, will use the correct register method
+	 * depending on the node type.
+	 * @param node The node
+	 * @return The simulation context
+	 */
+	public SimulationContext register(GridNode node) {
+		if (node instanceof User) {
+			return this.register((User) node);
+		} else if (node instanceof Scheduler) {
+			return this.register((Scheduler) node);
+		} else if (node instanceof ResourceManager) {
+			return this.register((ResourceManager) node);
+		} else if (node instanceof Worker) {
+			return this.register((Worker) node);
+		}
+
+		return this;
+	}
+
+	public int getNr(GridNode node) {
+		if (node instanceof Scheduler) {
+			return this.schedulers.indexOf(node);
+		} else if (node instanceof ResourceManager) {
+			return this.resourceManagers.indexOf(node);
+		} else if (node instanceof Worker) {
+			for (int i = 0; i < this.resourceManagers.size(); i++) {
+				ResourceManager rm = this.resourceManagers.get(i);
+				List<Worker> workers = this.workers.get(rm.getId());
+				int workerIdx = workers.indexOf(node);
+
+				if (workerIdx >= 0)
+					return (i * workers.size()) + workerIdx;
+			}
+		}
+
+		return 0;
 	}
 
 	public void stopSimulation() {
