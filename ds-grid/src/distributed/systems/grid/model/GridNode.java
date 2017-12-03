@@ -9,6 +9,7 @@ public abstract class GridNode implements ISocketCommunicator {
     }
 
     protected final String id;
+    protected final int nr;
     protected final SimulationContext context;
     protected final TYPE type;
     protected final Socket socket;
@@ -16,6 +17,7 @@ public abstract class GridNode implements ISocketCommunicator {
     protected GridNode(SimulationContext context, TYPE type) {
         this.id = UUID.randomUUID().toString();
         this.context = context.register(this);
+        this.nr = this.context.getNr(this);
         this.type = type;
         this.socket = new Socket(this);
     }
@@ -27,7 +29,7 @@ public abstract class GridNode implements ISocketCommunicator {
     }
 
     public int getNr() {
-        return this.context.getNr(this);
+        return this.nr;
     }
 
     public String getType() {
