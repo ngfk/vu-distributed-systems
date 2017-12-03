@@ -60,43 +60,53 @@ public class ResourceManager extends GridNode implements Runnable {
 	 * confirmation message to the scheduler that it received the job correctly
 	 */
 	private void sendJobConfirmationToScheduler(Socket scheduler, int value) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
-		scheduler.sendMessage(message);
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
+			scheduler.sendMessage(message);
+		}
 	}
 
 	/**
 	 * Request to a worker for it to start executing some code
 	 */
 	private void sendJobRequestToWorker(Socket worker, Job job) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.REQUEST, job.getId(), socket);
-		message.attachJob(job);
-		worker.sendMessage(message);
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.REQUEST, job.getId(), socket);
+			message.attachJob(job);
+			worker.sendMessage(message);
+		}
 	}
 
 	/**
 	 * Confirmation to a worker that it received its result correctly
 	 */
 	private void sendJobResultConfirmationToWorker(Socket worker, int value) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
-		worker.sendMessage(message);
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
+			worker.sendMessage(message);
+		}
 	}
 
 	/**
 	 * send job result back to the cluster
 	 */
 	private void sendJobResultToCluster(ActiveJob aj) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.RESULT, aj.getJob().getId(),
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.RESULT, aj.getJob().getId(),
 				socket);
-		message.attachJob(aj.getJob());
-		aj.getScheduler().sendMessage(message);
+			message.attachJob(aj.getJob());
+			aj.getScheduler().sendMessage(message);
+		}
 	}
 
 	/**
 	 * request proof that worker did not die
 	 */
 	private void sendRequestStatusMessage(Socket worker) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
-		worker.sendMessage(message);
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
+			worker.sendMessage(message);
+		}
 	}
 
 	/* ========================================================================
@@ -218,17 +228,19 @@ public class ResourceManager extends GridNode implements Runnable {
 	}
 
 	private void tryExecuteJob(ActiveJob aj) {
-		Socket availableWorker = getAvailableWorker();
+		if (status != STATUS.DEAD) {
+			Socket availableWorker = getAvailableWorker();
 
-		if (availableWorker == null) {
-			// status remains waiting -> whenever a node worker becomes available, give him this job.
-			return;
+			if (availableWorker == null) {
+				// status remains waiting -> whenever a node worker becomes available, give him this job.
+				return;
+			}
+
+			aj.setStatus(Job.STATUS.RUNNING);
+			workers.put(availableWorker, Worker.STATUS.RESERVED);
+			aj.setWorker(availableWorker);
+			sendJobRequestToWorker(availableWorker, aj.getJob());
 		}
-
-		aj.setStatus(Job.STATUS.RUNNING);
-		workers.put(availableWorker, Worker.STATUS.RESERVED);
-		aj.setWorker(availableWorker);
-		sendJobRequestToWorker(availableWorker, aj.getJob());
 	}
 
 	private Socket getAvailableWorker() {
@@ -274,29 +286,31 @@ public class ResourceManager extends GridNode implements Runnable {
 	 */
 	public void run() {
 		// for every active-unfinished job periodically check if the worker is still alive
-		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
-				sendRequestStatusMessage(activeJobs.get(i).getWorker());
+		if (status != STATUS.DEAD ) {
+			for (int i = 0; i < activeJobs.size(); i++) {
+				if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
+					sendRequestStatusMessage(activeJobs.get(i).getWorker());
 
-				// wait a while
-				try {
-					Thread.sleep(100L);
-				} catch (InterruptedException e) {
-					assert (false) : "Simulation runtread was interrupted";
-				}
+					// wait a while
+					try {
+						Thread.sleep(100L);
+					} catch (InterruptedException e) {
+						assert (false) : "Simulation runtread was interrupted";
+					}
 
-				if (aliveConfirmation == false) {
-					workers.put(activeJobs.get(i).getWorker(), Worker.STATUS.DEAD);
-					tryExecuteJob(activeJobs.get(i));
-				} else {
-					aliveConfirmation = false;
+					if (aliveConfirmation == false) {
+						workers.put(activeJobs.get(i).getWorker(), Worker.STATUS.DEAD);
+						tryExecuteJob(activeJobs.get(i));
+					} else {
+						aliveConfirmation = false;
+					}
 				}
 			}
-		}
-		try {
-			Thread.sleep(100L);
-		} catch (InterruptedException e) {
-			assert (false) : "Simulation runtread was interrupted";
+			try {
+				Thread.sleep(100L);
+			} catch (InterruptedException e) {
+				assert (false) : "Simulation runtread was interrupted";
+			}
 		}
 	}
 }

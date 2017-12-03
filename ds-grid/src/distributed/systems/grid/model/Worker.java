@@ -109,16 +109,18 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 * - From the frontend toggle to dead/alive
 	 */
 	public void onMessageReceived(Message message) {
-		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
-			if (message.getType() == Message.TYPE.REQUEST) {
-				jobRequestHandler(message);
-			}
-			if (message.getType() == Message.TYPE.CONFIRMATION) {
-				jobResultConfirmationHandler(message);
-			}
-			if (message.getType() == Message.TYPE.STATUS) {
-				if (this.status != STATUS.DEAD)
-					workerStatusHandler(message);
+		if (status != STATUS.DEAD ) {
+			if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
+				if (message.getType() == Message.TYPE.REQUEST) {
+					jobRequestHandler(message);
+				}
+				if (message.getType() == Message.TYPE.CONFIRMATION) {
+					jobResultConfirmationHandler(message);
+				}
+				if (message.getType() == Message.TYPE.STATUS) {
+					if (this.status != STATUS.DEAD)
+						workerStatusHandler(message);
+				}
 			}
 		}
 	}
