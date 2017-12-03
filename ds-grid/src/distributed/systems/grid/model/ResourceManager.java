@@ -54,7 +54,11 @@ public class ResourceManager extends GridNode implements Runnable {
 	}
 
 	public void toggleState() {
-		// TODO
+		if (this.status == STATUS.DEAD) {
+			this.status = STATUS.AVAILABLE;
+		} else {
+			this.status = STATUS.DEAD;
+		}
 	}
 
 	/* ========================================================================

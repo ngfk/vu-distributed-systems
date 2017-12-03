@@ -36,7 +36,11 @@ public class Scheduler extends GridNode {
 	}
 
 	public void toggleState() {
-		// TODO
+		if (this.status == STATUS.DEAD) {
+			this.status = STATUS.AVAILABLE;
+		} else {
+			this.status = STATUS.DEAD;
+		}
 	}
 
 	/* a scheduler should know about all other schedulers */

@@ -33,7 +33,11 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	}
 
 	public void toggleState() {
-		// TODO
+		if (this.status == STATUS.DEAD) {
+			this.status = STATUS.AVAILABLE;
+		} else {
+			this.status = STATUS.DEAD;
+		}
 	}
 
 	/*
