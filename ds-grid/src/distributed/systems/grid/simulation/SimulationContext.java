@@ -21,11 +21,22 @@ import distributed.systems.grid.model.Worker;
 public class SimulationContext {
 	
 	private GuiConnection connection;
-	private Simulation simulation;
+
 	private User user;
 	private List<Scheduler> schedulers = new ArrayList<Scheduler>();
 	private List<ResourceManager> resourceManagers = new ArrayList<ResourceManager>();
 	private Map<String, List<Worker>> workers = new HashMap<String, List<Worker>>();
+
+	private int startAutomatically = 0;
+
+	/**
+	 * Gets the amount of jobs that should be created on initialization. Only
+	 * used during development (e.g. set in `StartDebug.java`).
+	 * @return The amount of jobs to create
+	 */
+	public int getStartAutomatically() {
+		return this.startAutomatically;
+	}
 	
 	/**
 	 * Registers the GUI connection. Skipping this will simply run a simulation without GUI.
@@ -43,7 +54,8 @@ public class SimulationContext {
 	 * @return The simulation context
 	 */
 	public SimulationContext register(Simulation simulation) {
-		this.simulation = simulation;
+		// This is not actually required, for now.
+		// this.simulation = simulation;
 		return this;
 	}
 	
@@ -114,6 +126,15 @@ public class SimulationContext {
 	}
 
 	/**
+	 * Configures the simulation to start x jobs automatically.
+	 * @param jobCount The number of jobs to automatically create
+	 */
+	public SimulationContext startAutomatically(int jobCount) {
+		this.startAutomatically = jobCount;
+		return this;
+	}
+
+	/**
 	 * Mainly for debugging purposes, allow to print the index instead of UUID.
 	 * @param node The node
 	 * @return The node index
@@ -138,11 +159,18 @@ public class SimulationContext {
 	}
 
 	/**
-	 * Triggered by the front-end, stops running simulation.
+	 * Triggered by the front-end, starts running the simulation.
+	 */
+	public void startSimulation() {
+		this.user.start();
+	}
+
+	/**
+	 * Triggered by the front-end, stops running the simulation.
 	 */
 	public void stopSimulation() {
-		// TODO Trigger this from GuiConnection & dispose of the current
-		// simulation
+		// TODO Not sure if this is the only thread that has to be stopped.
+		this.user.stop();
 	}
 
 	/**

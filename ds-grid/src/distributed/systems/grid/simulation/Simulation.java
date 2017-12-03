@@ -44,13 +44,22 @@ public class Simulation {
 			schedulers.add(newScheduler);
 			schedulerSockets.add(newScheduler.getSocket());
 		}
+		
 		/* let the schedulers know about eachother */
 		for (int i = 0; i < schedulers.size(); i++) {
-			schedulers.get(i).setSchedulers(schedulerSockets); // 
+			schedulers.get(i).setSchedulers(schedulerSockets);
 		}
 
 		System.out.printf(">> Done with initializing all nodes\n");
 		new User(this.context, schedulerSockets);
 		this.context.sendSetup();
+	}
+
+	public void start() {
+		this.context.stopSimulation();
+	}
+
+	public void stop() {
+		this.context.stopSimulation();
 	}
 }

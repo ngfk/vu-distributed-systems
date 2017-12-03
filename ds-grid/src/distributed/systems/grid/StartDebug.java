@@ -5,7 +5,9 @@ import distributed.systems.grid.simulation.SimulationContext;
 
 public class StartDebug {
 	public static void main(String[] args) {
-		SimulationContext context = new SimulationContext();
+		SimulationContext context = new SimulationContext()
+			.startAutomatically(10);
+			
 		new Simulation(context, 2, 2, 2);
 	}
 }
