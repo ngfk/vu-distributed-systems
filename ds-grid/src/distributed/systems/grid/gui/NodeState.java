@@ -1,4 +1,4 @@
-package distributed.systems.assignmentA.types;
+package distributed.systems.grid.gui;
 
 import com.google.gson.annotations.SerializedName;
 

@@ -1,4 +1,4 @@
-package distributed.systems.assignmentA;
+package distributed.systems.grid.model;
 
 import java.util.ArrayList;
 
@@ -31,62 +31,57 @@ import java.util.ArrayList;
  */
 public class Message {
 	public static enum SENDER {
-		WORKER,
-		RESOURCE_MANAGER, 
-		SCHEDULER,
-		USER
+		WORKER, RESOURCE_MANAGER, SCHEDULER, USER
 	}
-	
+
 	public static enum TYPE {
-		STATUS,
-		REQUEST,
-		CONFIRMATION,
-		RESULT,
-		ACKNOWLEDGEMENT
+		STATUS, REQUEST, CONFIRMATION, RESULT, ACKNOWLEDGEMENT
 	}
-	
+
 	public Socket senderSocket; // socket that the receiver can use, to reply to the sender. 
 	private Job job; // jobs can be send over sockets
 	private ArrayList<Socket> sockets; // socket lists can be send in a message 
-	
+
 	private SENDER sender; // ubink
 	private TYPE type;
-	
+
 	private int value; // this is what is actually happening
-	
-	Message(SENDER sender, TYPE type, int value, Socket senderSocket){
+
+	Message(SENDER sender, TYPE type, int value, Socket senderSocket) {
 		this.sender = sender;
-		
+
 		this.type = type;
 		this.value = value;
-		
+
 		this.senderSocket = senderSocket;
 	}
-	
+
 	/* go-setter bellow (copies because we cannot send pointers over the network) */
 	public void attachJob(Job job) {
 		this.job = job.copy();
 	}
+
 	public void attachSockets(ArrayList<Socket> sockets) {
 		this.sockets = new ArrayList<>(sockets); // copy
 	}
+
 	/* go-getters bellow */
 	public String toString() {
 		return sender.toString() + " " + type.toString() + " " + value;
 	}
-	
+
 	public SENDER getSender() {
 		return sender;
 	}
-	
+
 	public TYPE getType() {
 		return type;
 	}
-	
+
 	public int getValue() {
 		return value;
 	}
-	
+
 	public Job getJob() {
 		return job;
 	}

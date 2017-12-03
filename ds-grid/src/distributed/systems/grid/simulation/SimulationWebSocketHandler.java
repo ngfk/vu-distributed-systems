@@ -1,4 +1,4 @@
-package distributed.systems.assignmentA;
+package distributed.systems.grid.simulation;
 
 import java.io.IOException;
 
@@ -14,17 +14,15 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
-import distributed.systems.assignmentA.types.GridClusterSetup;
-import distributed.systems.assignmentA.types.GridMessageInit;
-import distributed.systems.assignmentA.types.GridMessageSetup;
-import distributed.systems.assignmentA.types.GridMessageToggle;
-import distributed.systems.assignmentA.types.GridSetup;
+import distributed.systems.grid.gui.GuiMessageInit;
+import distributed.systems.grid.gui.GuiMessageSetup;
+import distributed.systems.grid.gui.GuiMessageToggle;
 
 @WebSocket
 public class SimulationWebSocketHandler {
 	private static Gson gson = new Gson();
 	private static JsonParser jsonParser = new JsonParser();
-	
+
 	private Session session;
 	private Simulation simulation;
 
@@ -69,21 +67,22 @@ public class SimulationWebSocketHandler {
 	@OnWebSocketMessage
 	public void onMessage(String message) {
 		System.out.println("WebSocket Message received: " + message);
-		
+
 		try {
-			JsonObject jsonObj = (JsonObject)jsonParser.parse(message);
+			JsonObject jsonObj = (JsonObject) jsonParser.parse(message);
 			String messageType = jsonObj.get("type").toString().replaceAll("\"", "");
-			
-			switch(messageType) {
+
+			switch (messageType) {
 			case "init":
-				GridMessageInit initMessage = gson.fromJson(message, GridMessageInit.class);
-				
-				this.simulation = new Simulation(initMessage.sizes.schedulers, initMessage.sizes.clusters, initMessage.sizes.workers);
-				GridSetup gridSetup = this.simulation.getGridSetup();				
-				GridMessageSetup gridMessageSetup = new GridMessageSetup(gridSetup);
-				
+				GuiMessageInit initMessage = gson.fromJson(message, GuiMessageInit.class);
+
+				this.simulation = new Simulation(initMessage.sizes.schedulers, initMessage.sizes.clusters,
+						initMessage.sizes.workers);
+				GridSetup gridSetup = this.simulation.getGridSetup();
+				GuiMessageSetup gridMessageSetup = new GuiMessageSetup(gridSetup);
+
 				System.out.println(gson.toJson(gridMessageSetup));
-				
+
 				session.getRemote().sendString(gson.toJson(gridMessageSetup));
 				break;
 			case "setup":
@@ -91,14 +90,14 @@ public class SimulationWebSocketHandler {
 				break;
 			case "toggle":
 				System.out.println("toggle message received");
-				GridMessageToggle toggleMessage = gson.fromJson(message, GridMessageToggle.class);
-				
+				GuiMessageToggle toggleMessage = gson.fromJson(message, GuiMessageToggle.class);
+
 				System.out.println("Toggling node id " + toggleMessage.nodeId + " of type " + toggleMessage.nodeType);
 				break;
 			default:
 				break;
 			}
-		} catch(JsonSyntaxException e) {
+		} catch (JsonSyntaxException e) {
 			System.out.println("Incorrect JSON received.");
 		} catch (IOException e) {
 			System.out.println("Error sending websocket packet.");

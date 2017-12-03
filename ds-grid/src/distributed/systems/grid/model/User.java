@@ -1,40 +1,41 @@
-package distributed.systems.assignmentA;
+package distributed.systems.grid.model;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import distributed.systems.grid.data.ActiveJob;
 
 /**
  * The computer that is pushing jobs to our System
  */
 public class User implements ISocketCommunicator, Runnable {
 	public static enum STATUS {
-			IDLE,
-			RUNNING
+		IDLE, RUNNING
 	}
-	
+
 	private int id;
 	private STATUS status;
 	private Socket socket;
-	
-	private ArrayList<ActiveJob> activeJobs; 
+
+	private ArrayList<ActiveJob> activeJobs;
 	private ArrayList<Socket> schedulers; // this should only store the active schedulers
-	
+
 	/**
 	 * Every user should at least know about 2 schedulers
 	 */
-	User(int id, ArrayList<Socket> schedulers){
+	public User(int id, ArrayList<Socket> schedulers) {
 		this.id = id;
 		socket = new Socket(this);
-		
+
 		this.schedulers = schedulers;
 		activeJobs = new ArrayList<ActiveJob>();
-		
-		for (int i =0; i < 10; i++) {
-			Job job = new Job(8000 + (int)(Math.random() * 5000));
+
+		for (int i = 0; i < 10; i++) {
+			Job job = new Job(8000 + (int) (Math.random() * 5000));
 			executeJob(job);
 		}
 	}
-	
+
 	public int getId() {
 		return this.id;
 	}
@@ -43,34 +44,34 @@ public class User implements ISocketCommunicator, Runnable {
 	public void run() {
 		while (true) {
 			/* Add a new job to the system that take up random time */
-			Job job = new Job(8000 + (int)(Math.random() * 5000));
+			Job job = new Job(8000 + (int) (Math.random() * 5000));
 			executeJob(job);
-			
+
 			try {
 				Thread.sleep(100L);
 			} catch (InterruptedException e) {
-				assert(false) : "Simulation runtread was interrupted";
+				assert (false) : "Simulation runtread was interrupted";
 			}
-			
+
 		}
 	}
-	
+
 	/**
 	 * should send a new job to a scheduler
 	 */
 	public void executeJob(Job job) {
 		Random rand = new Random();
 		int schedulerId = rand.nextInt(schedulers.size());
-		
+
 		Socket scheduler = schedulers.get(schedulerId);
 		activeJobs.add(new ActiveJob(job, scheduler, null));
 
 		Message message = new Message(Message.SENDER.USER, Message.TYPE.REQUEST, job.getId(), socket);
 		message.attachJob(job);
-		
+
 		scheduler.sendMessage(message);
 	}
-	
+
 	private void sendJobResultConfirmation(Socket scheduler, int jobId) {
 		Message message = new Message(Message.SENDER.USER, Message.TYPE.CONFIRMATION, jobId, socket);
 		scheduler.sendMessage(message);
@@ -82,9 +83,9 @@ public class User implements ISocketCommunicator, Runnable {
 	 */
 	private void jobConfirmationHandler(Message message) {
 		ActiveJob aj = getActiveJob(message.getValue());
-		aj.status = Job.STATUS.RUNNING;
+		aj.setStatus(Job.STATUS.RUNNING);
 	}
-	
+
 	/**
 	 * whenever the user gets the jobresult back from the schedulers.
 	 * 	- confirm to scheduler that job is received 
@@ -98,7 +99,7 @@ public class User implements ISocketCommunicator, Runnable {
 		sendJobResultConfirmation(message.senderSocket, jobId);
 		activeJobs.remove(aj);
 	}
-	
+
 	/**
 	 * Types of messages we expect here:
 	 * 
@@ -114,25 +115,24 @@ public class User implements ISocketCommunicator, Runnable {
 				jobResultHandler(message);
 			}
 		}
-		
+
 	}
-	
+
 	//TODO detect when scheduler is down.
-	
+
 	/**
 	 * get activeJob by jobId
 	 */
 	public ActiveJob getActiveJob(int jobId) {
 		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).job.getId() == jobId) {
+			if (activeJobs.get(i).getJob().getId() == jobId) {
 				return activeJobs.get(i);
 			}
 		}
 		return null;
 	}
-	
+
 	public String getType() {
 		return "User";
 	}
-	
 }

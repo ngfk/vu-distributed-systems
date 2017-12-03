@@ -1,9 +1,12 @@
-package distributed.systems.assignmentA;
+package distributed.systems.grid.simulation;
 
 import java.util.ArrayList;
 
-import distributed.systems.assignmentA.types.GridClusterSetup;
-import distributed.systems.assignmentA.types.GridSetup;
+import distributed.systems.grid.model.ResourceManager;
+import distributed.systems.grid.model.Scheduler;
+import distributed.systems.grid.model.Socket;
+import distributed.systems.grid.model.User;
+import distributed.systems.grid.model.Worker;
 
 /**
  * This class should initialize every other class and ultimately start the
@@ -14,11 +17,11 @@ public class Simulation {
 	private ArrayList<ResourceManager> resourceManagers;
 	private ArrayList<User> users;
 
-	Simulation(int schedulerCount, int clusterCount, int workerCount) {
+	public Simulation(int schedulerCount, int clusterCount, int workerCount) {
 		ArrayList<Socket> schedulerSockets = new ArrayList<Socket>();
 		ArrayList<Socket> rmSockets = new ArrayList<Socket>();
 		int uniqueWorkerId = 0;
-		
+
 		resourceManagers = new ArrayList<ResourceManager>();
 		for (int i = 0; i < clusterCount; i++) {
 			ResourceManager newResourceManager = new ResourceManager(i, workerCount);
@@ -33,7 +36,7 @@ public class Simulation {
 				newResourceManager.addWorker(worker);
 			}
 		}
-		
+
 		schedulers = new ArrayList<Scheduler>();
 		for (int i = 0; i < schedulerCount; i++) {
 			Scheduler newScheduler = new Scheduler(i, rmSockets);
@@ -44,7 +47,7 @@ public class Simulation {
 		for (int i = 0; i < schedulers.size(); i++) {
 			schedulers.get(i).setSchedulers(schedulerSockets); // 
 		}
-		
+
 		System.out.printf(">> Done with initializing all nodes\n");
 
 		// TODO Might support multiple users in a simulation.
@@ -59,23 +62,23 @@ public class Simulation {
 		for (int i = 0; i < this.resourceManagers.size(); i++) {
 			ResourceManager rm = this.resourceManagers.get(i);
 			ArrayList<Worker> workers = rm.getWorkers();
-			
+
 			int[] workerIds = new int[workers.size()];
 			for (int j = 0; j < workers.size(); j++) {
 				workerIds[j] = workers.get(j).getId();
 			}
-			
+
 			GridClusterSetup clusterId = new GridClusterSetup(rm.getId(), workerIds);
 			clusterIds[i] = clusterId;
 		}
-		
+
 		int[] schedulerIds = new int[this.schedulers.size()];
 		for (int i = 0; i < this.schedulers.size(); i++) {
 			schedulerIds[i] = this.schedulers.get(i).getId();
 		}
-		
+
 		int userId = this.users.get(0).getId();
-		
+
 		return new GridSetup(userId, schedulerIds, clusterIds);
 	}
 }

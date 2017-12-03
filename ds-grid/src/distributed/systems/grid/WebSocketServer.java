@@ -1,21 +1,23 @@
-package distributed.systems.assignmentA;
+package distributed.systems.grid;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
+import distributed.systems.grid.simulation.SimulationWebSocketHandler;
+
 public class WebSocketServer implements Runnable {
-	/// Websocket server port
+	// Websocket server port
 	private static final int PORT = 4000;
 
 	/**
-	 * The WebsocketServer thread run method
+	 * The WebsocketServer thread run method.
 	 */
 	@Override
 	public void run() {
 		// Create WebSocket server.
 		Server server = new Server(PORT);
-		
+
 		// Register WebSocket callback.
 		WebSocketHandler wsHandler = new WebSocketHandler() {
 			@Override
@@ -24,7 +26,7 @@ public class WebSocketServer implements Runnable {
 			}
 		};
 		server.setHandler(wsHandler);
-		
+
 		// Start WebSocket server.
 		try {
 			server.start();

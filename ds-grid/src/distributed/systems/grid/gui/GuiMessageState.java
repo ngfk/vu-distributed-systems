@@ -1,11 +1,11 @@
-package distributed.systems.assignmentA.types;
+package distributed.systems.grid.gui;
 
-public class GridMessageState extends GridMessage {
+public class GuiMessageState extends GuiMessage {
 	public int nodeId;
 	public NodeType nodeType;
 	public NodeState nodeState;
-	
-	public GridMessageState(int id, NodeType type, NodeState state) {
+
+	public GuiMessageState(int id, NodeType type, NodeState state) {
 		this.type = "state";
 		this.nodeId = id;
 		this.nodeType = type;

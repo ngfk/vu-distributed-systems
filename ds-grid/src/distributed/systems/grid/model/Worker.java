@@ -1,4 +1,6 @@
-package distributed.systems.assignmentA;
+package distributed.systems.grid.model;
+
+import distributed.systems.grid.data.ActiveJob;
 
 /**
  * Worker/Node does all the actual computations and returns the result to its
@@ -23,7 +25,7 @@ public class Worker implements ISocketCommunicator {
 	private int totalExecutionTime;
 	private ActiveJob activeJob;
 
-	Worker(int id, Socket rmSocket) {
+	public Worker(int id, Socket rmSocket) {
 		this.id = id;
 		this.rmSocket = rmSocket;
 		this.totalExecutionTime = 0;
@@ -52,9 +54,9 @@ public class Worker implements ISocketCommunicator {
 	 */
 	private void sendJobResultToRM() {
 		assert (activeJob != null);
-		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.RESULT, activeJob.job.getId(), socket);
-		message.attachJob(activeJob.job);
-		activeJob.scheduler.sendMessage(message);
+		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.RESULT, activeJob.getJob().getId(), socket);
+		message.attachJob(activeJob.getJob());
+		activeJob.getScheduler().sendMessage(message);
 	}
 
 	/*
@@ -62,11 +64,11 @@ public class Worker implements ISocketCommunicator {
 	 * Receive messages below
 	 * =====================================================================
 	 */
-	
+
 	private void workerStatusHandler(Message message) {
-		
+
 	}
-	
+
 	/**
 	 * if we receive a jobresult confirmation 
 	 * - The worker node is officially done with the calculation 
@@ -90,7 +92,7 @@ public class Worker implements ISocketCommunicator {
 		status = STATUS.BUSY;
 		sendJobConfirmationToRM(message.senderSocket, message.getValue());
 		activeJob = new ActiveJob(message.getJob(), message.senderSocket, null); // activeJob.scheduler here is a resourceManager
-		activeJob.status = Job.STATUS.RUNNING;
+		activeJob.setStatus(Job.STATUS.RUNNING);
 		executeActiveJob();
 	}
 
@@ -119,12 +121,12 @@ public class Worker implements ISocketCommunicator {
 	 * Class messages below
 	 * =====================================================================
 	 */
-	
+
 	/**
 	 * TODO
 	 */
 	private void executeActiveJob() {
-		activeJob.job.setResult(17);
+		activeJob.getJob().setResult(17);
 		totalExecutionTime += 17;
 		jobDoneHandler();
 	}
@@ -137,7 +139,7 @@ public class Worker implements ISocketCommunicator {
 	 */
 	private void jobDoneHandler() {
 		System.out.println("<< Worker done with job");
-		activeJob.status = Job.STATUS.CLOSED;
+		activeJob.setStatus(Job.STATUS.CLOSED);
 		sendJobResultToRM();
 	}
 
@@ -149,11 +151,11 @@ public class Worker implements ISocketCommunicator {
 	public Socket getSocket() {
 		return socket;
 	}
-	
+
 	public int getId() {
 		return this.id;
 	}
-	
+
 	public String getType() {
 		return "Worker";
 	}

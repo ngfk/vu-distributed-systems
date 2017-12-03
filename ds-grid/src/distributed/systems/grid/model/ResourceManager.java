@@ -1,11 +1,10 @@
-package distributed.systems.assignmentA;
+package distributed.systems.grid.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import distributed.systems.assignmentA.Scheduler.STATUS;
+import distributed.systems.grid.data.ActiveJob;
 
 /**
  * The entry point of a cluster
@@ -27,11 +26,11 @@ import distributed.systems.assignmentA.Scheduler.STATUS;
  */
 public class ResourceManager implements ISocketCommunicator, Runnable {
 	private int id;
-	
+
 	public ArrayList<Worker> workerObjects; // this is only to help drawing the interface!
 	private Socket socket;
-	private ArrayList<ActiveJob> activeJobs; 
-	
+	private ArrayList<ActiveJob> activeJobs;
+
 	/**
 	 * This is an hashmap of the worker nodes
 	 *  The idea is that since we cannot access the worker just by referencing their object 
@@ -39,17 +38,17 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	 *    The resourceManager now knows at all times how to communicate with the workers, and what their status is.   
 	 */
 	private HashMap<Socket, Worker.STATUS> workers;
-	
-	ResourceManager(int id, int numberOfWorkers){
+
+	public ResourceManager(int id, int numberOfWorkers) {
 		this.id = id;
 		socket = new Socket(this);
-		
-		workers = new HashMap<Socket,Worker.STATUS>();
+
+		workers = new HashMap<Socket, Worker.STATUS>();
 		activeJobs = new ArrayList<ActiveJob>();
-		
+
 		workerObjects = new ArrayList<Worker>();
 	}
-		
+
 	/* ========================================================================
 	 * 	Send messages below
 	 * ===================================================================== */
@@ -60,7 +59,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
 		scheduler.sendMessage(message);
 	}
-	
+
 	/**
 	 * Request to a worker for it to start executing some code
 	 */
@@ -69,7 +68,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		message.attachJob(job);
 		worker.sendMessage(message);
 	}
-	
+
 	/**
 	 * Confirmation to a worker that it received its result correctly
 	 */
@@ -77,14 +76,15 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
 		worker.sendMessage(message);
 	}
-	
+
 	/**
 	 * send job result back to the cluster
 	 */
 	private void sendJobResultToCluster(ActiveJob aj) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.RESULT, aj.job.getId(), socket);
-		message.attachJob(aj.job);
-		aj.scheduler.sendMessage(message);
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.RESULT, aj.getJob().getId(),
+				socket);
+		message.attachJob(aj.getJob());
+		aj.getScheduler().sendMessage(message);
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
 		worker.sendMessage(message);
 	}
-	
+
 	/* ========================================================================
 	 * 	Receive messages below
 	 * ===================================================================== */
@@ -106,26 +106,25 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		Socket workerSocket = message.senderSocket; // we use the socket as identifier for the worker
 		Worker.STATUS newStatus = Worker.STATUS.values()[message.getValue()]; // hacky way to convert int -> enum
 		workers.put(workerSocket, newStatus);
-		
+
 		dequeueJobHandler();
 	}
-	
-	
+
 	/**
 	 * whenever the RM receives a jobrequest:
 	 * 	- adds the job to the activeJobs list
 	 *  - it confirms the request to the scheduler
 	 *  - try executing the job
-	 */	
+	 */
 	private void jobRequestHandler(Message message) {
 		System.out.println(">> ResourceManager has received new job -> starting to process job");
 		ActiveJob aj = new ActiveJob(message.getJob(), message.senderSocket, null);
 		activeJobs.add(aj);
 		sendJobConfirmationToScheduler(message.senderSocket, message.getValue());
-		
+
 		tryExecuteJob(aj);
 	}
-	
+
 	/**
 	 * When the job gets confirmed by the worker (meaning that he is going to work on it)
 	 *  - update the jobstatus to RUNNING
@@ -134,23 +133,23 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	private void jobConfirmationHandler(Message message) {
 		workers.put(message.senderSocket, Worker.STATUS.BUSY); // removes the reserved status
 		ActiveJob aj = getActiveJob(message.getValue());
-		aj.status = Job.STATUS.RUNNING;
+		aj.setStatus(Job.STATUS.RUNNING);
 	}
-	
+
 	/**
 	 * When we receive a jobresult from a worker node
 	 */
-	public void jobResultHandler(Message message){
+	public void jobResultHandler(Message message) {
 		System.out.println("<< ResourceManager done with job");
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
-		aj.status = Job.STATUS.CLOSED;
-		aj.job = message.getJob();
-		
+		aj.setStatus(Job.STATUS.CLOSED);
+		aj.setJob(message.getJob());
+
 		sendJobResultConfirmationToWorker(message.senderSocket, jobId);
 		sendJobResultToCluster(aj);
 	}
-	
+
 	/**
 	 * When the scheduler confirms the result 
 	 */
@@ -159,7 +158,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		ActiveJob aj = getActiveJob(jobId);
 		activeJobs.remove(aj);
 	}
-	
+
 	/**
 	 * Types of messages we expect here:
 	 * 
@@ -169,9 +168,9 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	 * - Message from a scheduler saying that he has a Job for the cluster
 	 * - Message from a scheduler saying that he received the result of the Job correctly 
 	 */
-	public void onMessageReceived(Message message) {		
+	public void onMessageReceived(Message message) {
 		if (message.getSender() == Message.SENDER.WORKER) {
-			if (message.getType() == Message.TYPE.STATUS) {				
+			if (message.getType() == Message.TYPE.STATUS) {
 				workerStatusHandler(message);
 				return;
 			}
@@ -195,12 +194,10 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 				return;
 			}
 		}
-		
+
 		// exception
 	}
-	
-	
-	
+
 	/* ========================================================================
 	 * 	Class functions
 	 * ===================================================================== */
@@ -209,29 +206,31 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	 */
 	private void dequeueJobHandler() {
 		ActiveJob aj = getQueuedJob();
-		if (aj == null) { return ; }
-		
+		if (aj == null) {
+			return;
+		}
+
 		tryExecuteJob(aj);
 	}
-	
+
 	private void tryExecuteJob(ActiveJob aj) {
 		Socket availableWorker = getAvailableWorker();
-		
+
 		if (availableWorker == null) {
 			// status remains waiting -> whenever a node worker becomes available, give him this job.
 			return;
 		}
-		
-		aj.status = Job.STATUS.RUNNING;
+
+		aj.setStatus(Job.STATUS.RUNNING);
 		workers.put(availableWorker, Worker.STATUS.RESERVED);
-		aj.worker = availableWorker;
-		sendJobRequestToWorker(availableWorker, aj.job);
+		aj.setWorker(availableWorker);
+		sendJobRequestToWorker(availableWorker, aj.getJob());
 	}
-	
+
 	public Socket getSocket() {
 		return socket;
 	}
-	
+
 	private Socket getAvailableWorker() {
 		for (Entry<Socket, Worker.STATUS> entry : workers.entrySet()) {
 			Worker.STATUS status = entry.getValue();
@@ -239,48 +238,44 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 				return entry.getKey();
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public ActiveJob getActiveJob(int jobId) {
 		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).job.getId() == jobId) {
+			if (activeJobs.get(i).getJob().getId() == jobId) {
 				return activeJobs.get(i);
 			}
 		}
 		return null;
 	}
-	
+
 	public ActiveJob getQueuedJob() {
 		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).status == Job.STATUS.WAITING) {
+			if (activeJobs.get(i).getStatus() == Job.STATUS.WAITING) {
 				return activeJobs.get(i);
 			}
 		}
 		return null;
 	}
-	
-	
 
 	public int getId() {
 		return id;
 	}
-	
+
 	public String getType() {
 		return "ResourceManager";
 	}
-	
-	
+
 	public void addWorker(Worker worker) {
 		workerObjects.add(worker);
 	}
-	
+
 	public ArrayList<Worker> getWorkers() {
 		return workerObjects;
 	}
-	
-	
+
 	/**
 	 * The thread that checks if the workers are still alive
 	 *  - WorkerOnDie -> send active job to other worker.
@@ -288,14 +283,14 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	public void run() {
 		// for every active-unfinished job periodically check if the worker is still alive
 		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).status == Job.STATUS.RUNNING) {
-				sendRequestStatusMessage(activeJobs.get(i).worker);
+			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
+				sendRequestStatusMessage(activeJobs.get(i).getWorker());
 			}
 		}
 		try {
 			Thread.sleep(100L);
 		} catch (InterruptedException e) {
-			assert(false) : "Simulation runtread was interrupted";
+			assert (false) : "Simulation runtread was interrupted";
 		}
 	}
 }
