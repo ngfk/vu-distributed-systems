@@ -18,18 +18,18 @@ public class Worker extends GridNode implements ISocketCommunicator {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
 	
-	private Socket rmSocket; // socket to access the resource manager that belongs to the worker
+//	private Socket rmSocket; // socket to access the resource manager that belongs to the worker
 
 	STATUS status;
-	private int totalExecutionTime;
+	private int totalExecutionTime; // maybe track this at some point
 	private ActiveJob activeJob;
 
-	public Worker(SimulationContext context, Socket rmSocket) {
+	public Worker(SimulationContext context) {
 		super(context, GridNode.TYPE.WORKER);
-		this.rmSocket = rmSocket;
+//		this.rmSocket = rmSocket;
 		this.totalExecutionTime = 0;
 		this.status = STATUS.AVAILABLE;
-		rmSocket.sendMessage(getAliveMessage());
+//		rmSocket.sendMessage(getAliveMessage());
 	}
 
 	public void toggleState() {
@@ -49,7 +49,6 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 * send job confirm message to RM
 	 */
 	private void sendJobConfirmationToRM(Socket rmSocket, int value) {
-		assert (rmSocket == this.rmSocket); // workers cannot serve another RM (should never trigger tho)
 		if (this.status != STATUS.DEAD){
 			Message message = new Message(Message.SENDER.WORKER, Message.TYPE.CONFIRMATION, value, socket);
 			rmSocket.sendMessage(message);
@@ -105,7 +104,7 @@ public class Worker extends GridNode implements ISocketCommunicator {
 		activeJob = null;
 		if (this.status != STATUS.DEAD);{
 			status = Worker.STATUS.AVAILABLE;
-			rmSocket.sendMessage(getAliveMessage()); // update status to RM
+//			message.senderSocket.sendMessage(getAliveMessage()); // update status to RM
 		}
 	}
 

@@ -25,17 +25,20 @@ public class Simulation {
 
 		List<ResourceManager> resourceManagers = new ArrayList<ResourceManager>();
 		for (int i = 0; i < clusterCount; i++) {
-			ResourceManager newResourceManager = new ResourceManager(this.context, workerCount);
+			List<Socket> workerSockets = new ArrayList<Socket>();
+			ArrayList<Worker> workers = new ArrayList<Worker>();
+			
+			for (int j = 0; j < workerCount; j++) {
+				Worker worker = new Worker(this.context);
+				
+			}
+			
+			ResourceManager newResourceManager = new ResourceManager(this.context, workerSockets);
+			newResourceManager.setWorkers(workers); // only for GUI
 			resourceManagers.add(newResourceManager);
+			
 			Socket rmSocket = newResourceManager.getSocket();
 			rmSockets.add(rmSocket);
-
-			// We create all of the worker nodes here, On init, the worker
-			// nodes will let the resourceManager know that they're available
-			for (int j = 0; j < workerCount; j++) {
-				Worker worker = new Worker(this.context, rmSocket);
-				newResourceManager.addWorker(worker);
-			}
 		}
 
 		List<Scheduler> schedulers = new ArrayList<Scheduler>();

@@ -2,6 +2,7 @@ package distributed.systems.grid.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import distributed.systems.grid.data.ActiveJob;
@@ -43,13 +44,17 @@ public class ResourceManager extends GridNode implements Runnable {
 	 */
 	private HashMap<Socket, Worker.STATUS> workers;
 
-	public ResourceManager(SimulationContext context, int numberOfWorkers) {
+	public ResourceManager(SimulationContext context, List<Socket> workers) {
 		super(context, GridNode.TYPE.RESOURCE_MANAGER);
 
 		this.status = STATUS.AVAILABLE;
 		this.workers = new HashMap<Socket, Worker.STATUS>();
 		this.activeJobs = new ArrayList<ActiveJob>();
 		this.workerObjects = new ArrayList<Worker>();
+		
+		for (int i = 0; i < workers.size(); i ++) {
+			this.workers.put(workers.get(i), Worker.STATUS.AVAILABLE);
+		}
 	}
 
 	public void toggleState() {
@@ -298,6 +303,10 @@ public class ResourceManager extends GridNode implements Runnable {
 
 	public void addWorker(Worker worker) {
 		workerObjects.add(worker);
+	}
+	
+	public void setWorkers(ArrayList<Worker> workers) {
+		workerObjects = workers;
 	}
 
 	public ArrayList<Worker> getWorkers() {
