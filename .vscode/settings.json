@@ -1,0 +1,30 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true,
+        "**/package-lock.json": true,
+
+        "ds-grid/bin": true,
+        "ds-grid/.classpath": true,
+        "ds-grid/.project": true,
+
+        "ds-site/etc": true,
+        "ds-site/build": true,
+
+        "cz-config.js": true
+    },
+
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "java.format.enabled": false,
+
+    "tslint.nodePath": "./ds-site/node_modules/tslint/lib",
+    "tslint.configFile": "./ds-site/tslint.json",
+    "tslint.enable": true,
+    "tslint.alwaysShowRuleFailuresAsWarnings": true
+}
