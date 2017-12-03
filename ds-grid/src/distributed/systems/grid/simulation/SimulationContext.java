@@ -87,7 +87,23 @@ public class SimulationContext {
 		this.workers.get(resourceManagerId).add(worker);
 		return this;
 	}
+
+	public void stopSimulation() {
+		// TODO Trigger this from GuiConnection & dispose of the current
+		// simulation
+	}
+
+	public void toggleNode(String nodeId, NodeType nodeType) {
+		// TODO
+		// - Create a method to find node by nodeId & nodeType
+		// - Trigger this from GuiConnection
+		// - Use find method to get the node & toggle it's state
+	}
 	
+	/**
+	 * Sends a 'setup' message to the connected websocket. If no socket is
+	 * registered this method is a simple no-op.
+	 */
 	public void sendSetup() {
 		if (this.connection == null) return;
 		
@@ -116,7 +132,31 @@ public class SimulationContext {
 		this.connection.sendSetup(new GridSetup(userId, schedulerIds, clusterIds));
 	}
 	
-	public void sendState(int nodeId, NodeType nodeType, NodeState nodeState) {
-		
+	/**
+	 * Sends a 'state' message to the connected websocket. If no socket is
+	 * registered this method is a simple no-op.
+	 * @param nodeId The id of the node that has a change in state
+	 * @param nodeType The type of the node that has a change in state
+	 * @param nodeState The new state of the node
+	 */
+	public void sendState(String nodeId, NodeType nodeType, NodeState nodeState) {
+		// TODO 
+		// - no-op if no connection was registered
+		// - check existence of node
+		// - forward to connection
+	}
+
+	/**
+	 * Sends a 'queue' message to the connected websocket. If no socket is
+	 * registered this method is a simple no-op.
+	 * @param nodeId The id of the node that has a change in job count
+	 * @param nodeType The type of the node that has a change in job count
+	 * @param jobCount The new job count of the node
+	 */
+	public void sendQueue(String nodeId, NodeType nodeType, int jobCount) {
+		// TODO 
+		// - no-op if no connection was registered
+		// - check existence of node
+		// - forward to connection
 	}
 }
