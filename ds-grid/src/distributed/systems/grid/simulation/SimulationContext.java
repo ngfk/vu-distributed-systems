@@ -113,6 +113,11 @@ public class SimulationContext {
 		return this;
 	}
 
+	/**
+	 * Mainly for debugging purposes, allow to print the index instead of UUID.
+	 * @param node The node
+	 * @return The node index
+	 */
 	public int getNr(GridNode node) {
 		if (node instanceof Scheduler) {
 			return this.schedulers.indexOf(node);
@@ -132,14 +137,20 @@ public class SimulationContext {
 		return 0;
 	}
 
+	/**
+	 * Triggered by the front-end, stops running simulation.
+	 */
 	public void stopSimulation() {
 		// TODO Trigger this from GuiConnection & dispose of the current
 		// simulation
 	}
 
+	/**
+	 * Triggered by the front-end, toggles the state of the specified node.
+	 * @param nodeId The node id
+	 * @param nodeType The node type
+	 */
 	public void toggleNode(String nodeId, NodeType nodeType) {
-		// TODO Call this function from GuiConnection
-		
 		switch (nodeType) {
 		case SCHEDULER:
 			this.findScheduler(nodeId).toggleState();
