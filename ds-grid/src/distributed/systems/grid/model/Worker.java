@@ -117,23 +117,6 @@ public class Worker implements ISocketCommunicator {
 		executeActiveJob();
 	}
 
-	private void killedHandler(Message message) {
-		System.out.println(">> Worker got killed");
-		status = STATUS.DEAD;
-	}
-
-	/**
-	 * Revives a dead worker node by setting status to available and sends an alive message to RM
-	 * 
-	 * TODO: maybe continue job?
-	 */
-
-	private void resurrectedHandler(Message message) {
-		System.out.println(">> Worker got resurrected");
-		status = STATUS.AVAILABLE;
-		rmSocket.sendMessage(getAliveMessage());
-	}
-	
 	/**
 	 * Types of messages we expect here:
 	 * 
@@ -152,14 +135,6 @@ public class Worker implements ISocketCommunicator {
 			if (message.getType() == Message.TYPE.STATUS) {
 				if (this.status != STATUS.DEAD)
 					workerStatusHandler(message);
-			}
-		} else {
-			if (message.getType() == Message.TYPE.TOGGLE) {
-				if(this.status == STATUS.DEAD) {
-					resurrectedHandler(message);
-				} else {
-					killedHandler(message);
-				}
 			}
 		}
 	}

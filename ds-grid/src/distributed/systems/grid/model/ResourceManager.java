@@ -45,6 +45,8 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	private Socket socket;
 	private ArrayList<ActiveJob> activeJobs;
 
+	STATUS status;
+	
 	/**
 	 * This is an hashmap of the worker nodes
 	 *  The idea is that since we cannot access the worker just by referencing their object 
@@ -57,7 +59,8 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		this.id = UUID.randomUUID().toString();
 		this.nr = ResourceManager.NR++;
 		this.context = context.register(this);
-		
+		this.status = STATUS.AVAILABLE;
+
 		socket = new Socket(this);
 
 		workers = new HashMap<Socket, Worker.STATUS>();
@@ -210,7 +213,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 				jobResultConfirmationHandler(message);
 				return;
 			}
-		}
+		} 
 
 		// exception
 	}
@@ -306,14 +309,17 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		for (int i = 0; i < activeJobs.size(); i++) {
 			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
 				sendRequestStatusMessage(activeJobs.get(i).getWorker());
+
 				// wait a while
 				try {
 					Thread.sleep(100L);
 				} catch (InterruptedException e) {
 					assert (false) : "Simulation runtread was interrupted";
 				}
+
 				if (aliveConfirmation == false) {
 					workers.put(activeJobs.get(i).getWorker(), Worker.STATUS.DEAD);
+					tryExecuteJob(activeJobs.get(i));
 				} else {
 					aliveConfirmation = false;
 				}
