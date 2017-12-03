@@ -243,7 +243,7 @@ public class Scheduler implements ISocketCommunicator {
 		aj.markAsDone(message.senderSocket);
 
 		if (aj.isDone()) {
-			System.out.println("<< Schedulers done with job");
+			System.out.printf("<< Schedulers done with job (todo: %d)\n", activeJobs.size() -1);
 			activeJobs.remove(aj);
 		}
 	}

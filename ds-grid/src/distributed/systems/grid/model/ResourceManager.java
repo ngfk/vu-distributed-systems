@@ -101,10 +101,10 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	}
 
 	/**
-	 * request proof that worker did not die
+	 * request job status from worker
 	 */
-	private void sendRequestStatusMessage(Socket worker) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
+	private void sendPingRequestMessage(Socket worker, int jobId) {
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.PING, jobId, socket);
 		worker.sendMessage(message);
 	}
 
@@ -301,7 +301,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		// for every active-unfinished job periodically check if the worker is still alive
 		for (int i = 0; i < activeJobs.size(); i++) {
 			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
-				sendRequestStatusMessage(activeJobs.get(i).getWorker());
+				sendPingRequestMessage(activeJobs.get(i).getWorker(), activeJobs.get(i).getJob().getId());
 			}
 		}
 		try {

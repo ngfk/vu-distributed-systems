@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * resourceM	| confirmation	| x > 1	| the rm confirms to the scheduler that it has received jobId: x
  * resourceM	| request		| x > 1	| the rm requests to a worker to compute job with jobId: x
  * resourceM	| confirmation	| x > 1	| the rm confirms to the worker that it has received the results of jobId: x
- * resourceM	| status			| 0		| the rm requests the worker to confirm he's alive
+ * resourceM	| ping			| x > 1	| the rm requests the worker to send a status update of the job its currently working on 
  * 	- - - --- --- --- - - -
  *	worker	| confirmation	| x > 1	| the worker confirms the request to the RM of jobId: x
  *	worker	| result			| x > 1	| the worker returns result of the job to the resourceManager
@@ -35,7 +35,7 @@ public class Message {
 	}
 
 	public static enum TYPE {
-		STATUS, REQUEST, CONFIRMATION, RESULT, ACKNOWLEDGEMENT
+		STATUS, REQUEST, CONFIRMATION, RESULT, ACKNOWLEDGEMENT, PING
 	}
 
 	public Socket senderSocket; // socket that the receiver can use, to reply to the sender. 

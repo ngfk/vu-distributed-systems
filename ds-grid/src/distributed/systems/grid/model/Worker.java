@@ -78,7 +78,7 @@ public class Worker implements ISocketCommunicator {
 	 * =====================================================================
 	 */
 
-	private void workerStatusHandler(Message message) {
+	private void jobStatusRequestHandler(Message message) {
 
 	}
 
@@ -123,8 +123,8 @@ public class Worker implements ISocketCommunicator {
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
 				jobResultConfirmationHandler(message);
 			}
-			if (message.getType() == Message.TYPE.STATUS) {
-				workerStatusHandler(message);
+			if (message.getType() == Message.TYPE.PING) {
+				jobStatusRequestHandler(message);
 			}
 		}
 	}

@@ -42,6 +42,7 @@ public class User implements ISocketCommunicator, Runnable {
 		this.schedulers = schedulers;
 		activeJobs = new ArrayList<ActiveJob>();
 
+		// debug jobs
 		for (int i = 0; i < 10; i++) {
 			Job job = new Job(8000 + (int) (Math.random() * 5000));
 			executeJob(job);
