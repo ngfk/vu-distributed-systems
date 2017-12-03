@@ -32,6 +32,10 @@ public class Worker extends GridNode implements ISocketCommunicator {
 		rmSocket.sendMessage(getAliveMessage());
 	}
 
+	public void toggleState() {
+		// TODO
+	}
+
 	/*
 	 * ======================================================================== 
 	 * Send messages below

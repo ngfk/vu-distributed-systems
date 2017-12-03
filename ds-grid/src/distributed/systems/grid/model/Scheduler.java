@@ -35,6 +35,10 @@ public class Scheduler extends GridNode {
 		this.activeJobs = new ArrayList<ActiveJob>();
 	}
 
+	public void toggleState() {
+		// TODO
+	}
+
 	/* a scheduler should know about all other schedulers */
 	public void setSchedulers(List<Socket> schedulerSockets) {
 		schedulers = new HashMap<Socket, Scheduler.STATUS>();

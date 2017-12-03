@@ -20,6 +20,8 @@ public abstract class GridNode implements ISocketCommunicator {
         this.socket = new Socket(this);
     }
 
+    public abstract void toggleState();
+
     public String getId() {
         return this.id;
     }
@@ -32,7 +34,7 @@ public abstract class GridNode implements ISocketCommunicator {
         return this.type.toString();
     }
 
-    	public Socket getSocket() {
-    		return this.socket;
+    public Socket getSocket() {
+        return this.socket;
     }
 }

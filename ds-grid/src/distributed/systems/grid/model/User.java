@@ -35,6 +35,10 @@ public class User extends GridNode implements Runnable {
 		}
 	}
 
+	public void toggleState() {
+		// TODO
+	}
+
 	/* loop that produces the jobs */
 	public void run() {
 		while (true) {

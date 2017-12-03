@@ -53,6 +53,10 @@ public class ResourceManager extends GridNode implements Runnable {
 		this.workerObjects = new ArrayList<Worker>();
 	}
 
+	public void toggleState() {
+		// TODO
+	}
+
 	/* ========================================================================
 	 * 	Send messages below
 	 * ===================================================================== */

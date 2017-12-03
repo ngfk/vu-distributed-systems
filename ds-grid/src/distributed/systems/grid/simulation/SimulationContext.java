@@ -138,10 +138,19 @@ public class SimulationContext {
 	}
 
 	public void toggleNode(String nodeId, NodeType nodeType) {
-		// TODO
-		// - Create a method to find node by nodeId & nodeType
-		// - Trigger this from GuiConnection
-		// - Use find method to get the node & toggle it's state
+		// TODO Call this function from GuiConnection
+		
+		switch (nodeType) {
+		case SCHEDULER:
+			this.findScheduler(nodeId).toggleState();
+			break;
+		case RESOURCE_MANAGER:
+			this.findResourceManager(nodeId).toggleState();
+			break;
+		case WORKER:
+			this.findWorker(nodeId).toggleState();
+			break;
+		}
 	}
 	
 	/**
@@ -202,5 +211,50 @@ public class SimulationContext {
 		// - no-op if no connection was registered
 		// - check existence of node
 		// - forward to connection
+	}
+	
+	/**
+	 * Find the Scheduler instance with the provided id.
+	 * @param nodeId The scheduler id
+	 * @return The Scheduler instance
+	 */
+	private Scheduler findScheduler(String nodeId) {
+		for (Scheduler scheduler : this.schedulers) {
+			if (scheduler.getId().equals(nodeId))
+				return scheduler;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Find the ResourceManager instance with the provided id.
+	 * @param nodeId The resource manager id
+	 * @return The ResourceManager instance
+	 */
+	private ResourceManager findResourceManager(String nodeId) {
+		for (ResourceManager resourceManager : this.resourceManagers) {
+			if (resourceManager.getId().equals(nodeId))
+				return resourceManager;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Find the Worker instance with the provided id.
+	 * @param nodeId The worker id
+	 * @return The Worker instance
+	 */
+	private Worker findWorker(String nodeId) {
+		for (ResourceManager resourceManager : this.resourceManagers) {
+			List<Worker> workers = this.workers.get(resourceManager.getId());
+			for (Worker worker : workers) {
+				if (worker.getId().equals(nodeId))
+					return worker;
+			}
+		}
+
+		return null;
 	}
 }
