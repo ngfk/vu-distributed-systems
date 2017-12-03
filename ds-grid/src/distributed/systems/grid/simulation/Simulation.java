@@ -30,7 +30,8 @@ public class Simulation {
 			
 			for (int j = 0; j < workerCount; j++) {
 				Worker worker = new Worker(this.context);
-				
+				workers.add(worker);
+				workerSockets.add(worker.getSocket());
 			}
 			
 			ResourceManager newResourceManager = new ResourceManager(this.context, workerSockets);

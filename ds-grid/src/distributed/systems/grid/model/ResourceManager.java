@@ -256,20 +256,22 @@ public class ResourceManager extends GridNode implements Runnable {
 	}
 
 	private void tryExecuteJob(ActiveJob aj) {
-		if (status != STATUS.DEAD) {
-			Socket availableWorker = getAvailableWorker();
-
-			if (availableWorker == null) {
-				// status remains waiting -> whenever a node worker becomes available, give him this job.
-				return;
-			}
-
-			aj.setStatus(Job.STATUS.RUNNING);
-			workers.put(availableWorker, Worker.STATUS.RESERVED);
-			availableWorker.isAlive(); // say that this second was the last time we say the worker alive (so that it does not pollute the network too fast)
-			aj.setWorker(availableWorker);
-			sendJobRequestToWorker(availableWorker, aj.getJob());
+		if (status == STATUS.DEAD) {
+			// dead man cant jump
 		}
+		
+		Socket availableWorker = getAvailableWorker();
+
+		if (availableWorker == null) {
+			// status remains waiting -> whenever a node worker becomes available, give him this job.
+			return;
+		}
+
+		aj.setStatus(Job.STATUS.RUNNING);
+		workers.put(availableWorker, Worker.STATUS.RESERVED);
+		availableWorker.isAlive(); // say that this second was the last time we say the worker alive (so that it does not pollute the network too fast)
+		aj.setWorker(availableWorker);
+		sendJobRequestToWorker(availableWorker, aj.getJob());
 	}
 
 	private Socket getAvailableWorker() {
