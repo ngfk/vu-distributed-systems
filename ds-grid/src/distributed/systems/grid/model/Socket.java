@@ -41,7 +41,7 @@ public class Socket {
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt ();
+			Thread.currentThread().interrupt();
 		}
 
 		System.out.printf("[Socket(%d) -- %s(%d)->%s(%d) %s: %s]\n", delay, message.getSender(),
