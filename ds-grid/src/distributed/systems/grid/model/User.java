@@ -16,7 +16,10 @@ public class User implements ISocketCommunicator, Runnable {
 		IDLE, RUNNING
 	}
 	
+	private static int NR = 0;
+	
 	private final String id;
+	private final int nr;
 	
 	@SuppressWarnings("unused")
 	private SimulationContext context;
@@ -32,6 +35,7 @@ public class User implements ISocketCommunicator, Runnable {
 	 */
 	public User(SimulationContext context, List<Socket> schedulers) {
 		this.id = UUID.randomUUID().toString();
+		this.nr = User.NR++;
 		this.context = context.register(this);
 		socket = new Socket(this);
 
@@ -46,6 +50,10 @@ public class User implements ISocketCommunicator, Runnable {
 
 	public String getId() {
 		return this.id;
+	}
+	
+	public int getNr() {
+		return this.nr;
 	}
 
 	/* loop that produces the jobs */

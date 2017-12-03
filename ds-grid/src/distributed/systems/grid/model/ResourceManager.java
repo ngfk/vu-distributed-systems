@@ -28,7 +28,10 @@ import distributed.systems.grid.simulation.SimulationContext;
  */
 public class ResourceManager implements ISocketCommunicator, Runnable {
 	
+	private static int NR = 0;
+	
 	private final String id;
+	private final int nr;
 	
 	@SuppressWarnings("unused")
 	private SimulationContext context;
@@ -48,6 +51,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 
 	public ResourceManager(SimulationContext context, int numberOfWorkers) {
 		this.id = UUID.randomUUID().toString();
+		this.nr = ResourceManager.NR++;
 		this.context = context.register(this);
 		
 		socket = new Socket(this);
@@ -270,7 +274,11 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	}
 
 	public String getId() {
-		return id;
+		return this.id;
+	}
+	
+	public int getNr() {
+		return this.nr;
 	}
 
 	public String getType() {

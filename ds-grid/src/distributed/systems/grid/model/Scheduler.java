@@ -22,8 +22,11 @@ public class Scheduler implements ISocketCommunicator {
 	public static enum STATUS {
 		RUNNING, DEAD
 	}
+	
+	private static int NR = 0;
 
 	private final String id;
+	private final int nr;
 	
 	@SuppressWarnings("unused")
 	private SimulationContext context;
@@ -36,6 +39,7 @@ public class Scheduler implements ISocketCommunicator {
 
 	public Scheduler(SimulationContext context, List<Socket> rmSockets) {
 		this.id = UUID.randomUUID().toString();
+		this.nr = Scheduler.NR++;
 		this.context = context.register(this);
 		this.socket = new Socket(this);
 		this.rmSockets = rmSockets;
@@ -45,6 +49,10 @@ public class Scheduler implements ISocketCommunicator {
 
 	public String getId() {
 		return this.id;
+	}
+	
+	public int getNr() {
+		return this.nr;
 	}
 
 	/* a scheduler should know about all other schedulers */

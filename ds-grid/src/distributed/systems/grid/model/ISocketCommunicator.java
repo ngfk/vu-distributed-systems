@@ -5,6 +5,8 @@ package distributed.systems.grid.model;
  */
 public interface ISocketCommunicator {
 	public String getId();
+	
+	public int getNr();
 
 	public String getType();
 

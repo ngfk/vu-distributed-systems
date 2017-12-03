@@ -20,10 +20,13 @@ public class Worker implements ISocketCommunicator {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
 	
+	private static int NR = 0;
+	
 	private Socket rmSocket; // socket to access the resource manager that belongs to the worker
 	private Socket socket;
 
 	private final String id;
+	private final int nr;
 	
 	@SuppressWarnings("unused")
 	private SimulationContext context;
@@ -31,9 +34,11 @@ public class Worker implements ISocketCommunicator {
 	STATUS status;
 	private int totalExecutionTime;
 	private ActiveJob activeJob;
+	
 
-	public Worker(SimulationContext context, String parentId, Socket rmSocket) {		
+	public Worker(SimulationContext context, String parentId, Socket rmSocket) {
 		this.id = UUID.randomUUID().toString();
+		this.nr = Worker.NR++;
 		this.context = context.register(parentId, this);
 		this.rmSocket = rmSocket;
 		this.totalExecutionTime = 0;
@@ -162,6 +167,10 @@ public class Worker implements ISocketCommunicator {
 
 	public String getId() {
 		return this.id;
+	}
+	
+	public int getNr() {
+		return this.nr;
 	}
 
 	public String getType() {

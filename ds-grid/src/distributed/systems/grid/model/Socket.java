@@ -17,6 +17,10 @@ public class Socket {
 	public String getId() {
 		return this.node.getId();
 	}
+	
+	public int getNr() {
+		return this.node.getNr();
+	}
 
 	/**
 	 * If we send a message using this socket, ensure that it ends up at the right receiver
@@ -40,8 +44,8 @@ public class Socket {
 			Thread.currentThread().interrupt();
 		}
 
-		System.out.printf("[Socket(%d) -- %s(%s)->%s(%s) %s: %s]\n", delay, message.getSender(),
-				message.senderSocket.getId(), node.getType(), node.getId(), message.getType(), message.getValue());
+		System.out.printf("[Socket(%d) -- %s(%d)->%s(%d) %s: %s]\n", delay, message.getSender(),
+				message.senderSocket.getNr(), node.getType(), node.getNr(), message.getType(), message.getValue());
 		node.onMessageReceived(message);
 	}
 
