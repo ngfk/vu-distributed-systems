@@ -3,6 +3,7 @@ package distributed.systems.grid.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
@@ -15,7 +16,7 @@ public class User implements ISocketCommunicator, Runnable {
 		IDLE, RUNNING
 	}
 	
-	private int id;
+	private final String id;
 	
 	@SuppressWarnings("unused")
 	private SimulationContext context;
@@ -29,8 +30,8 @@ public class User implements ISocketCommunicator, Runnable {
 	/**
 	 * Every user should at least know about 2 schedulers
 	 */
-	public User(SimulationContext context, int id, List<Socket> schedulers) {
-		this.id = id;
+	public User(SimulationContext context, List<Socket> schedulers) {
+		this.id = UUID.randomUUID().toString();
 		this.context = context.register(this);
 		socket = new Socket(this);
 
@@ -43,7 +44,7 @@ public class User implements ISocketCommunicator, Runnable {
 		}
 	}
 
-	public int getId() {
+	public String getId() {
 		return this.id;
 	}
 

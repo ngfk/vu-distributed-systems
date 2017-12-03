@@ -22,11 +22,10 @@ public class Simulation {
 		
 		List<Socket> schedulerSockets = new ArrayList<Socket>();
 		List<Socket> rmSockets = new ArrayList<Socket>();
-		int uniqueWorkerId = 0;
 
 		List<ResourceManager> resourceManagers = new ArrayList<ResourceManager>();
 		for (int i = 0; i < clusterCount; i++) {
-			ResourceManager newResourceManager = new ResourceManager(this.context, i, workerCount);
+			ResourceManager newResourceManager = new ResourceManager(this.context, workerCount);
 			resourceManagers.add(newResourceManager);
 			Socket rmSocket = newResourceManager.getSocket();
 			rmSockets.add(rmSocket);
@@ -34,14 +33,14 @@ public class Simulation {
 			// We create all of the worker nodes here, On init, the worker
 			// nodes will let the resourceManager know that they're available
 			for (int j = 0; j < workerCount; j++) {
-				Worker worker = new Worker(this.context, newResourceManager.getId(), uniqueWorkerId++, rmSocket);
+				Worker worker = new Worker(this.context, newResourceManager.getId(), rmSocket);
 				newResourceManager.addWorker(worker);
 			}
 		}
 
 		List<Scheduler> schedulers = new ArrayList<Scheduler>();
 		for (int i = 0; i < schedulerCount; i++) {
-			Scheduler newScheduler = new Scheduler(this.context, i, rmSockets);
+			Scheduler newScheduler = new Scheduler(this.context, rmSockets);
 			schedulers.add(newScheduler);
 			schedulerSockets.add(newScheduler.getSocket());
 		}
@@ -51,7 +50,7 @@ public class Simulation {
 		}
 
 		System.out.printf(">> Done with initializing all nodes\n");
-		new User(this.context, 0, schedulerSockets);
+		new User(this.context, schedulerSockets);
 		this.context.sendSetup();
 	}
 }

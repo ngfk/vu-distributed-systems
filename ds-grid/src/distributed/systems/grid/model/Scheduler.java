@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.UUID;
 
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
@@ -22,7 +23,7 @@ public class Scheduler implements ISocketCommunicator {
 		RUNNING, DEAD
 	}
 
-	private int id;
+	private final String id;
 	
 	@SuppressWarnings("unused")
 	private SimulationContext context;
@@ -33,8 +34,8 @@ public class Scheduler implements ISocketCommunicator {
 	private List<ActiveJob> activeJobs; // this is a shared data-structure between schedulers 
 	private HashMap<Socket, Scheduler.STATUS> schedulers; // schedulers are identified in the system by their sockets
 
-	public Scheduler(SimulationContext context, int id, List<Socket> rmSockets) {
-		this.id = id;
+	public Scheduler(SimulationContext context, List<Socket> rmSockets) {
+		this.id = UUID.randomUUID().toString();
 		this.context = context.register(this);
 		this.socket = new Socket(this);
 		this.rmSockets = rmSockets;
@@ -42,7 +43,7 @@ public class Scheduler implements ISocketCommunicator {
 		activeJobs = new ArrayList<ActiveJob>();
 	}
 
-	public int getId() {
+	public String getId() {
 		return this.id;
 	}
 

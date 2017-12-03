@@ -1,5 +1,7 @@
 package distributed.systems.grid.model;
 
+import java.util.UUID;
+
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
 
@@ -21,7 +23,7 @@ public class Worker implements ISocketCommunicator {
 	private Socket rmSocket; // socket to access the resource manager that belongs to the worker
 	private Socket socket;
 
-	private int id; // relative to each resource manager
+	private final String id;
 	
 	@SuppressWarnings("unused")
 	private SimulationContext context;
@@ -30,8 +32,8 @@ public class Worker implements ISocketCommunicator {
 	private int totalExecutionTime;
 	private ActiveJob activeJob;
 
-	public Worker(SimulationContext context, int parentId, int id, Socket rmSocket) {		
-		this.id = id;
+	public Worker(SimulationContext context, String parentId, Socket rmSocket) {		
+		this.id = UUID.randomUUID().toString();
 		this.context = context.register(parentId, this);
 		this.rmSocket = rmSocket;
 		this.totalExecutionTime = 0;
@@ -158,7 +160,7 @@ public class Worker implements ISocketCommunicator {
 		return socket;
 	}
 
-	public int getId() {
+	public String getId() {
 		return this.id;
 	}
 

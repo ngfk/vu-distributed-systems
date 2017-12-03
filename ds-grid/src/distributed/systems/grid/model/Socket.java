@@ -14,7 +14,7 @@ public class Socket {
 		this.node = node; // the node where the message is going through
 	}
 
-	public int getId() {
+	public String getId() {
 		return this.node.getId();
 	}
 
@@ -40,7 +40,7 @@ public class Socket {
 			Thread.currentThread().interrupt();
 		}
 
-		System.out.printf("[Socket(%d) -- %s(%d)->%s(%d) %s: %s]\n", delay, message.getSender(),
+		System.out.printf("[Socket(%d) -- %s(%s)->%s(%s) %s: %s]\n", delay, message.getSender(),
 				message.senderSocket.getId(), node.getType(), node.getId(), message.getType(), message.getValue());
 		node.onMessageReceived(message);
 	}

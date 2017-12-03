@@ -24,7 +24,7 @@ public class SimulationContext {
 	private User user;
 	private List<Scheduler> schedulers = new ArrayList<Scheduler>();
 	private List<ResourceManager> resourceManagers = new ArrayList<ResourceManager>();
-	private Map<Integer, List<Worker>> workers = new HashMap<Integer, List<Worker>>();
+	private Map<String, List<Worker>> workers = new HashMap<String, List<Worker>>();
 	
 	/**
 	 * Registers the GUI connection. Skipping this will simply run a simulation without GUI.
@@ -83,7 +83,7 @@ public class SimulationContext {
 	 * @param worker The worker
 	 * @return The simulation context
 	 */
-	public SimulationContext register(int resourceManagerId, Worker worker) {
+	public SimulationContext register(String resourceManagerId, Worker worker) {
 		this.workers.get(resourceManagerId).add(worker);
 		return this;
 	}
@@ -91,9 +91,9 @@ public class SimulationContext {
 	public void sendSetup() {
 		if (this.connection == null) return;
 		
-		int userId = this.user.getId();
+		String userId = this.user.getId();
 
-		int[] schedulerIds = new int[this.schedulers.size()];
+		String[] schedulerIds = new String[this.schedulers.size()];
 		for (int i = 0; i < this.schedulers.size(); i++) {
 			schedulerIds[i] = this.schedulers.get(i).getId();
 		}
@@ -104,7 +104,7 @@ public class SimulationContext {
 			List<Worker> workers = this.workers.get(rm.getId());
 			if (workers == null) continue;
 
-			int[] workerIds = new int[workers.size()];
+			String[] workerIds = new String[workers.size()];
 			for (int j = 0; j < workers.size(); j++) {
 				workerIds[j] = workers.get(j).getId();
 			}

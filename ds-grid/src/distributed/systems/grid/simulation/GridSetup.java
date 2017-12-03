@@ -1,11 +1,11 @@
 package distributed.systems.grid.simulation;
 
 public class GridSetup {
-	public int user;
-	public int[] schedulers;
+	public String user;
+	public String[] schedulers;
 	public GridClusterSetup[] clusters;
 
-	public GridSetup(int userId, int[] schedulerIds, GridClusterSetup[] clusterIds) {
+	public GridSetup(String userId, String[] schedulerIds, GridClusterSetup[] clusterIds) {
 		this.user = userId;
 		this.schedulers = schedulerIds;
 		this.clusters = clusterIds;

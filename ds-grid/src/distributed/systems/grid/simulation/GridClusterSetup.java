@@ -1,10 +1,10 @@
 package distributed.systems.grid.simulation;
 
 public class GridClusterSetup {
-	public int resourceManager;
-	public int[] workers;
+	public String resourceManager;
+	public String[] workers;
 
-	public GridClusterSetup(int resourceManagerId, int[] workerIds) {
+	public GridClusterSetup(String resourceManagerId, String[] workerIds) {
 		this.resourceManager = resourceManagerId;
 		this.workers = workerIds;
 	}

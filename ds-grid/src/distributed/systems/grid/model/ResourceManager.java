@@ -3,6 +3,7 @@ package distributed.systems.grid.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
@@ -27,7 +28,7 @@ import distributed.systems.grid.simulation.SimulationContext;
  */
 public class ResourceManager implements ISocketCommunicator, Runnable {
 	
-	private int id;
+	private final String id;
 	
 	@SuppressWarnings("unused")
 	private SimulationContext context;
@@ -45,8 +46,8 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	 */
 	private HashMap<Socket, Worker.STATUS> workers;
 
-	public ResourceManager(SimulationContext context, int id, int numberOfWorkers) {
-		this.id = id;
+	public ResourceManager(SimulationContext context, int numberOfWorkers) {
+		this.id = UUID.randomUUID().toString();
 		this.context = context.register(this);
 		
 		socket = new Socket(this);
@@ -268,7 +269,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		return null;
 	}
 
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 
