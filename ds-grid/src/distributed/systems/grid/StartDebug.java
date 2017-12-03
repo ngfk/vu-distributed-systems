@@ -8,6 +8,6 @@ public class StartDebug {
 		SimulationContext context = new SimulationContext()
 			.startAutomatically(10);
 			
-		new Simulation(context, 2, 2, 2);
+		new Simulation(context, 2, 2, 2); 
 	}
 }
