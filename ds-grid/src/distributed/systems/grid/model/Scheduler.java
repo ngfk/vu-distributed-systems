@@ -22,7 +22,7 @@ public class Scheduler extends GridNode {
 		RUNNING, DEAD
 	}
 	
-	private final STATUS status;
+	private STATUS status;
 	private List<Socket> rmSockets; // list of all resourceManagers
 	private List<ActiveJob> activeJobs; // this is a shared data-structure between schedulers 
 	private HashMap<Socket, Scheduler.STATUS> schedulers; // schedulers are identified in the system by their sockets
