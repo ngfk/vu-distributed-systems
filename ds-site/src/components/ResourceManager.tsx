@@ -2,51 +2,28 @@ import * as React from 'react';
 
 import { GridActionCreators } from '../actions/grid.actions';
 import { ResourceManager as ResourceManagerModel } from '../models/grid';
-import { NodeState, NodeType } from '../models/node';
+import { NodeType } from '../models/node';
+import { getNodeColor } from '../utils/node-color';
 
 export interface ResourceManagerProps {
     model: ResourceManagerModel;
     gridToggle: GridActionCreators['gridToggle'];
 }
 
-export interface ResourceManagerState {}
-
-export class ResourceManager extends React.Component<
-    ResourceManagerProps,
-    ResourceManagerState
-> {
-    constructor(props: ResourceManagerProps) {
-        super(props);
-    }
-
+export class ResourceManager extends React.Component<ResourceManagerProps> {
     public render(): JSX.Element {
         const { state, jobs } = this.props.model;
-        let backgroundStyle = {};
-
-        if (state === NodeState.Online) {
-            backgroundStyle = {
-                backgroundColor: 'green'
-            };
-        } else if (state === NodeState.Busy) {
-            backgroundStyle = {
-                backgroundColor: 'orange'
-            };
-        } else if (state === NodeState.Unreachable) {
-            backgroundStyle = {
-                backgroundColor: 'grey'
-            };
-        } else {
-            backgroundStyle = { backgroundColor: 'red' };
-        }
+        const backgroundColor = getNodeColor(state);
 
         return (
             <div
-                className="ResourceManager"
+                className="resource-manager"
                 onClick={this.handleClick}
-                style={backgroundStyle}
+                style={{ backgroundColor }}
             >
-                <div className="ResourceManager-label">
-                    Resource manager <br /> Job queue: {jobs}
+                <div className="resource-manager__label">
+                    <div>Resource manager</div>
+                    <div>Job queue: {jobs}</div>
                 </div>
             </div>
         );
