@@ -4,95 +4,80 @@ body {
     font-family: sans-serif;
 }
 
-.inputForm {
+.input-form {
     display: flex;
     justify-content: space-around;
 }
 
-.User-box {
+.app {
+    text-align: center;
+}
+
+.app .app__logo {
+    animation: app-logo-spin infinite 20s linear;
+    height: 80px;
+}
+
+.app .app__header {
+    background-color: #222;
+    height: 150px;
+    padding: 20px;
+    color: white;
+}
+
+.app .app__intro {
+    font-size: large;
+}
+
+.grid {
     display: flex;
-    margin: 10px 60px;
-    justify-content: space-around;
-    flex-flow: row wrap;
+    flex-flow: column nowrap;
 }
 
-.User {
-    margin: 5px;
-    width: 60px;
-    height: 60px;
-    border: 1px solid black;
-    border-radius: 5px;
-}
-
-.User-label {
-    margin-top: 35%;
-}
-
-.Cluster-box {
-    display: flex;
-    margin: 10px 60px;
-    justify-content: space-around;
-    flex-flow: row wrap;
-}
-
-.Cluster {
+.grid .grid__users {
+    padding: 10px;
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
-    width: 150px;
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 5px;
-    margin: 5px;
 }
 
-.Cluster-label {
-    align-self: center;
-}
-
-.Worker {
-    margin: 1px;
-    width: 20px;
-    height: 20px;
-    border: 1px solid black;
-    border-radius: 5px;
-}
-
-.Worker-label {
-    margin-top: 0%;
-}
-
-.ResourceManager {
-    margin: 1px;
-    width: 115px;
-    height: 50px;
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 5px;
-}
-
-.ResourceManager-label {
-    margin-top: 0%;
-}
-
-.Scheduler-box {
+.grid .grid__schedulers-container {
+    padding: 10px;
     display: flex;
-    flex-flow: column;
-    justify-content: space-around;
-    border: 1px solid black;
-    border-radius: 5px;
-    margin: 10px 60px;
+    justify-content: center;
 }
 
-.Schedulers {
+.grid .grid__schedulers {
     display: flex;
     flex-flow: row wrap;
-    justify-content: space-around;
+    justify-content: center;
+    border: 1px solid black;
     border-radius: 5px;
-    margin: 10px 60px;
 }
 
-.Scheduler {
+.grid .grid__clusters {
+    padding: 10px;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+}
+
+.user {
+    margin: 10px;
+    width: 75px;
+    height: 75px;
+    border: 1px solid black;
+    border-radius: 50%;
+}
+
+.user .user__label {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.scheduler {
     width: 75px;
     height: 75px;
     border: 1px solid black;
@@ -101,33 +86,54 @@ body {
     margin: 10px;
 }
 
-.Scheduler-label {
-    margin-top: 35%;
+.scheduler .scheduler__label {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
 }
 
-.App {
-    text-align: center;
-}
-
-.App-logo {
-    animation: App-logo-spin infinite 20s linear;
-    height: 80px;
-}
-
-.App-header {
-    background-color: #222;
-    height: 150px;
-    padding: 20px;
-    color: white;
-}
-
-.App-intro {
-    font-size: large;
-}
-
-.App-body {
+.cluster {
     display: flex;
     flex-flow: column nowrap;
+    align-items: center;
+    margin: 5px;
+    padding: 5px;
+    width: 150px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+.cluster .cluster__workers {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    padding: 8px;
+}
+
+.resource-manager {
+    margin: 1px;
+    width: 115px;
+    height: 50px;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.resource-manager .resource-manager__label {
+    margin-top: 0%;
+}
+
+.worker {
+    margin: 1px;
+    width: 15px;
+    height: 15px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+.worker .worker__label {
+    font-size: 0.75em;
 }
 
 @keyframes App-logo-spin {

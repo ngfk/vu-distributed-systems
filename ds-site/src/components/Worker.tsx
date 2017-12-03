@@ -3,6 +3,7 @@ import * as React from 'react';
 import { GridActionCreators } from '../actions/grid.actions';
 import { Worker as WorkerModel } from '../models/grid';
 import { NodeState, NodeType } from '../models/node';
+import { getNodeColor } from '../utils/node-color';
 
 export interface WorkerProps {
     model: WorkerModel;
@@ -10,44 +11,22 @@ export interface WorkerProps {
     gridToggle: GridActionCreators['gridToggle'];
 }
 
-export interface WorkerState {}
-
-export class Worker extends React.Component<WorkerProps, WorkerState> {
-    constructor(props: WorkerProps) {
-        super(props);
-    }
-
+export class Worker extends React.Component<WorkerProps> {
     public render(): JSX.Element {
         const state =
             this.props.clusterState === NodeState.Offline
                 ? NodeState.Unreachable
                 : this.props.model.state;
 
-        let backgroundStyle = {};
-
-        if (state === NodeState.Online) {
-            backgroundStyle = {
-                backgroundColor: 'green'
-            };
-        } else if (state === NodeState.Busy) {
-            backgroundStyle = {
-                backgroundColor: 'orange'
-            };
-        } else if (state === NodeState.Unreachable) {
-            backgroundStyle = {
-                backgroundColor: 'grey'
-            };
-        } else {
-            backgroundStyle = { backgroundColor: 'red' };
-        }
+        const backgroundColor = getNodeColor(state);
 
         return (
             <div
-                className="Worker"
+                className="worker"
                 onClick={this.handleClick}
-                style={backgroundStyle}
+                style={{ backgroundColor }}
             >
-                <div className="Worker-label"> W </div>
+                <div className="worker__label">W</div>
             </div>
         );
     }
