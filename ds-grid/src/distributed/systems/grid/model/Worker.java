@@ -1,7 +1,5 @@
 package distributed.systems.grid.model;
 
-import java.util.UUID;
-
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
 
@@ -15,42 +13,36 @@ import distributed.systems.grid.simulation.SimulationContext;
  * OnResurrect: If a worker comes back to live, it can simply continues sending
  * the stillAlive message to the resouceManager
  */
-public class Worker implements ISocketCommunicator {
+public class Worker extends GridNode implements ISocketCommunicator {
 	public static enum STATUS {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
 	
-	private static int NR = 0;
-	
 	private Socket rmSocket; // socket to access the resource manager that belongs to the worker
-	private Socket socket;
 
-	private final String id;
-	private final int nr;
-	
-	@SuppressWarnings("unused")
-	private SimulationContext context;
-	
 	STATUS status;
 	private int totalExecutionTime;
 	private ActiveJob activeJob;
-	
 
-	public Worker(SimulationContext context, String parentId, Socket rmSocket) {
-		this.id = UUID.randomUUID().toString();
-		this.nr = Worker.NR++;
-		this.context = context.register(parentId, this);
+	public Worker(SimulationContext context, Socket rmSocket) {
+		super(context, GridNode.TYPE.WORKER);
 		this.rmSocket = rmSocket;
 		this.totalExecutionTime = 0;
 		this.status = STATUS.AVAILABLE;
-
-		socket = new Socket(this);
 		rmSocket.sendMessage(getAliveMessage());
 	}
 
+	public void toggleState() {
+		if (this.status == STATUS.DEAD) {
+			this.status = STATUS.AVAILABLE;
+		} else {
+			this.status = STATUS.DEAD;
+		}
+	}
+
 	/*
-	 * ======================================================================== Send
-	 * messages below
+	 * ======================================================================== 
+	 * Send messages below
 	 * =====================================================================
 	 */
 	/**
@@ -58,8 +50,10 @@ public class Worker implements ISocketCommunicator {
 	 */
 	private void sendJobConfirmationToRM(Socket rmSocket, int value) {
 		assert (rmSocket == this.rmSocket); // workers cannot serve another RM (should never trigger tho)
-		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.CONFIRMATION, value, socket);
-		rmSocket.sendMessage(message);
+		if (this.status != STATUS.DEAD){
+			Message message = new Message(Message.SENDER.WORKER, Message.TYPE.CONFIRMATION, value, socket);
+			rmSocket.sendMessage(message);
+		}
 	}
 
 	/**
@@ -68,8 +62,10 @@ public class Worker implements ISocketCommunicator {
 	private void sendJobResultToRM() {
 		assert (activeJob != null);
 		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.RESULT, activeJob.getJob().getId(), socket);
-		message.attachJob(activeJob.getJob());
-		activeJob.getScheduler().sendMessage(message);
+		if (this.status != STATUS.DEAD){
+			message.attachJob(activeJob.getJob());
+			activeJob.getScheduler().sendMessage(message);
+		}
 	}
 
 	/*
@@ -78,8 +74,11 @@ public class Worker implements ISocketCommunicator {
 	 * =====================================================================
 	 */
 
-	private void jobStatusRequestHandler(Message message) {
-
+//	private void jobStatusRequestHandler(Message message) { // renaming stuff
+	private void workerStatusHandler(Message message) {
+		if (this.status != STATUS.DEAD);{
+			rmSocket.sendMessage(getAliveMessage()); // update status to RM
+		}
 	}
 
 	/**
@@ -90,8 +89,10 @@ public class Worker implements ISocketCommunicator {
 	 */
 	private void jobResultConfirmationHandler(Message message) {
 		activeJob = null;
-		status = Worker.STATUS.AVAILABLE;
-		rmSocket.sendMessage(getAliveMessage()); // update status to RM
+		if (this.status != STATUS.DEAD);{
+			status = Worker.STATUS.AVAILABLE;
+			rmSocket.sendMessage(getAliveMessage()); // update status to RM
+		}
 	}
 
 	/**
@@ -114,17 +115,25 @@ public class Worker implements ISocketCommunicator {
 	 * 
 	 * - From a resourceManager requesting a job computation 
 	 * - From a resourceManager confirmation of a job result
+	 * - From the frontend toggle to dead/alive
 	 */
 	public void onMessageReceived(Message message) {
-		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
-			if (message.getType() == Message.TYPE.REQUEST) {
-				jobRequestHandler(message);
-			}
-			if (message.getType() == Message.TYPE.CONFIRMATION) {
-				jobResultConfirmationHandler(message);
-			}
-			if (message.getType() == Message.TYPE.PING) {
-				jobStatusRequestHandler(message);
+		if (status != STATUS.DEAD ) {
+			if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
+				if (message.getType() == Message.TYPE.REQUEST) {
+					jobRequestHandler(message);
+				}
+				if (message.getType() == Message.TYPE.CONFIRMATION) {
+					jobResultConfirmationHandler(message);
+				}
+				if (message.getType() == Message.TYPE.STATUS) {
+					workerStatusHandler(message);
+				}
+				
+				// TODO
+				if (message.getType() == Message.TYPE.PING) {
+					// jobStatusRequestHandler(message);
+				}
 			}
 		}
 	}
@@ -159,21 +168,5 @@ public class Worker implements ISocketCommunicator {
 	private Message getAliveMessage() {
 		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.STATUS, status.ordinal(), socket); // enum -> int
 		return message;
-	}
-
-	public Socket getSocket() {
-		return socket;
-	}
-
-	public String getId() {
-		return this.id;
-	}
-	
-	public int getNr() {
-		return this.nr;
-	}
-
-	public String getType() {
-		return "Worker";
 	}
 }

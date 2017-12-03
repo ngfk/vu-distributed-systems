@@ -3,7 +3,6 @@ package distributed.systems.grid.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
@@ -11,55 +10,58 @@ import distributed.systems.grid.simulation.SimulationContext;
 /**
  * The computer that is pushing jobs to our System
  */
-public class User implements ISocketCommunicator, Runnable {
-	public static enum STATUS {
-		IDLE, RUNNING
-	}
-	
-	private static int NR = 0;
-	
-	private final String id;
-	private final int nr;
-	
-	@SuppressWarnings("unused")
-	private SimulationContext context;
+public class User extends GridNode implements Runnable {
 
-	private STATUS status;
-	private Socket socket;
-
+	private boolean running;
+	
 	private List<ActiveJob> activeJobs;
 	private List<Socket> schedulers; // this should only store the active schedulers
+	
+	private Thread thread;
 
 	/**
 	 * Every user should at least know about 2 schedulers
 	 */
 	public User(SimulationContext context, List<Socket> schedulers) {
-		this.id = UUID.randomUUID().toString();
-		this.nr = User.NR++;
-		this.context = context.register(this);
-		socket = new Socket(this);
+		super(context, GridNode.TYPE.SCHEDULER);
 
+		this.running = true;
+		this.activeJobs = new ArrayList<ActiveJob>();
 		this.schedulers = schedulers;
-		activeJobs = new ArrayList<ActiveJob>();
 
-		// debug jobs
-		for (int i = 0; i < 10; i++) {
+		// Create jobs if configured in context, used in `StartDebug.java` for
+		// testing purposes.
+		for (int i = 0; i < context.getStartAutomatically(); i++) {
 			Job job = new Job(8000 + (int) (Math.random() * 5000));
 			executeJob(job);
 		}
 	}
 
-	public String getId() {
-		return this.id;
+	public void start() {
+		if (this.thread != null) this.stop();
+		this.running = true;
+		this.thread = new Thread(this);
 	}
 	
-	public int getNr() {
-		return this.nr;
+	public void stop() {
+		if (this.thread == null) return;
+		
+		try {
+			this.running = false;
+			this.thread.join();
+			this.thread = null;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void toggleState() {
+		// NOOP, the user's state cannot be toggled.
 	}
 
 	/* loop that produces the jobs */
 	public void run() {
-		while (true) {
+		while (this.running) {
 			/* Add a new job to the system that take up random time */
 			Job job = new Job(8000 + (int) (Math.random() * 5000));
 			executeJob(job);
@@ -69,7 +71,6 @@ public class User implements ISocketCommunicator, Runnable {
 			} catch (InterruptedException e) {
 				assert (false) : "Simulation runtread was interrupted";
 			}
-
 		}
 	}
 
@@ -147,9 +148,5 @@ public class User implements ISocketCommunicator, Runnable {
 			}
 		}
 		return null;
-	}
-
-	public String getType() {
-		return "User";
 	}
 }

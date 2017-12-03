@@ -8,6 +8,7 @@ import java.util.Map;
 import distributed.systems.grid.gui.GuiConnection;
 import distributed.systems.grid.gui.NodeState;
 import distributed.systems.grid.gui.NodeType;
+import distributed.systems.grid.model.GridNode;
 import distributed.systems.grid.model.ResourceManager;
 import distributed.systems.grid.model.Scheduler;
 import distributed.systems.grid.model.User;
@@ -20,11 +21,22 @@ import distributed.systems.grid.model.Worker;
 public class SimulationContext {
 	
 	private GuiConnection connection;
-	private Simulation simulation;
+
 	private User user;
 	private List<Scheduler> schedulers = new ArrayList<Scheduler>();
 	private List<ResourceManager> resourceManagers = new ArrayList<ResourceManager>();
 	private Map<String, List<Worker>> workers = new HashMap<String, List<Worker>>();
+
+	private int startAutomatically = 0;
+
+	/**
+	 * Gets the amount of jobs that should be created on initialization. Only
+	 * used during development (e.g. set in `StartDebug.java`).
+	 * @return The amount of jobs to create
+	 */
+	public int getStartAutomatically() {
+		return this.startAutomatically;
+	}
 	
 	/**
 	 * Registers the GUI connection. Skipping this will simply run a simulation without GUI.
@@ -42,7 +54,8 @@ public class SimulationContext {
 	 * @return The simulation context
 	 */
 	public SimulationContext register(Simulation simulation) {
-		this.simulation = simulation;
+		// This is not actually required, for now.
+		// this.simulation = simulation;
 		return this;
 	}
 	
@@ -76,18 +89,113 @@ public class SimulationContext {
 		this.workers.put(resourceManager.getId(), new ArrayList<Worker>());
 		return this;
 	}
-	
+
 	/**
-	 * Registers a Worker instance.
-	 * @param resourceManager The parent resource manager
+	 * Registers a Worker instance, the worker is added to the last resource
+	 * manager that was registered.
 	 * @param worker The worker
 	 * @return The simulation context
 	 */
-	public SimulationContext register(String resourceManagerId, Worker worker) {
-		this.workers.get(resourceManagerId).add(worker);
+	public SimulationContext register(Worker worker) {
+		int index = this.resourceManagers.size() - 1;
+		if (index < 0) return this;
+
+		ResourceManager rm = this.resourceManagers.get(index);
+		this.workers.get(rm.getId()).add(worker);
 		return this;
 	}
+
+	/**
+	 * Registers a GridNode instance, will use the correct register method
+	 * depending on the node type.
+	 * @param node The node
+	 * @return The simulation context
+	 */
+	public SimulationContext register(GridNode node) {
+		if (node instanceof User) {
+			return this.register((User) node);
+		} else if (node instanceof Scheduler) {
+			return this.register((Scheduler) node);
+		} else if (node instanceof ResourceManager) {
+			return this.register((ResourceManager) node);
+		} else if (node instanceof Worker) {
+			return this.register((Worker) node);
+		}
+
+		return this;
+	}
+
+	/**
+	 * Configures the simulation to start x jobs automatically.
+	 * @param jobCount The number of jobs to automatically create
+	 */
+	public SimulationContext startAutomatically(int jobCount) {
+		this.startAutomatically = jobCount;
+		return this;
+	}
+
+	/**
+	 * Mainly for debugging purposes, allow to print the index instead of UUID.
+	 * @param node The node
+	 * @return The node index
+	 */
+	public int getNr(GridNode node) {
+		if (node instanceof Scheduler) {
+			return this.schedulers.indexOf(node);
+		} else if (node instanceof ResourceManager) {
+			return this.resourceManagers.indexOf(node);
+		} else if (node instanceof Worker) {
+			for (int i = 0; i < this.resourceManagers.size(); i++) {
+				ResourceManager rm = this.resourceManagers.get(i);
+				List<Worker> workers = this.workers.get(rm.getId());
+				int workerIdx = workers.indexOf(node);
+
+				if (workerIdx >= 0)
+					return (i * workers.size()) + workerIdx;
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Triggered by the front-end, starts running the simulation.
+	 */
+	public void startSimulation() {
+		this.user.start();
+	}
+
+	/**
+	 * Triggered by the front-end, stops running the simulation.
+	 */
+	public void stopSimulation() {
+		// TODO Not sure if this is the only thread that has to be stopped.
+		this.user.stop();
+	}
+
+	/**
+	 * Triggered by the front-end, toggles the state of the specified node.
+	 * @param nodeId The node id
+	 * @param nodeType The node type
+	 */
+	public void toggleNode(String nodeId, NodeType nodeType) {
+		switch (nodeType) {
+		case SCHEDULER:
+			this.findScheduler(nodeId).toggleState();
+			break;
+		case RESOURCE_MANAGER:
+			this.findResourceManager(nodeId).toggleState();
+			break;
+		case WORKER:
+			this.findWorker(nodeId).toggleState();
+			break;
+		}
+	}
 	
+	/**
+	 * Sends a 'setup' message to the connected websocket. If no socket is
+	 * registered this method is a simple no-op.
+	 */
 	public void sendSetup() {
 		if (this.connection == null) return;
 		
@@ -116,7 +224,76 @@ public class SimulationContext {
 		this.connection.sendSetup(new GridSetup(userId, schedulerIds, clusterIds));
 	}
 	
-	public void sendState(int nodeId, NodeType nodeType, NodeState nodeState) {
+	/**
+	 * Sends a 'state' message to the connected websocket. If no socket is
+	 * registered this method is a simple no-op.
+	 * @param nodeId The id of the node that has a change in state
+	 * @param nodeType The type of the node that has a change in state
+	 * @param nodeState The new state of the node
+	 */
+	public void sendState(String nodeId, NodeType nodeType, NodeState nodeState) {
+		// TODO 
+		// - no-op if no connection was registered
+		// - check existence of node
+		// - forward to connection
+	}
+
+	/**
+	 * Sends a 'queue' message to the connected websocket. If no socket is
+	 * registered this method is a simple no-op.
+	 * @param nodeId The id of the node that has a change in job count
+	 * @param nodeType The type of the node that has a change in job count
+	 * @param jobCount The new job count of the node
+	 */
+	public void sendQueue(String nodeId, NodeType nodeType, int jobCount) {
+		// TODO 
+		// - no-op if no connection was registered
+		// - check existence of node
+		// - forward to connection
+	}
+	
+	/**
+	 * Find the Scheduler instance with the provided id.
+	 * @param nodeId The scheduler id
+	 * @return The Scheduler instance
+	 */
+	private Scheduler findScheduler(String nodeId) {
+		for (Scheduler scheduler : this.schedulers) {
+			if (scheduler.getId().equals(nodeId))
+				return scheduler;
+		}
 		
+		return null;
+	}
+	
+	/**
+	 * Find the ResourceManager instance with the provided id.
+	 * @param nodeId The resource manager id
+	 * @return The ResourceManager instance
+	 */
+	private ResourceManager findResourceManager(String nodeId) {
+		for (ResourceManager resourceManager : this.resourceManagers) {
+			if (resourceManager.getId().equals(nodeId))
+				return resourceManager;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Find the Worker instance with the provided id.
+	 * @param nodeId The worker id
+	 * @return The Worker instance
+	 */
+	private Worker findWorker(String nodeId) {
+		for (ResourceManager resourceManager : this.resourceManagers) {
+			List<Worker> workers = this.workers.get(resourceManager.getId());
+			for (Worker worker : workers) {
+				if (worker.getId().equals(nodeId))
+					return worker;
+			}
+		}
+
+		return null;
 	}
 }

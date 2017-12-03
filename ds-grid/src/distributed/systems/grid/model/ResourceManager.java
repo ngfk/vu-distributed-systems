@@ -3,7 +3,6 @@ package distributed.systems.grid.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.UUID;
 
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
@@ -26,21 +25,17 @@ import distributed.systems.grid.simulation.SimulationContext;
  * 	If the resourceManager comes back to life, it might have an outdated / invalid workers list.
  *  but this will be fixed whenever the workers start sending their I am alive message again.
  */
-public class ResourceManager implements ISocketCommunicator, Runnable {
+public class ResourceManager extends GridNode implements Runnable {
+	public static enum STATUS {
+		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
+	}
 	
-	private static int NR = 0;
-	
-	private final String id;
-	private final int nr;
-	
-	@SuppressWarnings("unused")
-	private SimulationContext context;
-	
-
+	private static boolean aliveConfirmation = false;
 	public ArrayList<Worker> workerObjects; // this is only to help drawing the interface!
-	private Socket socket;
 	private ArrayList<ActiveJob> activeJobs;
 
+	private STATUS status;
+	
 	/**
 	 * This is an hashmap of the worker nodes
 	 *  The idea is that since we cannot access the worker just by referencing their object 
@@ -50,16 +45,20 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	private HashMap<Socket, Worker.STATUS> workers;
 
 	public ResourceManager(SimulationContext context, int numberOfWorkers) {
-		this.id = UUID.randomUUID().toString();
-		this.nr = ResourceManager.NR++;
-		this.context = context.register(this);
-		
-		socket = new Socket(this);
+		super(context, GridNode.TYPE.RESOURCE_MANAGER);
 
-		workers = new HashMap<Socket, Worker.STATUS>();
-		activeJobs = new ArrayList<ActiveJob>();
+		this.status = STATUS.AVAILABLE;
+		this.workers = new HashMap<Socket, Worker.STATUS>();
+		this.activeJobs = new ArrayList<ActiveJob>();
+		this.workerObjects = new ArrayList<Worker>();
+	}
 
-		workerObjects = new ArrayList<Worker>();
+	public void toggleState() {
+		if (this.status == STATUS.DEAD) {
+			this.status = STATUS.AVAILABLE;
+		} else {
+			this.status = STATUS.DEAD;
+		}
 	}
 
 	/* ========================================================================
@@ -69,43 +68,54 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	 * confirmation message to the scheduler that it received the job correctly
 	 */
 	private void sendJobConfirmationToScheduler(Socket scheduler, int value) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
-		scheduler.sendMessage(message);
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
+			scheduler.sendMessage(message);
+		}
 	}
 
 	/**
 	 * Request to a worker for it to start executing some code
 	 */
 	private void sendJobRequestToWorker(Socket worker, Job job) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.REQUEST, job.getId(), socket);
-		message.attachJob(job);
-		worker.sendMessage(message);
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.REQUEST, job.getId(), socket);
+			message.attachJob(job);
+			worker.sendMessage(message);
+		}
 	}
 
 	/**
 	 * Confirmation to a worker that it received its result correctly
 	 */
 	private void sendJobResultConfirmationToWorker(Socket worker, int value) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
-		worker.sendMessage(message);
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
+			worker.sendMessage(message);
+		}
 	}
 
 	/**
 	 * send job result back to the cluster
 	 */
 	private void sendJobResultToCluster(ActiveJob aj) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.RESULT, aj.getJob().getId(),
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.RESULT, aj.getJob().getId(),
 				socket);
-		message.attachJob(aj.getJob());
-		aj.getScheduler().sendMessage(message);
+			message.attachJob(aj.getJob());
+			aj.getScheduler().sendMessage(message);
+		}
 	}
 
 	/**
 	 * request job status from worker
 	 */
-	private void sendPingRequestMessage(Socket worker, int jobId) {
-		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.PING, jobId, socket);
-		worker.sendMessage(message);
+	// private void sendPingRequestMessage(Socket worker, int jobId) { // renaming maybe? 
+	private void sendRequestStatusMessage(Socket worker) {
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
+			worker.sendMessage(message);
+		}
 	}
 
 	/* ========================================================================
@@ -119,7 +129,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		Socket workerSocket = message.senderSocket; // we use the socket as identifier for the worker
 		Worker.STATUS newStatus = Worker.STATUS.values()[message.getValue()]; // hacky way to convert int -> enum
 		workers.put(workerSocket, newStatus);
-
+		aliveConfirmation = true;
 		dequeueJobHandler();
 	}
 
@@ -206,7 +216,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 				jobResultConfirmationHandler(message);
 				return;
 			}
-		}
+		} 
 
 		// exception
 	}
@@ -227,21 +237,19 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	}
 
 	private void tryExecuteJob(ActiveJob aj) {
-		Socket availableWorker = getAvailableWorker();
+		if (status != STATUS.DEAD) {
+			Socket availableWorker = getAvailableWorker();
 
-		if (availableWorker == null) {
-			// status remains waiting -> whenever a node worker becomes available, give him this job.
-			return;
+			if (availableWorker == null) {
+				// status remains waiting -> whenever a node worker becomes available, give him this job.
+				return;
+			}
+
+			aj.setStatus(Job.STATUS.RUNNING);
+			workers.put(availableWorker, Worker.STATUS.RESERVED);
+			aj.setWorker(availableWorker);
+			sendJobRequestToWorker(availableWorker, aj.getJob());
 		}
-
-		aj.setStatus(Job.STATUS.RUNNING);
-		workers.put(availableWorker, Worker.STATUS.RESERVED);
-		aj.setWorker(availableWorker);
-		sendJobRequestToWorker(availableWorker, aj.getJob());
-	}
-
-	public Socket getSocket() {
-		return socket;
 	}
 
 	private Socket getAvailableWorker() {
@@ -273,18 +281,6 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		return null;
 	}
 
-	public String getId() {
-		return this.id;
-	}
-	
-	public int getNr() {
-		return this.nr;
-	}
-
-	public String getType() {
-		return "ResourceManager";
-	}
-
 	public void addWorker(Worker worker) {
 		workerObjects.add(worker);
 	}
@@ -299,15 +295,32 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	 */
 	public void run() {
 		// for every active-unfinished job periodically check if the worker is still alive
-		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
-				sendPingRequestMessage(activeJobs.get(i).getWorker(), activeJobs.get(i).getJob().getId());
+		if (status != STATUS.DEAD ) {
+			for (int i = 0; i < activeJobs.size(); i++) {
+				if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
+					sendRequestStatusMessage(activeJobs.get(i).getWorker());
+
+					// wait a while
+					try {
+						Thread.sleep(100L);
+					} catch (InterruptedException e) {
+						assert (false) : "Simulation runtread was interrupted";
+					}
+
+					// not sure if this will work with multiple workers / what about the scenario where multiple workers appear to be dead
+					if (aliveConfirmation == false) {
+						workers.put(activeJobs.get(i).getWorker(), Worker.STATUS.DEAD);
+						tryExecuteJob(activeJobs.get(i));
+					} else {
+						aliveConfirmation = false;
+					}
+				}
 			}
-		}
-		try {
-			Thread.sleep(100L);
-		} catch (InterruptedException e) {
-			assert (false) : "Simulation runtread was interrupted";
+			try {
+				Thread.sleep(100L);
+			} catch (InterruptedException e) {
+				assert (false) : "Simulation runtread was interrupted";
+			}
 		}
 	}
 }

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.UUID;
 
 import distributed.systems.grid.data.ActiveJob;
 import distributed.systems.grid.simulation.SimulationContext;
@@ -18,41 +17,30 @@ import distributed.systems.grid.simulation.SimulationContext;
  * The list of users is flexible
  *
  */
-public class Scheduler implements ISocketCommunicator {
+public class Scheduler extends GridNode {
 	public static enum STATUS {
 		RUNNING, DEAD
 	}
 	
-	private static int NR = 0;
-
-	private final String id;
-	private final int nr;
-	
-	@SuppressWarnings("unused")
-	private SimulationContext context;
-	
-	private Socket socket;
-
+	private STATUS status;
 	private List<Socket> rmSockets; // list of all resourceManagers
 	private List<ActiveJob> activeJobs; // this is a shared data-structure between schedulers 
 	private HashMap<Socket, Scheduler.STATUS> schedulers; // schedulers are identified in the system by their sockets
 
 	public Scheduler(SimulationContext context, List<Socket> rmSockets) {
-		this.id = UUID.randomUUID().toString();
-		this.nr = Scheduler.NR++;
-		this.context = context.register(this);
-		this.socket = new Socket(this);
+		super(context, GridNode.TYPE.SCHEDULER);
+
+		this.status = STATUS.RUNNING;
 		this.rmSockets = rmSockets;
-
-		activeJobs = new ArrayList<ActiveJob>();
+		this.activeJobs = new ArrayList<ActiveJob>();
 	}
 
-	public String getId() {
-		return this.id;
-	}
-	
-	public int getNr() {
-		return this.nr;
+	public void toggleState() {
+		if (this.status == STATUS.DEAD) {
+			this.status = STATUS.RUNNING;
+		} else {
+			this.status = STATUS.DEAD;
+		}
 	}
 
 	/* a scheduler should know about all other schedulers */
@@ -75,66 +63,80 @@ public class Scheduler implements ISocketCommunicator {
 	 * send a message to a scheduler, saying that we received a job.
 	 */
 	public void sendJobConfirmationRequestMessage(Socket scheduler, Job job) {
-		if (scheduler == socket) {
-			return;
-		} // dont send to self
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
-		message.attachJob(job);
-		scheduler.sendMessage(message);
+		if(status != STATUS.DEAD){
+			if (scheduler == socket) {
+				return;
+			} // dont send to self
+			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
+			message.attachJob(job);
+			scheduler.sendMessage(message);
+		}
 	}
 
 	/**
 	 * send a message to a scheduler, saying that we received the job result
 	 */
 	public void sendJobResultConfirmationRequestMessage(Socket scheduler, Job job) {
-		if (scheduler == socket) {
-			return;
-		} // dont send to self
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
-		message.attachJob(job);
-		scheduler.sendMessage(message);
+		if(status != STATUS.DEAD){
+			if (scheduler == socket) {
+				return;
+			} // dont send to self
+			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
+			message.attachJob(job);
+			scheduler.sendMessage(message);
+		}
 	}
 
 	/**
 	 * confirm to scheduler that we noted that he has received its jobresult
 	 */
 	public void sendJobResultConfirmationConfirmation(Socket scheduler, int jobId) {
-		if (scheduler == socket) {
-			return;
-		} // dont send to self
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.ACKNOWLEDGEMENT, jobId, socket);
-		scheduler.sendMessage(message);
+		if(status != STATUS.DEAD){
+			if (scheduler == socket) {
+				return;
+			} // dont send to self
+			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.ACKNOWLEDGEMENT, jobId, socket);
+			scheduler.sendMessage(message);
+		}
 	}
 
 	/**
 	 * send a message to a scheduler, saying that we confirmed your received job
 	 */
 	public void sendJobConfirmationMessage(Socket scheduler, int jobId) {
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
-		scheduler.sendMessage(message);
+		if(status != STATUS.DEAD){
+			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
+			scheduler.sendMessage(message);
+		}
 	}
 
 	/**
 	 * send a request to execute a job to a resourcemanager(cluster) 
 	 */
 	public void sendRequestJobExecutionMessage(Socket rm, Job job) {
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
-		message.attachJob(job);
-		rm.sendMessage(message);
+		if(status != STATUS.DEAD){
+			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
+			message.attachJob(job);
+			rm.sendMessage(message);
+		}
 	}
 
 	/**
 	 * confirm to user that we have received the job
 	 */
 	public void sendJobConfirmationToUser(Socket user, int jobId) {
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
-		user.sendMessage(message);
+		if(status != STATUS.DEAD){
+			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
+			user.sendMessage(message);
+		}
 	}
 
 	public void sendJobResultToUser(Socket user, Job job) {
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
-		message.attachJob(job);
-		user.sendMessage(message);
+		if(status != STATUS.DEAD){
+			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
+			user.sendMessage(message);
+			message.attachJob(job);
+		}
 	}
 
 	/* ========================================================================
@@ -256,31 +258,33 @@ public class Scheduler implements ISocketCommunicator {
 	 * - ...
 	 */
 	public void onMessageReceived(Message message) {
-		if (message.getSender() == Message.SENDER.USER) {
-			if (message.getType() == Message.TYPE.REQUEST) {
-				jobRequestHandler(message);
+		if(status != STATUS.DEAD){
+			if (message.getSender() == Message.SENDER.USER) {
+				if (message.getType() == Message.TYPE.REQUEST) {
+					jobRequestHandler(message);
+				}
+				if (message.getType() == Message.TYPE.CONFIRMATION) {
+					userJobResultConfirmationHandler(message);
+				}
 			}
-			if (message.getType() == Message.TYPE.CONFIRMATION) {
-				userJobResultConfirmationHandler(message);
+			if (message.getSender() == Message.SENDER.SCHEDULER) {
+				if (message.getType() == Message.TYPE.REQUEST) {
+					schedulerJobRequestHandler(message);
+				}
+				if (message.getType() == Message.TYPE.CONFIRMATION) {
+					schedulerJobConfirmationHandler(message);
+				}
+				if (message.getType() == Message.TYPE.RESULT) {
+					schedulerJobResultConfirmationHandler(message);
+				}
+				if (message.getType() == Message.TYPE.ACKNOWLEDGEMENT) {
+					schedulerJobResultAcknowledgementHandler(message);
+				}
 			}
-		}
-		if (message.getSender() == Message.SENDER.SCHEDULER) {
-			if (message.getType() == Message.TYPE.REQUEST) {
-				schedulerJobRequestHandler(message);
-			}
-			if (message.getType() == Message.TYPE.CONFIRMATION) {
-				schedulerJobConfirmationHandler(message);
-			}
-			if (message.getType() == Message.TYPE.RESULT) {
-				schedulerJobResultConfirmationHandler(message);
-			}
-			if (message.getType() == Message.TYPE.ACKNOWLEDGEMENT) {
-				schedulerJobResultAcknowledgementHandler(message);
-			}
-		}
-		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
-			if (message.getType() == Message.TYPE.RESULT) {
-				schedulerJobResultHandler(message);
+			if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
+				if (message.getType() == Message.TYPE.RESULT) {
+					schedulerJobResultHandler(message);
+				}
 			}
 		}
 	}
@@ -295,19 +299,17 @@ public class Scheduler implements ISocketCommunicator {
 	}
 
 	public void executeJob(Job job) {
-		Random rand = new Random();
-		int schedulerId = rand.nextInt(rmSockets.size());
+		if(status != STATUS.DEAD){
+			Random rand = new Random();
+			int schedulerId = rand.nextInt(rmSockets.size());
 
-		Socket rm = rmSockets.get(schedulerId);
+			Socket rm = rmSockets.get(schedulerId);
 
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
-		message.attachJob(job);
+			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
+			message.attachJob(job);
 
-		rm.sendMessage(message);
-	}
-
-	public Socket getSocket() {
-		return socket;
+			rm.sendMessage(message);
+		}
 	}
 
 	public ActiveJob getActiveJob(int jobId) {
@@ -336,9 +338,5 @@ public class Scheduler implements ISocketCommunicator {
 		}
 		assert (activeSchedulers.size() > 0);
 		return activeSchedulers;
-	}
-
-	public String getType() {
-		return "Scheduler";
 	}
 }
