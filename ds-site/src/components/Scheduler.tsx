@@ -1,11 +1,11 @@
 import * as React from 'react';
 
 import { GridActionCreators } from '../actions/grid.actions';
+import { Scheduler as SchedulerModel } from '../models/grid';
 import { NodeState, NodeType } from '../models/node';
 
 export interface SchedulerProps {
-    id: number;
-    state: NodeState;
+    model: SchedulerModel;
     gridToggle: GridActionCreators['gridToggle'];
 }
 
@@ -16,17 +16,18 @@ export class Scheduler extends React.Component<SchedulerProps, SchedulerState> {
         super(props);
     }
     public render(): JSX.Element {
+        const { state } = this.props.model;
         let backgroundStyle = {};
 
-        if (this.props.state === NodeState.Online) {
+        if (state === NodeState.Online) {
             backgroundStyle = {
                 backgroundColor: 'green'
             };
-        } else if (this.props.state === NodeState.Busy) {
+        } else if (state === NodeState.Busy) {
             backgroundStyle = {
                 backgroundColor: 'orange'
             };
-        } else if (this.props.state === NodeState.Unreachable) {
+        } else if (state === NodeState.Unreachable) {
             backgroundStyle = {
                 backgroundColor: 'grey'
             };
@@ -47,7 +48,7 @@ export class Scheduler extends React.Component<SchedulerProps, SchedulerState> {
 
     private handleClick = () => {
         this.props.gridToggle({
-            id: this.props.id,
+            id: this.props.model.id,
             type: NodeType.Scheduler
         });
     };

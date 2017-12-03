@@ -1,12 +1,11 @@
 import * as React from 'react';
 
 import { GridActionCreators } from '../actions/grid.actions';
+import { ResourceManager as ResourceManagerModel } from '../models/grid';
 import { NodeState, NodeType } from '../models/node';
 
 export interface ResourceManagerProps {
-    id: number;
-    state: NodeState;
-    jobs: number;
+    model: ResourceManagerModel;
     gridToggle: GridActionCreators['gridToggle'];
 }
 
@@ -19,18 +18,20 @@ export class ResourceManager extends React.Component<
     constructor(props: ResourceManagerProps) {
         super(props);
     }
+
     public render(): JSX.Element {
+        const { state, jobs } = this.props.model;
         let backgroundStyle = {};
 
-        if (this.props.state === NodeState.Online) {
+        if (state === NodeState.Online) {
             backgroundStyle = {
                 backgroundColor: 'green'
             };
-        } else if (this.props.state === NodeState.Busy) {
+        } else if (state === NodeState.Busy) {
             backgroundStyle = {
                 backgroundColor: 'orange'
             };
-        } else if (this.props.state === NodeState.Unreachable) {
+        } else if (state === NodeState.Unreachable) {
             backgroundStyle = {
                 backgroundColor: 'grey'
             };
@@ -45,7 +46,7 @@ export class ResourceManager extends React.Component<
                 style={backgroundStyle}
             >
                 <div className="ResourceManager-label">
-                    Resource manager <br /> Job queue: {this.props.jobs}
+                    Resource manager <br /> Job queue: {jobs}
                 </div>
             </div>
         );
@@ -53,7 +54,7 @@ export class ResourceManager extends React.Component<
 
     private handleClick = () => {
         this.props.gridToggle({
-            id: this.props.id,
+            id: this.props.model.id,
             type: NodeType.ResourceManager
         });
     };

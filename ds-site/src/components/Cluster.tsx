@@ -6,7 +6,6 @@ import {
     ResourceManager as ResourceManagerState,
     Worker as WorkerState
 } from '../models/grid';
-import { NodeState } from '../models/node';
 import { ResourceManager } from './ResourceManager';
 
 export interface ClusterProps {
@@ -22,31 +21,25 @@ export class Cluster extends React.Component<ClusterProps> {
 
         workerNodes.push(
             <ResourceManager
-                id={resourceManager.id}
-                state={resourceManager.state}
-                jobs={resourceManager.jobs}
+                key={resourceManager.id}
+                model={resourceManager}
                 gridToggle={gridToggle}
             />
         );
 
         this.props.workers.forEach(worker => {
-            const state =
-                this.props.resourceManager.state === NodeState.Offline
-                    ? NodeState.Unreachable
-                    : worker.state;
-
             workerNodes.push(
                 <Worker
                     key={worker.id}
-                    id={worker.id}
-                    state={state}
+                    model={worker}
+                    clusterState={resourceManager.state}
                     gridToggle={gridToggle}
                 />
             );
         });
 
         let formatted = workerNodes.map((line, i) => (
-            <div key={'Worker' + i}> {line} </div>
+            <div key={'Worker' + i}>{line}</div>
         ));
 
         return (

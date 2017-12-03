@@ -30,14 +30,14 @@ export interface GridMessageSetup extends GridMessage {
 
 export interface GridMessageState extends GridMessage {
     readonly type: GridMessageType.State;
-    readonly nodeId: number;
+    readonly nodeId: string;
     readonly nodeType: NodeType;
     readonly nodeState: NodeState;
 }
 
 export interface GridMessageQueue extends GridMessage {
     readonly type: GridMessageType.Queue;
-    readonly nodeId: number;
+    readonly nodeId: string;
     readonly nodeType: NodeType;
     readonly jobs: number;
 }
@@ -48,7 +48,7 @@ export interface GridMessageStop extends GridMessage {
 
 export interface GridMessageToggle extends GridMessage {
     readonly type: GridMessageType.Toggle;
-    readonly nodeId: number;
+    readonly nodeId: string;
     readonly nodeType: NodeType;
 }
 

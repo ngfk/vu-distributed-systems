@@ -11,7 +11,7 @@ import { NodeType } from '../models/node';
 export type Modifier<T> = (old: T) => T;
 export type Adjuster<T, E = T> = (
     collection: T[],
-    id: number,
+    id: string,
     modifier: Modifier<E>
 ) => T[];
 
@@ -58,7 +58,7 @@ export const adjustWorker: Adjuster<Cluster, Worker> = (
 
 export const adjustNode = <T extends NodeType>(
     grid: Grid,
-    id: number,
+    id: string,
     type: T,
     modifier: Modifier<GridNodeMap[T]>
 ): Grid => {
