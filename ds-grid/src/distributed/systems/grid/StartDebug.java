@@ -1,9 +1,11 @@
 package distributed.systems.grid;
 
 import distributed.systems.grid.simulation.Simulation;
+import distributed.systems.grid.simulation.SimulationContext;
 
 public class StartDebug {
 	public static void main(String[] args) {
-		new Simulation(2, 2, 2);
+		SimulationContext context = new SimulationContext();
+		new Simulation(context, 2, 2, 2);
 	}
 }

@@ -1,6 +1,7 @@
 package distributed.systems.grid.model;
 
 import distributed.systems.grid.data.ActiveJob;
+import distributed.systems.grid.simulation.SimulationContext;
 
 /**
  * Worker/Node does all the actual computations and returns the result to its
@@ -16,17 +17,22 @@ public class Worker implements ISocketCommunicator {
 	public static enum STATUS {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
-
+	
 	private Socket rmSocket; // socket to access the resource manager that belongs to the worker
 	private Socket socket;
 
 	private int id; // relative to each resource manager
+	
+	@SuppressWarnings("unused")
+	private SimulationContext context;
+	
 	STATUS status;
 	private int totalExecutionTime;
 	private ActiveJob activeJob;
 
-	public Worker(int id, Socket rmSocket) {
+	public Worker(SimulationContext context, int parentId, int id, Socket rmSocket) {		
 		this.id = id;
+		this.context = context.register(parentId, this);
 		this.rmSocket = rmSocket;
 		this.totalExecutionTime = 0;
 		this.status = STATUS.AVAILABLE;

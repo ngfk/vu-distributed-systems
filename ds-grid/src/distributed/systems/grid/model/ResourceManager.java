@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import distributed.systems.grid.data.ActiveJob;
+import distributed.systems.grid.simulation.SimulationContext;
 
 /**
  * The entry point of a cluster
@@ -25,7 +26,12 @@ import distributed.systems.grid.data.ActiveJob;
  *  but this will be fixed whenever the workers start sending their I am alive message again.
  */
 public class ResourceManager implements ISocketCommunicator, Runnable {
+	
 	private int id;
+	
+	@SuppressWarnings("unused")
+	private SimulationContext context;
+	
 
 	public ArrayList<Worker> workerObjects; // this is only to help drawing the interface!
 	private Socket socket;
@@ -39,8 +45,10 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 	 */
 	private HashMap<Socket, Worker.STATUS> workers;
 
-	public ResourceManager(int id, int numberOfWorkers) {
+	public ResourceManager(SimulationContext context, int id, int numberOfWorkers) {
 		this.id = id;
+		this.context = context.register(this);
+		
 		socket = new Socket(this);
 
 		workers = new HashMap<Socket, Worker.STATUS>();

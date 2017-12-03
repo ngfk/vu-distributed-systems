@@ -1,4 +1,4 @@
-package distributed.systems.grid.simulation;
+package distributed.systems.grid.gui;
 
 import java.io.IOException;
 
@@ -14,23 +14,22 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
-import distributed.systems.grid.gui.GuiMessageInit;
-import distributed.systems.grid.gui.GuiMessageSetup;
-import distributed.systems.grid.gui.GuiMessageToggle;
+import distributed.systems.grid.simulation.GridSetup;
+import distributed.systems.grid.simulation.Simulation;
+import distributed.systems.grid.simulation.SimulationContext;
 
 @WebSocket
-public class SimulationWebSocketHandler {
+public class GuiConnection {
 	private static Gson gson = new Gson();
 	private static JsonParser jsonParser = new JsonParser();
 
 	private Session session;
-	private Simulation simulation;
+	private SimulationContext context;
 
 	/**
-	 * Called if a Websocket connection closes
-	 * 
-	 * @param statusCode statuscode
-	 * @param reason close reason
+	 * Called if a WebSocket connection closes.
+	 * @param statusCode The status code
+	 * @param reason Close reason
 	 */
 	@OnWebSocketClose
 	public void onClose(int statusCode, String reason) {
@@ -38,9 +37,8 @@ public class SimulationWebSocketHandler {
 	}
 
 	/**
-	 * Called if a Websocket error occurs
-	 * 
-	 * @param t the error reason
+	 * Called if a WebSocket error occurs.
+	 * @param t The error reason
 	 */
 	@OnWebSocketError
 	public void onError(Throwable t) {
@@ -48,9 +46,8 @@ public class SimulationWebSocketHandler {
 	}
 
 	/**
-	 * Called if a new Websocket connection is created
-	 * 
-	 * @param session the new session
+	 * Called if a new WebSocket connection is created.
+	 * @param session The new session
 	 */
 	@OnWebSocketConnect
 	public void onConnect(Session session) {
@@ -60,9 +57,8 @@ public class SimulationWebSocketHandler {
 	}
 
 	/**
-	 * Called if a new Websocket packet is received
-	 * 
-	 * @param message the received data
+	 * Called if a new WebSocket packet is received.
+	 * @param message The received data
 	 */
 	@OnWebSocketMessage
 	public void onMessage(String message) {
@@ -75,16 +71,11 @@ public class SimulationWebSocketHandler {
 			switch (messageType) {
 			case "init":
 				GuiMessageInit initMessage = gson.fromJson(message, GuiMessageInit.class);
+				GuiMessageInitSizes sizes = initMessage.sizes;
 
-				this.simulation = new Simulation(initMessage.sizes.schedulers, initMessage.sizes.clusters,
-						initMessage.sizes.workers);
-				GridSetup gridSetup = this.simulation.getGridSetup();
-				GuiMessageSetup gridMessageSetup = new GuiMessageSetup(gridSetup);
-
-				System.out.println(gson.toJson(gridMessageSetup));
-
-				session.getRemote().sendString(gson.toJson(gridMessageSetup));
-				break;
+				this.context = new SimulationContext().register(this);
+				new Simulation(this.context, sizes.schedulers, sizes.clusters, sizes.workers);
+			break;
 			case "setup":
 				System.out.println("setup message received");
 				break;
@@ -99,6 +90,18 @@ public class SimulationWebSocketHandler {
 			}
 		} catch (JsonSyntaxException e) {
 			System.out.println("Incorrect JSON received.");
+		}
+	}
+
+	public void sendSetup(GridSetup setup) {
+		GuiMessageSetup gridMessageSetup = new GuiMessageSetup(setup);
+		System.out.println(gson.toJson(gridMessageSetup));
+		this.send(gson.toJson(gridMessageSetup));
+	}
+
+	private void send(String message) {
+		try {
+			session.getRemote().sendString(message);
 		} catch (IOException e) {
 			System.out.println("Error sending websocket packet.");
 		}

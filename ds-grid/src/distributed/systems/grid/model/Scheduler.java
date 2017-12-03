@@ -2,10 +2,12 @@ package distributed.systems.grid.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
 
 import distributed.systems.grid.data.ActiveJob;
+import distributed.systems.grid.simulation.SimulationContext;
 
 /**
  * A scheduler know where to find all resource managers, other schedulers, and users?
@@ -21,14 +23,19 @@ public class Scheduler implements ISocketCommunicator {
 	}
 
 	private int id;
+	
+	@SuppressWarnings("unused")
+	private SimulationContext context;
+	
 	private Socket socket;
 
-	private ArrayList<Socket> rmSockets; // list of all resourceManagers
-	private ArrayList<ActiveJob> activeJobs; // this is a shared data-structure between schedulers 
+	private List<Socket> rmSockets; // list of all resourceManagers
+	private List<ActiveJob> activeJobs; // this is a shared data-structure between schedulers 
 	private HashMap<Socket, Scheduler.STATUS> schedulers; // schedulers are identified in the system by their sockets
 
-	public Scheduler(int id, ArrayList<Socket> rmSockets) {
+	public Scheduler(SimulationContext context, int id, List<Socket> rmSockets) {
 		this.id = id;
+		this.context = context.register(this);
 		this.socket = new Socket(this);
 		this.rmSockets = rmSockets;
 
@@ -40,7 +47,7 @@ public class Scheduler implements ISocketCommunicator {
 	}
 
 	/* a scheduler should know about all other schedulers */
-	public void setSchedulers(ArrayList<Socket> schedulerSockets) {
+	public void setSchedulers(List<Socket> schedulerSockets) {
 		schedulers = new HashMap<Socket, Scheduler.STATUS>();
 
 		for (int i = 0; i < schedulerSockets.size(); i++) {

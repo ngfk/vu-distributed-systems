@@ -1,9 +1,11 @@
 package distributed.systems.grid.model;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import distributed.systems.grid.data.ActiveJob;
+import distributed.systems.grid.simulation.SimulationContext;
 
 /**
  * The computer that is pushing jobs to our System
@@ -12,19 +14,24 @@ public class User implements ISocketCommunicator, Runnable {
 	public static enum STATUS {
 		IDLE, RUNNING
 	}
-
+	
 	private int id;
+	
+	@SuppressWarnings("unused")
+	private SimulationContext context;
+
 	private STATUS status;
 	private Socket socket;
 
-	private ArrayList<ActiveJob> activeJobs;
-	private ArrayList<Socket> schedulers; // this should only store the active schedulers
+	private List<ActiveJob> activeJobs;
+	private List<Socket> schedulers; // this should only store the active schedulers
 
 	/**
 	 * Every user should at least know about 2 schedulers
 	 */
-	public User(int id, ArrayList<Socket> schedulers) {
+	public User(SimulationContext context, int id, List<Socket> schedulers) {
 		this.id = id;
+		this.context = context.register(this);
 		socket = new Socket(this);
 
 		this.schedulers = schedulers;

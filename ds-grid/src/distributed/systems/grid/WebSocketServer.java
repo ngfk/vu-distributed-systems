@@ -4,7 +4,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
-import distributed.systems.grid.simulation.SimulationWebSocketHandler;
+import distributed.systems.grid.gui.GuiConnection;
 
 public class WebSocketServer implements Runnable {
 	// Websocket server port
@@ -22,7 +22,7 @@ public class WebSocketServer implements Runnable {
 		WebSocketHandler wsHandler = new WebSocketHandler() {
 			@Override
 			public void configure(WebSocketServletFactory factory) {
-				factory.register(SimulationWebSocketHandler.class);
+				factory.register(GuiConnection.class);
 			}
 		};
 		server.setHandler(wsHandler);
