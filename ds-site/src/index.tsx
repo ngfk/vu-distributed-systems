@@ -8,6 +8,7 @@ import { applyMiddleware, compose } from 'redux';
 
 import { ActionMap } from './actions/actions';
 import App from './containers/App';
+import { GridMessageType } from './models/grid-message';
 import { reducer, State } from './reducers/reducer';
 import registerServiceWorker from './registerServiceWorker';
 import { GridConnection, gridMiddleware } from './utils/grid-connection';
@@ -21,11 +22,11 @@ const store = createStore<State, ActionMap>(reducer, enhancer(middleware));
 // Forward messages from back-end to store
 grid.subscribe(message => {
     switch (message.type) {
-        case 'setup':
+        case GridMessageType.Setup:
             store.dispatch('GRID_SETUP', message.grid);
             console.log('setup', message);
             break;
-        case 'queue':
+        case GridMessageType.Queue:
             store.dispatch('GRID_QUEUE', {
                 id: message.nodeId,
                 type: message.nodeType,
@@ -33,7 +34,7 @@ grid.subscribe(message => {
             });
             console.log('jobqueue', message);
             break;
-        case 'state':
+        case GridMessageType.State:
             store.dispatch('GRID_STATE', {
                 id: message.nodeId,
                 type: message.nodeType,

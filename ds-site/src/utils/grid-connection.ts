@@ -5,6 +5,7 @@ import {
     GridMessageInit,
     GridMessageStop,
     GridMessageToggle,
+    GridMessageType,
     IncomingGridMessage,
     OutgoingGridMessage
 } from '../models/grid-message';
@@ -96,8 +97,13 @@ export class GridConnection {
             throw new Error(invalidMessageErr + message.data);
         }
 
+        const accept = [
+            GridMessageType.Setup,
+            GridMessageType.Queue,
+            GridMessageType.State
+        ];
+
         // Throw error on messages with invalid structure.
-        const accept = ['setup', 'state', 'data'];
         if (
             !data ||
             typeof data.type !== 'string' ||
@@ -127,7 +133,7 @@ export const gridMiddleware: GridMiddleware = grid => store => next => action =>
         case 'GRID_INIT': {
             const payload = p as GridActionMap['GRID_INIT'];
             const message: GridMessageInit = {
-                type: 'init',
+                type: GridMessageType.Init,
                 sizes: {
                     schedulers: payload.schedulers,
                     clusters: payload.clusters,
@@ -138,14 +144,14 @@ export const gridMiddleware: GridMiddleware = grid => store => next => action =>
             return next(action);
         }
         case 'GRID_STOP': {
-            const message: GridMessageStop = { type: 'stop' };
+            const message: GridMessageStop = { type: GridMessageType.Stop };
             grid.send(message);
             return next(action);
         }
         case 'GRID_TOGGLE': {
             const payload = p as GridActionMap['GRID_TOGGLE'];
             const message: GridMessageToggle = {
-                type: 'toggle',
+                type: GridMessageType.Toggle,
                 nodeId: payload.id,
                 nodeType: payload.type
             };

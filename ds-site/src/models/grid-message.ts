@@ -2,11 +2,20 @@ import { GridSetup } from './grid';
 import { NodeState, NodeType } from './node';
 
 export interface GridMessage {
-    readonly type: string;
+    readonly type: GridMessageType;
+}
+
+export enum GridMessageType {
+    Init = 'init',
+    Setup = 'setup',
+    State = 'state',
+    Queue = 'queue',
+    Stop = 'stop',
+    Toggle = 'toggle'
 }
 
 export interface GridMessageInit extends GridMessage {
-    readonly type: 'init';
+    readonly type: GridMessageType.Init;
     readonly sizes: {
         readonly schedulers: number;
         readonly clusters: number;
@@ -15,30 +24,30 @@ export interface GridMessageInit extends GridMessage {
 }
 
 export interface GridMessageSetup extends GridMessage {
-    readonly type: 'setup';
+    readonly type: GridMessageType.Setup;
     readonly grid: GridSetup;
 }
 
 export interface GridMessageState extends GridMessage {
-    readonly type: 'state';
+    readonly type: GridMessageType.State;
     readonly nodeId: number;
     readonly nodeType: NodeType;
     readonly nodeState: NodeState;
 }
 
 export interface GridMessageQueue extends GridMessage {
-    readonly type: 'queue';
+    readonly type: GridMessageType.Queue;
     readonly nodeId: number;
     readonly nodeType: NodeType;
     readonly jobs: number;
 }
 
 export interface GridMessageStop extends GridMessage {
-    readonly type: 'stop';
+    readonly type: GridMessageType.Stop;
 }
 
 export interface GridMessageToggle extends GridMessage {
-    readonly type: 'toggle';
+    readonly type: GridMessageType.Toggle;
     readonly nodeId: number;
     readonly nodeType: NodeType;
 }
