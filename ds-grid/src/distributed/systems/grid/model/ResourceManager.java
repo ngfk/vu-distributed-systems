@@ -27,12 +27,16 @@ import distributed.systems.grid.simulation.SimulationContext;
  *  but this will be fixed whenever the workers start sending their I am alive message again.
  */
 public class ResourceManager implements ISocketCommunicator, Runnable {
+	public static enum STATUS {
+		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
+	}
 	
 	private static int NR = 0;
 	
 	private final String id;
 	private final int nr;
-	
+	private static boolean aliveConfirmation = false;
+
 	@SuppressWarnings("unused")
 	private SimulationContext context;
 	
@@ -119,7 +123,7 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		Socket workerSocket = message.senderSocket; // we use the socket as identifier for the worker
 		Worker.STATUS newStatus = Worker.STATUS.values()[message.getValue()]; // hacky way to convert int -> enum
 		workers.put(workerSocket, newStatus);
-
+		aliveConfirmation = true;
 		dequeueJobHandler();
 	}
 
@@ -302,6 +306,17 @@ public class ResourceManager implements ISocketCommunicator, Runnable {
 		for (int i = 0; i < activeJobs.size(); i++) {
 			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
 				sendRequestStatusMessage(activeJobs.get(i).getWorker());
+				// wait a while
+				try {
+					Thread.sleep(100L);
+				} catch (InterruptedException e) {
+					assert (false) : "Simulation runtread was interrupted";
+				}
+				if (aliveConfirmation == false) {
+					workers.put(activeJobs.get(i).getWorker(), Worker.STATUS.DEAD);
+				} else {
+					aliveConfirmation = false;
+				}
 			}
 		}
 		try {

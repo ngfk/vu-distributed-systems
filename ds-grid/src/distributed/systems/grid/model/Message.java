@@ -35,7 +35,7 @@ public class Message {
 	}
 
 	public static enum TYPE {
-		STATUS, REQUEST, CONFIRMATION, RESULT, ACKNOWLEDGEMENT
+		STATUS, REQUEST, CONFIRMATION, RESULT, ACKNOWLEDGEMENT, TOGGLE
 	}
 
 	public Socket senderSocket; // socket that the receiver can use, to reply to the sender. 

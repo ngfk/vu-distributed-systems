@@ -49,8 +49,8 @@ public class Worker implements ISocketCommunicator {
 	}
 
 	/*
-	 * ======================================================================== Send
-	 * messages below
+	 * ======================================================================== 
+	 * Send messages below
 	 * =====================================================================
 	 */
 	/**
@@ -58,8 +58,10 @@ public class Worker implements ISocketCommunicator {
 	 */
 	private void sendJobConfirmationToRM(Socket rmSocket, int value) {
 		assert (rmSocket == this.rmSocket); // workers cannot serve another RM (should never trigger tho)
-		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.CONFIRMATION, value, socket);
-		rmSocket.sendMessage(message);
+		if (this.status != STATUS.DEAD){
+			Message message = new Message(Message.SENDER.WORKER, Message.TYPE.CONFIRMATION, value, socket);
+			rmSocket.sendMessage(message);
+		}
 	}
 
 	/**
@@ -68,8 +70,10 @@ public class Worker implements ISocketCommunicator {
 	private void sendJobResultToRM() {
 		assert (activeJob != null);
 		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.RESULT, activeJob.getJob().getId(), socket);
-		message.attachJob(activeJob.getJob());
-		activeJob.getScheduler().sendMessage(message);
+		if (this.status != STATUS.DEAD){
+			message.attachJob(activeJob.getJob());
+			activeJob.getScheduler().sendMessage(message);
+		}
 	}
 
 	/*
@@ -79,7 +83,9 @@ public class Worker implements ISocketCommunicator {
 	 */
 
 	private void workerStatusHandler(Message message) {
-
+		if (this.status != STATUS.DEAD);{
+			rmSocket.sendMessage(getAliveMessage()); // update status to RM
+		}
 	}
 
 	/**
@@ -90,8 +96,10 @@ public class Worker implements ISocketCommunicator {
 	 */
 	private void jobResultConfirmationHandler(Message message) {
 		activeJob = null;
-		status = Worker.STATUS.AVAILABLE;
-		rmSocket.sendMessage(getAliveMessage()); // update status to RM
+		if (this.status != STATUS.DEAD);{
+			status = Worker.STATUS.AVAILABLE;
+			rmSocket.sendMessage(getAliveMessage()); // update status to RM
+		}
 	}
 
 	/**
@@ -109,11 +117,29 @@ public class Worker implements ISocketCommunicator {
 		executeActiveJob();
 	}
 
+	private void killedHandler(Message message) {
+		System.out.println(">> Worker got killed");
+		status = STATUS.DEAD;
+	}
+
+	/**
+	 * Revives a dead worker node by setting status to available and sends an alive message to RM
+	 * 
+	 * TODO: maybe continue job?
+	 */
+
+	private void resurrectedHandler(Message message) {
+		System.out.println(">> Worker got resurrected");
+		status = STATUS.AVAILABLE;
+		rmSocket.sendMessage(getAliveMessage());
+	}
+	
 	/**
 	 * Types of messages we expect here:
 	 * 
 	 * - From a resourceManager requesting a job computation 
 	 * - From a resourceManager confirmation of a job result
+	 * - From the frontend toggle to dead/alive
 	 */
 	public void onMessageReceived(Message message) {
 		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
@@ -124,7 +150,16 @@ public class Worker implements ISocketCommunicator {
 				jobResultConfirmationHandler(message);
 			}
 			if (message.getType() == Message.TYPE.STATUS) {
-				workerStatusHandler(message);
+				if (this.status != STATUS.DEAD)
+					workerStatusHandler(message);
+			}
+		} else {
+			if (message.getType() == Message.TYPE.TOGGLE) {
+				if(this.status == STATUS.DEAD) {
+					resurrectedHandler(message);
+				} else {
+					killedHandler(message);
+				}
 			}
 		}
 	}
