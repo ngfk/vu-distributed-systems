@@ -17,6 +17,7 @@ public class ActiveJob {
 	Socket scheduler; // the scheduler that received the job
 
 	Socket worker; // the worker that is currently responsible for this job
+//	STATUS workerStatus; // the worker status
 
 	HashMap<Socket, STATUS> schedulers;
 
@@ -55,6 +56,14 @@ public class ActiveJob {
 	public void setStatus(Job.STATUS value) {
 		this.status = value;
 	}
+	
+//	public void setWorkerStatus(STATUS status) {
+//		this.workerStatus = status;
+//	}
+//	
+//	public STATUS getWorkerStatus() {
+//		return this.workerStatus;
+//	}
 
 	public Socket getWorker() {
 		return this.worker;

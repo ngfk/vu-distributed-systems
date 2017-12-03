@@ -30,7 +30,6 @@ public class ResourceManager extends GridNode implements Runnable {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
 	
-	private static boolean aliveConfirmation = false;
 	public ArrayList<Worker> workerObjects; // this is only to help drawing the interface!
 	private ArrayList<ActiveJob> activeJobs;
 
@@ -110,10 +109,9 @@ public class ResourceManager extends GridNode implements Runnable {
 	/**
 	 * request job status from worker
 	 */
-	// private void sendPingRequestMessage(Socket worker, int jobId) { // renaming maybe? 
-	private void sendRequestStatusMessage(Socket worker) {
+	private void sendPingRequestMessage(Socket worker, int jobId) { 
 		if (status != STATUS.DEAD ) {
-			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.PING, 0, socket);
 			worker.sendMessage(message);
 		}
 	}
@@ -129,7 +127,6 @@ public class ResourceManager extends GridNode implements Runnable {
 		Socket workerSocket = message.senderSocket; // we use the socket as identifier for the worker
 		Worker.STATUS newStatus = Worker.STATUS.values()[message.getValue()]; // hacky way to convert int -> enum
 		workers.put(workerSocket, newStatus);
-		aliveConfirmation = true;
 		dequeueJobHandler();
 	}
 
@@ -151,12 +148,14 @@ public class ResourceManager extends GridNode implements Runnable {
 	/**
 	 * When the job gets confirmed by the worker (meaning that he is going to work on it)
 	 *  - update the jobstatus to RUNNING
+	 *  - update lastseen of worker
 	 *  - update worker to BUSY
 	 */
 	private void jobConfirmationHandler(Message message) {
 		workers.put(message.senderSocket, Worker.STATUS.BUSY); // removes the reserved status
 		ActiveJob aj = getActiveJob(message.getValue());
 		aj.setStatus(Job.STATUS.RUNNING);
+		message.senderSocket.isAlive(); // update alive time of worker
 	}
 
 	/**
@@ -169,7 +168,9 @@ public class ResourceManager extends GridNode implements Runnable {
 		aj.setStatus(Job.STATUS.CLOSED);
 		aj.setJob(message.getJob());
 
-		sendJobResultConfirmationToWorker(message.senderSocket, jobId);
+		workers.put(message.senderSocket, Worker.STATUS.AVAILABLE); // set worker status to available for RM 
+		sendJobResultConfirmationToWorker(message.senderSocket, jobId); // worker will update its internal status after receiving this message
+		
 		sendJobResultToCluster(aj);
 	}
 
@@ -180,6 +181,15 @@ public class ResourceManager extends GridNode implements Runnable {
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
 		activeJobs.remove(aj);
+	}
+	
+	/**
+	 * when we receive the 'hey im still alive message from a worker'
+	 *  - update the last seen status of worker
+	 */
+	public void jobPingResultHandler(Message message) {
+		Socket worker = message.senderSocket;
+		worker.isAlive();		
 	}
 
 	/**
@@ -203,6 +213,10 @@ public class ResourceManager extends GridNode implements Runnable {
 			}
 			if (message.getType() == Message.TYPE.RESULT) {
 				jobResultHandler(message);
+				return;
+			}
+			if (message.getType() == Message.TYPE.PING) {
+				jobPingResultHandler(message);
 				return;
 			}
 		}
@@ -247,6 +261,7 @@ public class ResourceManager extends GridNode implements Runnable {
 
 			aj.setStatus(Job.STATUS.RUNNING);
 			workers.put(availableWorker, Worker.STATUS.RESERVED);
+			availableWorker.isAlive(); // say that this second was the last time we say the worker alive (so that it does not pollute the network too fast)
 			aj.setWorker(availableWorker);
 			sendJobRequestToWorker(availableWorker, aj.getJob());
 		}
@@ -298,21 +313,17 @@ public class ResourceManager extends GridNode implements Runnable {
 		if (status != STATUS.DEAD ) {
 			for (int i = 0; i < activeJobs.size(); i++) {
 				if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
-					sendRequestStatusMessage(activeJobs.get(i).getWorker());
-
-					// wait a while
-					try {
-						Thread.sleep(100L);
-					} catch (InterruptedException e) {
-						assert (false) : "Simulation runtread was interrupted";
-					}
-
-					// not sure if this will work with multiple workers / what about the scenario where multiple workers appear to be dead
-					if (aliveConfirmation == false) {
-						workers.put(activeJobs.get(i).getWorker(), Worker.STATUS.DEAD);
+					Socket worker = activeJobs.get(i).getWorker();
+					
+					// we did not hear from this guy for a loong time
+					if (!worker.lastAliveIn(500L)) { // declare worker dead
+						workers.put(worker, Worker.STATUS.DEAD);
 						tryExecuteJob(activeJobs.get(i));
-					} else {
-						aliveConfirmation = false;
+					}
+					
+					// did not hear from this worker in a slightly long time
+					else if (!worker.lastAliveIn(200L)) { // request ping message
+						sendPingRequestMessage(worker, activeJobs.get(i).getJob().getId());
 					}
 				}
 			}

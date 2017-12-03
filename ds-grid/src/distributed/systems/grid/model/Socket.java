@@ -8,7 +8,28 @@ import java.util.Random;
  */
 public class Socket {
 	private ISocketCommunicator node;
-	private int lastReply;
+	private long lastAlive;
+	
+	
+	/**
+	 * We use this to check whenever we last got a response over this socket
+	 *  & thus to determine whenever a node has died;
+	 *  - This function updates the lastAlive timestamp of a node.
+	 */
+	public void isAlive() {
+		this.lastAlive = System.currentTimeMillis();
+	}
+	
+	/**
+	 * flexible function to check if a node is dead
+	 * @param delta - how long we should wait 
+	 */
+	public boolean lastAliveIn(long delta) {
+		if (this.lastAlive < System.currentTimeMillis() - delta) {
+			return false;
+		}
+		return true;
+	}
 
 	Socket(ISocketCommunicator node) {
 		this.node = node; // the node where the message is going through
@@ -34,6 +55,9 @@ public class Socket {
 		}).start();
 	}
 
+	/**
+	 * sends the messages in a non-blocking way with some delay (simulate traffic on a network)
+	 */
 	public void asyncSend(Message message) {
 		Random rand = new Random();
 		int delay = rand.nextInt(50);

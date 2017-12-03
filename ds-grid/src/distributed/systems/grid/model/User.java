@@ -57,6 +57,7 @@ public class User extends GridNode implements Runnable {
 
 	public void toggleState() {
 		// NOOP, the user's state cannot be toggled.
+		// cool story bro
 	}
 
 	/* loop that produces the jobs */

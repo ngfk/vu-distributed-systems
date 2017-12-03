@@ -28,6 +28,7 @@ import java.util.ArrayList;
  *	worker	| confirmation	| x > 1	| the worker confirms the request to the RM of jobId: x
  *	worker	| result			| x > 1	| the worker returns result of the job to the resourceManager
  *	worker	| status			| x		| this worker is updating its status to the ResourceManager (also used to register a worker with the resourceManager)
+ *	worker	| ping			| x > 1	| the worker is saying that it is busy with jobId: x (if -> 0 it means that it forgot about the job ?)
  */
 public class Message {
 	public static enum SENDER {

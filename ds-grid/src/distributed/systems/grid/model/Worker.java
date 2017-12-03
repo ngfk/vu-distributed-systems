@@ -67,6 +67,18 @@ public class Worker extends GridNode implements ISocketCommunicator {
 			activeJob.getScheduler().sendMessage(message);
 		}
 	}
+	
+	/**
+	 * Reply to the PING job status request from RM
+	 */
+	private void sendJobStatusToRM(Socket rmSocket) {
+		int jobId = 0;
+		if (activeJob != null) {
+			jobId = activeJob.getJob().getId();
+		}
+		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.PING, jobId, socket);
+		rmSocket.sendMessage(message);
+	}
 
 	/*
 	 * ========================================================================
@@ -74,10 +86,12 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 * =====================================================================
 	 */
 
-//	private void jobStatusRequestHandler(Message message) { // renaming stuff
-	private void workerStatusHandler(Message message) {
-		if (this.status != STATUS.DEAD);{
-			rmSocket.sendMessage(getAliveMessage()); // update status to RM
+	/**
+	 * when the rm asks the job status (more like a 'hey are you still alive message?')
+	 */
+	private void jobStatusRequestHandler(Message message) {
+		if (this.status != STATUS.DEAD){
+			sendJobStatusToRM(message.senderSocket);
 		}
 	}
 
@@ -118,22 +132,18 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 * - From the frontend toggle to dead/alive
 	 */
 	public void onMessageReceived(Message message) {
-		if (status != STATUS.DEAD ) {
-			if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
-				if (message.getType() == Message.TYPE.REQUEST) {
-					jobRequestHandler(message);
-				}
-				if (message.getType() == Message.TYPE.CONFIRMATION) {
-					jobResultConfirmationHandler(message);
-				}
-				if (message.getType() == Message.TYPE.STATUS) {
-					workerStatusHandler(message);
-				}
-				
-				// TODO
-				if (message.getType() == Message.TYPE.PING) {
-					// jobStatusRequestHandler(message);
-				}
+		if (status == STATUS.DEAD ) {
+			return; //dead people cannot receive messages yo.
+		}
+		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
+			if (message.getType() == Message.TYPE.REQUEST) {
+				jobRequestHandler(message);
+			}
+			if (message.getType() == Message.TYPE.CONFIRMATION) {
+				jobResultConfirmationHandler(message);
+			}
+			if (message.getType() == Message.TYPE.PING) {
+				 jobStatusRequestHandler(message);
 			}
 		}
 	}
