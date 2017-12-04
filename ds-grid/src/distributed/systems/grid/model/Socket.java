@@ -11,6 +11,11 @@ public class Socket {
 	private long lastAlive;
 	
 	
+	Socket(ISocketCommunicator node) {
+		this.node = node; // the node where the message is going through
+		isAlive();
+	}
+		
 	/**
 	 * We use this to check whenever we last got a response over this socket
 	 *  & thus to determine whenever a node has died;
@@ -30,9 +35,9 @@ public class Socket {
 		}
 		return true;
 	}
-
-	Socket(ISocketCommunicator node) {
-		this.node = node; // the node where the message is going through
+	
+	public void debugLastAliveIn(long delta) {
+		System.out.printf("%d >= %d - %d\n", this.lastAlive, System.currentTimeMillis(), delta);
 	}
 
 	public String getId() {

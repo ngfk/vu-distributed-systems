@@ -19,8 +19,10 @@ import java.util.ArrayList;
  * scheduler	| result			| x > 1	| the scheduler sends a message to another scheduler saying that it has received the result of jobId: x
  * scheduler	|acknowledgement| x > 1	| the scheduler sends a confirmation to another scheduler saying that it noted that he had received the results of jobId: x
  * scheduler	| request		| x > 1	| the scheduler sends a message to the resourceManager, asking it to execute this job.
+ * scheduler	| ping			| 0		| the scheduler sends a message to the resourceManager, asking it to verify it is alive
  * 	- - - --- --- --- - - -
  * resourceM	| confirmation	| x > 1	| the rm confirms to the scheduler that it has received jobId: x
+ * resourceM	| status			| x		| the rm confirms to the scheduler that it is still living
  * resourceM	| request		| x > 1	| the rm requests to a worker to compute job with jobId: x
  * resourceM	| confirmation	| x > 1	| the rm confirms to the worker that it has received the results of jobId: x
  * resourceM	| ping			| x > 1	| the rm requests the worker to send a status update of the job its currently working on 

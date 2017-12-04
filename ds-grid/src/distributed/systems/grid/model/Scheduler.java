@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import distributed.systems.grid.data.ActiveJob;
+import distributed.systems.grid.model.ResourceManager.STATUS;
 import distributed.systems.grid.simulation.SimulationContext;
 
 /**
@@ -134,11 +135,17 @@ public class Scheduler extends GridNode {
 	public void sendJobResultToUser(Socket user, Job job) {
 		if(status != STATUS.DEAD){
 			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
-			user.sendMessage(message);
 			message.attachJob(job);
+			user.sendMessage(message);
 		}
 	}
 
+	public void sendPingRequestMessage(Socket recv) {
+		if(status != STATUS.DEAD){
+			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.PING, 0, socket);
+			recv.sendMessage(message);
+		}
+	}
 	/* ========================================================================
 	 * 	Receive messages below
 	 * ===================================================================== */
@@ -258,33 +265,39 @@ public class Scheduler extends GridNode {
 	 * - ...
 	 */
 	public void onMessageReceived(Message message) {
-		if(status != STATUS.DEAD){
-			if (message.getSender() == Message.SENDER.USER) {
-				if (message.getType() == Message.TYPE.REQUEST) {
-					jobRequestHandler(message);
-				}
-				if (message.getType() == Message.TYPE.CONFIRMATION) {
-					userJobResultConfirmationHandler(message);
-				}
+		if (status == STATUS.DEAD){
+			// cant do mahn
+		}
+		
+		message.senderSocket.isAlive(); // notice that the sender (whoever it may be is still alive)
+		if (message.getSender() == Message.SENDER.USER) {
+			if (message.getType() == Message.TYPE.REQUEST) {
+				jobRequestHandler(message);
 			}
-			if (message.getSender() == Message.SENDER.SCHEDULER) {
-				if (message.getType() == Message.TYPE.REQUEST) {
-					schedulerJobRequestHandler(message);
-				}
-				if (message.getType() == Message.TYPE.CONFIRMATION) {
-					schedulerJobConfirmationHandler(message);
-				}
-				if (message.getType() == Message.TYPE.RESULT) {
-					schedulerJobResultConfirmationHandler(message);
-				}
-				if (message.getType() == Message.TYPE.ACKNOWLEDGEMENT) {
-					schedulerJobResultAcknowledgementHandler(message);
-				}
+			if (message.getType() == Message.TYPE.CONFIRMATION) {
+				userJobResultConfirmationHandler(message);
 			}
-			if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
-				if (message.getType() == Message.TYPE.RESULT) {
-					schedulerJobResultHandler(message);
-				}
+		}
+		if (message.getSender() == Message.SENDER.SCHEDULER) {
+			if (message.getType() == Message.TYPE.REQUEST) {
+				schedulerJobRequestHandler(message);
+			}
+			if (message.getType() == Message.TYPE.CONFIRMATION) {
+				schedulerJobConfirmationHandler(message);
+			}
+			if (message.getType() == Message.TYPE.RESULT) {
+				schedulerJobResultConfirmationHandler(message);
+			}
+			if (message.getType() == Message.TYPE.ACKNOWLEDGEMENT) {
+				schedulerJobResultAcknowledgementHandler(message);
+			}
+		}
+		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
+			if (message.getType() == Message.TYPE.RESULT) {
+				schedulerJobResultHandler(message);
+			}
+			if (message.getType() == Message.TYPE.STATUS) {
+				// only used to register the isAlive field, but that happens at the beginning of this function :)
 			}
 		}
 	}
@@ -295,21 +308,43 @@ public class Scheduler extends GridNode {
 	public void handleExecuteJob(ActiveJob aj) {
 		System.out.println(">> Scheduler got job confirmations from all other schedulers -> starting to process job");
 		sendJobConfirmationToUser(aj.getJob().getUser(), aj.getJob().getId());
-		executeJob(aj.getJob());
+		executeJob(aj);
 	}
 
-	public void executeJob(Job job) {
+	public void executeJob(ActiveJob aj) {
 		if(status != STATUS.DEAD){
+			Job job = aj.getJob();
 			Random rand = new Random();
-			int schedulerId = rand.nextInt(rmSockets.size());
+			
+			ArrayList<Socket> activeRmSockets = getActiveRms();
+			int r = activeRmSockets.size();
+			int schedulerId = rand.nextInt(r);
 
-			Socket rm = rmSockets.get(schedulerId);
-
+			Socket rm = activeRmSockets.get(schedulerId);
+			aj.setRm(rm);
+			aj.setStatus(Job.STATUS.RUNNING);
+			
 			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
 			message.attachJob(job);
 
 			rm.sendMessage(message);
 		}
+	}
+	
+	/**
+	 * the resource managers that verify that they are alive periodically 
+	 */
+	public ArrayList<Socket> getActiveRms(){
+		ArrayList<Socket> activeRms = new ArrayList<Socket>();
+		
+		for (int i = 0; i < rmSockets.size(); i++) {
+			Socket rmSocket = rmSockets.get(i);
+			
+			if (rmSocket.lastAliveIn(200L)) {
+				activeRms.add(rmSocket);
+			}
+		}
+		return activeRms;
 	}
 
 	public ActiveJob getActiveJob(int jobId) {
@@ -328,6 +363,9 @@ public class Scheduler extends GridNode {
 		return true;
 	}
 
+	/**
+	 * get the un-dead schedulers
+	 */
 	public ArrayList<Socket> getActiveSchedulers() {
 		ArrayList<Socket> activeSchedulers = new ArrayList<Socket>();
 		for (Entry<Socket, STATUS> entry : schedulers.entrySet()) {
@@ -338,5 +376,43 @@ public class Scheduler extends GridNode {
 		}
 		assert (activeSchedulers.size() > 0);
 		return activeSchedulers;
+	}
+	
+	/**
+	 * The thread that checks
+	 *  - if the schedulers are still alive // TODO
+	 *  - if the resourceManagers are still alive
+	 * 
+	 *  = SchedulerOnDie -> ?
+	 *  = ResourceManagerOnDie -> ?
+	 */
+	public void run() { // TODO thread needs to be ran.. I think this should also be wrapped in a infinite loop
+		// check RM's for active jobs
+		for (int i = 0; i < activeJobs.size(); i++) {
+			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
+				Socket rmSocket = activeJobs.get(i).getRm();
+				
+				if (!rmSocket.lastAliveIn(500L)) { 
+					// declare rm dead
+					executeJob(activeJobs.get(i));
+				}
+			}
+		}
+		
+		// update inactive RM's
+		for (int i = 0; i < rmSockets.size(); i++) {
+			Socket rmSocket = rmSockets.get(i);
+			if (!rmSocket.lastAliveIn(200L)) {
+				// request status message // TODO
+				sendPingRequestMessage(rmSocket);
+			}
+		}
+		
+		try {
+			Thread.sleep(100L);
+		} catch (InterruptedException e) {
+			assert (false) : "Simulation runtread was interrupted";
+		}
+		
 	}
 }

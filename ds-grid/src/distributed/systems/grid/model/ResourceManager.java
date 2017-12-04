@@ -69,6 +69,16 @@ public class ResourceManager extends GridNode implements Runnable {
 	 * 	Send messages below
 	 * ===================================================================== */
 	/**
+	 * Check if the worker is still dead by sending it a status request message
+	 */
+	private void sendRequestStatusMessage(Socket worker) {
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
+			worker.sendMessage(message);
+		}
+	}
+	
+	/**
 	 * confirmation message to the scheduler that it received the job correctly
 	 */
 	private void sendJobConfirmationToScheduler(Socket scheduler, int value) {
@@ -120,13 +130,19 @@ public class ResourceManager extends GridNode implements Runnable {
 			worker.sendMessage(message);
 		}
 	}
+	
+	private void sendStatus(Socket recv) {
+		if (status != STATUS.DEAD ) {
+			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 1, socket);
+			recv.sendMessage(message);
+		}
+	}
 
 	/* ========================================================================
 	 * 	Receive messages below
 	 * ===================================================================== */
 	/**
-	 * onMessageReceive handler (1)
-	 * NOTE also adds the worker to the resourceManager if it was not already in there :-)
+	 * Whenever the worker comes back to life (or updates it status for any other reason)
 	 */
 	private void workerStatusHandler(Message message) {
 		Socket workerSocket = message.senderSocket; // we use the socket as identifier for the worker
@@ -191,10 +207,17 @@ public class ResourceManager extends GridNode implements Runnable {
 	/**
 	 * when we receive the 'hey im still alive message from a worker'
 	 *  - update the last seen status of worker
+	 *  
+	 *  - actually not necessary since it happens in the onMessageReceived func.
 	 */
 	public void jobPingResultHandler(Message message) {
 		Socket worker = message.senderSocket;
 		worker.isAlive();		
+	}
+	
+	public void pingRequestHandler(Message message) {
+		Socket scheduler = message.senderSocket;
+		sendStatus(scheduler);
 	}
 
 	/**
@@ -207,6 +230,8 @@ public class ResourceManager extends GridNode implements Runnable {
 	 * - Message from a scheduler saying that he received the result of the Job correctly 
 	 */
 	public void onMessageReceived(Message message) {
+		
+		message.senderSocket.isAlive(); // notice that sender is still alive
 		if (message.getSender() == Message.SENDER.WORKER) {
 			if (message.getType() == Message.TYPE.STATUS) {
 				workerStatusHandler(message);
@@ -233,6 +258,10 @@ public class ResourceManager extends GridNode implements Runnable {
 			}
 			if (message.getType() == Message.TYPE.CONFIRMATION) {
 				jobResultConfirmationHandler(message);
+				return;
+			}
+			if (message.getType() == Message.TYPE.PING) {
+				pingRequestHandler(message);
 				return;
 			}
 		} 
@@ -314,14 +343,29 @@ public class ResourceManager extends GridNode implements Runnable {
 	public ArrayList<Worker> getWorkers() {
 		return workerObjects;
 	}
+	
+	public ArrayList<Socket> getDeadWorkers(){
+		ArrayList<Socket> deadWorkers = new ArrayList<Socket>();
+		
+		for (Entry<Socket, Worker.STATUS> entry : workers.entrySet()) {
+			Worker.STATUS status = entry.getValue();
+			if (status == Worker.STATUS.DEAD) {
+				deadWorkers.add(entry.getKey());
+			}
+		}
+		
+		return deadWorkers;
+	}
 
 	/**
 	 * The thread that checks if the workers are still alive
 	 *  - WorkerOnDie -> send active job to other worker.
+	 *  
+	 *  TODO. check if workers are alive again
 	 */
 	public void run() {
-		// for every active-unfinished job periodically check if the worker is still alive
 		if (status != STATUS.DEAD ) {
+			// for every active-unfinished job periodically check if the worker is still alive
 			for (int i = 0; i < activeJobs.size(); i++) {
 				if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
 					Socket worker = activeJobs.get(i).getWorker();
@@ -338,6 +382,16 @@ public class ResourceManager extends GridNode implements Runnable {
 					}
 				}
 			}
+			// for every dead worker, check if he's alive again
+			ArrayList<Socket> deadWorkers = getDeadWorkers();
+			for (int i = 0; i < deadWorkers.size(); i++) {
+				Socket worker = deadWorkers.get(i);
+				if (!worker.lastAliveIn(10000L)) { // check if worker is alive only after long intervals
+					worker.isAlive();
+					sendRequestStatusMessage(worker);
+				}
+			}
+			
 			try {
 				Thread.sleep(100L);
 			} catch (InterruptedException e) {

@@ -45,6 +45,12 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 * Send messages below
 	 * =====================================================================
 	 */
+	private void workerStatusHandler(Socket rmSocket) {
+		if (this.status != STATUS.DEAD);{
+			rmSocket.sendMessage(getAliveMessage()); // update status to RM
+		}
+	}
+	
 	/**
 	 * send job confirm message to RM
 	 */
@@ -143,6 +149,9 @@ public class Worker extends GridNode implements ISocketCommunicator {
 			}
 			if (message.getType() == Message.TYPE.PING) {
 				 jobStatusRequestHandler(message);
+			}
+			if (message.getType() == Message.TYPE.STATUS) {
+				workerStatusHandler(message.senderSocket);
 			}
 		}
 	}
