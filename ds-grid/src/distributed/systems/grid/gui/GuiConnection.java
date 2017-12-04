@@ -69,13 +69,11 @@ public class GuiConnection {
 			String messageType = jsonObj.get("type").toString().replaceAll("\"", "");
 
 			switch (messageType) {
-			case "init":
-				GuiMessageInit initMessage = gson.fromJson(message, GuiMessageInit.class);
-				GuiMessageInitSizes sizes = initMessage.sizes;
+			case "start":
+				GuiMessageStart startMessage = gson.fromJson(message, GuiMessageStart.class);
+				GuiMessageStartSizes sizes = startMessage.sizes;
 				this.context = new SimulationContext().register(this);
 				new Simulation(this.context, sizes.schedulers, sizes.clusters, sizes.workers);
-				break;
-			case "start":
 				this.context.startSimulation();
 				break;
 			case "stop":

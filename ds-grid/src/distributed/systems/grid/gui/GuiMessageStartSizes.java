@@ -1,6 +1,6 @@
 package distributed.systems.grid.gui;
 
-public class GuiMessageInitSizes {
+public class GuiMessageStartSizes {
 	public int schedulers;
 	public int clusters;
 	public int workers;
