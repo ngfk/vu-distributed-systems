@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { GridActionCreators } from '../actions/grid.actions';
+import { debounce } from '../utils/debounce';
 
 export interface SettingsProps {
     actions: GridActionCreators;
@@ -19,9 +20,23 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
         workers: 2
     };
 
+    private debouncedGridInit: GridActionCreators['gridInit'];
+
     constructor(props: SettingsProps) {
         super(props);
         this.state = this.initialState;
+
+        // Create debounced version of gridInit.
+        const { gridInit } = this.props.actions;
+        this.debouncedGridInit = debounce(gridInit, 1500);
+
+        // Render grid with initial state.
+        const { schedulers, clusters, workers } = this.state;
+        gridInit({
+            schedulers,
+            clusters,
+            workers: workers * 32
+        });
     }
 
     public render(): JSX.Element {
@@ -78,6 +93,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
             ...state,
             schedulers: event.target.value
         }));
+        this.renderGrid();
     };
 
     private onClusters = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,6 +102,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
             ...state,
             clusters: event.target.value
         }));
+        this.renderGrid();
     };
 
     private onWorkers = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,6 +111,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
             ...state,
             workers: event.target.value
         }));
+        this.renderGrid();
     };
 
     private onReset = () => {
@@ -102,10 +120,19 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
 
     private onStart = () => {
         const { schedulers, clusters, workers } = this.state;
-        this.props.actions.gridInit({
+        this.props.actions.gridStart({
             schedulers,
             clusters,
             workers: workers * 32
         });
     };
+
+    private renderGrid(): void {
+        const { schedulers, clusters, workers } = this.state;
+        this.debouncedGridInit({
+            schedulers,
+            clusters,
+            workers: workers * 32
+        });
+    }
 }

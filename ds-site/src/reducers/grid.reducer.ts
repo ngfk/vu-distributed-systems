@@ -1,74 +1,57 @@
 import { createReducer } from '@ngfk/ts-redux';
 
 import { GridActionMap } from '../actions/grid.actions';
-import { Cluster, Grid, Scheduler } from '../models/grid';
+import { Cluster, Grid, Scheduler, Worker } from '../models/grid';
 import { NodeState } from '../models/node';
 import { adjustNode } from '../utils/grid-adjuster';
+import { uuid } from '../utils/uuid';
 
 const initial: Grid = {
-    user: 'f9391477-16b2-5e31-9b30-d3483c9a0607',
-    schedulerJobs: 6,
-    schedulers: [
-        {
-            id: '0df164f4-feee-511e-859d-b2b0d35c31a2',
-            state: NodeState.Busy,
-            jobs: 2
-        },
-        {
-            id: '382e60e7-5e8e-54bb-a403-1e447a0443a0',
-            state: NodeState.Online,
-            jobs: 0
-        },
-        {
-            id: 'b675ef6e-1546-527a-98ec-7d8c73292294',
-            state: NodeState.Online,
-            jobs: 0
-        },
-        {
-            id: '0881fd93-bb79-5f62-bc34-3add5b92952f',
-            state: NodeState.Online,
-            jobs: 0
-        },
-        {
-            id: '8d1fbca8-381f-5b8e-bd0c-617677688040',
-            state: NodeState.Online,
-            jobs: 0
-        }
-    ],
-    clusters: [
-        {
-            resourceManager: {
-                id: 'f688d367-1126-5b64-bce4-4ff699de0bb3',
-                state: NodeState.Online,
-                jobs: 4
-            },
-            workers: [
-                {
-                    id: '7020eb53-4f19-5b50-9bec-70a508513216',
-                    state: NodeState.Online,
-                    jobs: 0
-                }
-            ]
-        },
-        {
-            resourceManager: {
-                id: 'dc172a37-a024-59ab-bbb1-c6fbe9cf60b6',
-                state: NodeState.Offline,
-                jobs: 4
-            },
-            workers: [
-                {
-                    id: '75c55640-8c36-5c5a-826e-0286777ff204',
-                    state: NodeState.Online,
-                    jobs: 0
-                }
-            ]
-        }
-    ]
+    user: '',
+    schedulerJobs: 0,
+    schedulers: [],
+    clusters: []
 };
 
 export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
-    GRID_INIT: state => state,
+    GRID_INIT: (state, payload) => {
+        const schedulers: Scheduler[] = [];
+        for (let s = 0; s < payload.schedulers; s++) {
+            schedulers.push({
+                id: uuid(),
+                state: NodeState.Online,
+                jobs: 0
+            });
+        }
+
+        const clusters: Cluster[] = [];
+        for (let c = 0; c < payload.clusters; c++) {
+            const workers: Worker[] = [];
+            for (let w = 0; w < payload.workers; w++) {
+                workers.push({
+                    id: uuid(),
+                    state: NodeState.Online,
+                    jobs: 0
+                });
+            }
+
+            clusters.push({
+                resourceManager: {
+                    id: uuid(),
+                    state: NodeState.Online,
+                    jobs: 0
+                },
+                workers
+            });
+        }
+
+        return {
+            user: uuid(),
+            schedulerJobs: 0,
+            schedulers,
+            clusters
+        };
+    },
     GRID_SETUP: (state, payload) => {
         const schedulers: Scheduler[] = payload.schedulers.map(id => ({
             id,

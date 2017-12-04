@@ -8,7 +8,7 @@ export interface GridActionMap {
     GRID_SETUP: GridSetup;
     GRID_STATE: { id: string; type: NodeType; state: NodeState };
     GRID_QUEUE: { id: string; type: NodeType; jobs: number };
-    GRID_START: void;
+    GRID_START: { schedulers: number; clusters: number; workers: number };
     GRID_STOP: void;
     GRID_TOGGLE: { id: string; type: NodeType };
 }

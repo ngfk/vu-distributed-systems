@@ -15,15 +15,6 @@ export enum GridMessageType {
     Toggle = 'toggle'
 }
 
-export interface GridMessageInit extends GridMessage {
-    readonly type: GridMessageType.Init;
-    readonly sizes: {
-        readonly schedulers: number;
-        readonly clusters: number;
-        readonly workers: number;
-    };
-}
-
 export interface GridMessageSetup extends GridMessage {
     readonly type: GridMessageType.Setup;
     readonly grid: GridSetup;
@@ -45,6 +36,11 @@ export interface GridMessageQueue extends GridMessage {
 
 export interface GridMessageStart extends GridMessage {
     readonly type: GridMessageType.Start;
+    readonly sizes: {
+        readonly schedulers: number;
+        readonly clusters: number;
+        readonly workers: number;
+    };
 }
 
 export interface GridMessageStop extends GridMessage {
@@ -61,7 +57,6 @@ export interface GridMessageToggle extends GridMessage {
  * Only includes the grid messages that are going to the grid back-end.
  */
 export type OutgoingGridMessage =
-    | GridMessageInit
     | GridMessageStart
     | GridMessageStop
     | GridMessageToggle;
