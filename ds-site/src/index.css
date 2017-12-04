@@ -138,9 +138,8 @@ body {
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
-    margin: 5px;
-    padding: 5px;
-    width: 150px;
+    margin: 2px;
+    width: 250px;
     border: 1px solid black;
     border-radius: 5px;
 }
@@ -149,7 +148,7 @@ body {
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
-    padding: 8px;
+    padding: 5px;
 }
 
 .resource-manager {
@@ -167,10 +166,9 @@ body {
 
 .worker {
     margin: 1px;
-    width: 15px;
-    height: 15px;
+    width: 11px;
+    height: 11px;
     border: 1px solid black;
-    border-radius: 5px;
 }
 
 .worker .worker__label {

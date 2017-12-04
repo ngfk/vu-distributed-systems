@@ -25,9 +25,7 @@ export class Worker extends React.Component<WorkerProps> {
                 className="worker"
                 onClick={this.handleClick}
                 style={{ backgroundColor }}
-            >
-                <div className="worker__label">W</div>
-            </div>
+            />
         );
     }
 
