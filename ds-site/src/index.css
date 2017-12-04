@@ -1,12 +1,8 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: sans-serif;
-}
-
-.input-form {
-    display: flex;
-    justify-content: space-around;
+    font-family: Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+        'Helvetica Neue', sans-serif;
 }
 
 .app {
@@ -27,6 +23,51 @@ body {
 
 .app .app__intro {
     font-size: large;
+}
+
+.app .app__settings {
+    display: flex;
+    justify-content: center;
+    text-align: left;
+}
+
+.settings {
+    padding: 10px;
+    background-color: #222;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 5px;
+}
+
+.settings .settings__sliders {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-end;
+}
+
+.settings .settings__sliders > * {
+    display: flex;
+}
+
+.settings .settings__label {
+    text-align: left;
+    width: 85px;
+}
+
+.settings .settings__value {
+    width: 40px;
+    text-align: right;
+    padding-right: 5px;
+}
+
+.settings .settings__buttons {
+    padding: 10px 5px 0 0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.settings .settings__buttons > * {
+    margin: 0 2px;
 }
 
 .grid {
