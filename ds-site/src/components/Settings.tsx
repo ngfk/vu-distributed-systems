@@ -28,7 +28,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
 
         // Create debounced version of gridInit.
         const { gridInit } = this.props.actions;
-        this.debouncedGridInit = debounce(gridInit, 1500);
+        this.debouncedGridInit = debounce(gridInit, 200);
 
         // Render grid with initial state.
         const { schedulers, clusters, workers } = this.state;
@@ -88,35 +88,30 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
     }
 
     private onSchedulers = (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.persist();
-        this.setState(state => ({
-            ...state,
-            schedulers: parseInt(event.target.value, 10)
-        }));
-        this.renderGrid();
+        const { clusters, workers } = this.state;
+        const schedulers = parseInt(event.target.value, 10);
+        this.setState(state => ({ ...state, schedulers }));
+        this.renderGrid(schedulers, clusters, workers);
     };
 
     private onClusters = (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.persist();
-        this.setState(state => ({
-            ...state,
-            clusters: parseInt(event.target.value, 10)
-        }));
-        this.renderGrid();
+        const { schedulers, workers } = this.state;
+        const clusters = parseInt(event.target.value, 10);
+        this.setState(state => ({ ...state, clusters }));
+        this.renderGrid(schedulers, clusters, workers);
     };
 
     private onWorkers = (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.persist();
-        this.setState(state => ({
-            ...state,
-            workers: parseInt(event.target.value, 10)
-        }));
-        this.renderGrid();
+        const { schedulers, clusters } = this.state;
+        const workers = parseInt(event.target.value, 10);
+        this.setState(state => ({ ...state, workers }));
+        this.renderGrid(schedulers, clusters, workers);
     };
 
     private onReset = () => {
+        const { schedulers, clusters, workers } = this.initialState;
         this.setState(this.initialState);
-        setTimeout(() => this.renderGrid(), 0);
+        this.renderGrid(schedulers, clusters, workers);
     };
 
     private onStart = () => {
@@ -128,8 +123,11 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
         });
     };
 
-    private renderGrid(): void {
-        const { schedulers, clusters, workers } = this.state;
+    private renderGrid(
+        schedulers: number,
+        clusters: number,
+        workers: number
+    ): void {
         this.debouncedGridInit({
             schedulers,
             clusters,

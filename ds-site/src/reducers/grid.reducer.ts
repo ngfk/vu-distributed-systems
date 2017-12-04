@@ -3,7 +3,6 @@ import { createReducer } from '@ngfk/ts-redux';
 import { GridActionMap } from '../actions/grid.actions';
 import { Cluster, Grid, Scheduler, Worker } from '../models/grid';
 import { adjustNode } from '../utils/grid-adjuster';
-import { uuid } from '../utils/uuid';
 
 const initial: Grid = {
     user: '',
@@ -17,7 +16,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
         const schedulers: Scheduler[] = [];
         for (let s = 0; s < payload.schedulers; s++) {
             schedulers.push({
-                id: uuid(),
+                id: 's' + s,
                 jobCount: 0,
                 isDown: false
             });
@@ -28,7 +27,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
             const workers: Worker[] = [];
             for (let w = 0; w < payload.workers; w++) {
                 workers.push({
-                    id: uuid(),
+                    id: 'c' + c + 'w' + w,
                     jobCount: 0,
                     isDown: false
                 });
@@ -36,7 +35,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
 
             clusters.push({
                 resourceManager: {
-                    id: uuid(),
+                    id: 'c' + c,
                     jobCount: 0,
                     isDown: false
                 },
@@ -45,7 +44,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
         }
 
         return {
-            user: uuid(),
+            user: 'u',
             schedulerJobs: 0,
             schedulers,
             clusters
