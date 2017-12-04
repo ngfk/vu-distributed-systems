@@ -1,5 +1,3 @@
-import { NodeState } from './node';
-
 export interface Grid {
     readonly user: string;
     readonly schedulerJobs: number;
@@ -9,8 +7,8 @@ export interface Grid {
 
 export interface Scheduler {
     readonly id: string;
-    readonly state: NodeState;
-    readonly jobs: number;
+    readonly jobCount: number;
+    readonly isDown: boolean;
 }
 
 export interface Cluster {
@@ -20,14 +18,14 @@ export interface Cluster {
 
 export interface ResourceManager {
     readonly id: string;
-    readonly state: NodeState;
-    readonly jobs: number;
+    readonly jobCount: number;
+    readonly isDown: boolean;
 }
 
 export interface Worker {
     readonly id: string;
-    readonly state: NodeState;
-    readonly jobs: number;
+    readonly jobCount: number;
+    readonly isDown: boolean;
 }
 
 export interface GridSetup {

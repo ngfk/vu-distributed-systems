@@ -32,13 +32,6 @@ grid.subscribe(message => {
                 jobs: message.jobs
             });
             break;
-        case GridMessageType.State:
-            store.dispatch('GRID_STATE', {
-                id: message.nodeId,
-                type: message.nodeType,
-                state: message.nodeState
-            });
-            break;
     }
 });
 
