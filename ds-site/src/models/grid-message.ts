@@ -6,7 +6,6 @@ export interface GridMessage {
 }
 
 export enum GridMessageType {
-    Init = 'init',
     Setup = 'setup',
     State = 'state',
     Queue = 'queue',
