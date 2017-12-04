@@ -65,7 +65,7 @@ export class GridConnection {
     private connect(url: string): void {
         this.websocket = new WebSocket(url);
         this.websocket.onclose = () => this.reconnect(url);
-        this.websocket.onopen = () => (this.reconnectDelay = BASE_DELAY);
+        this.websocket.onopen = () => this.onOpen();
         this.websocket.onmessage = message => this.onMessage(message);
     }
 
@@ -79,6 +79,22 @@ export class GridConnection {
             this.reconnectDelay *= 1.2;
             this.connect(url);
         }, this.reconnectDelay);
+
+        window.onunload = () => {};
+    }
+
+    /**
+     * Whenever a new connection is opened the re-connection delay can be reset
+     * and the window's onUnload handler is configured to send a stop message
+     * to the grid back-end.
+     */
+    private onOpen(): void {
+        this.reconnectDelay = BASE_DELAY;
+
+        window.onunload = () => {
+            const message: GridMessageStop = { type: GridMessageType.Stop };
+            this.send(message);
+        };
     }
 
     /**
