@@ -41,6 +41,7 @@ public class User extends GridNode implements Runnable {
 		if (this.thread != null) this.stop();
 		this.running = true;
 		this.thread = new Thread(this);
+		this.thread.run();
 	}
 	
 	public void stop() {
@@ -68,7 +69,7 @@ public class User extends GridNode implements Runnable {
 			executeJob(job);
 
 			try {
-				Thread.sleep(100L);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				assert (false) : "Simulation runtread was interrupted";
 			}
