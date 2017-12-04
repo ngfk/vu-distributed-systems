@@ -1,12 +1,11 @@
 import { ActionFactory } from '@ngfk/ts-redux';
 
 import { GridSetup } from '../models/grid';
-import { NodeState, NodeType } from '../models/node';
+import { NodeType } from '../models/node';
 
 export interface GridActionMap {
     GRID_INIT: { schedulers: number; clusters: number; workers: number };
     GRID_SETUP: GridSetup;
-    GRID_STATE: { id: string; type: NodeType; state: NodeState };
     GRID_QUEUE: { id: string; type: NodeType; jobs: number };
     GRID_START: { schedulers: number; clusters: number; workers: number };
     GRID_STOP: void;

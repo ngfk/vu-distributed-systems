@@ -1,16 +1,11 @@
-import { NodeState } from '../models/node';
-
-export const getNodeColor = (state: NodeState): string => {
-    switch (state) {
-        case NodeState.Online:
-            return 'green';
-        case NodeState.Offline:
-            return 'red';
-        case NodeState.Busy:
-            return 'orange';
-        case NodeState.Unreachable:
-            return 'gray';
-        default:
-            return 'purple';
+export const getNodeColor = (jobCount: number, isDown: boolean): string => {
+    if (isDown === true) {
+        return 'red';
     }
+    if (jobCount === 0) {
+        return 'green';
+    } else if (jobCount > 0) {
+        return 'orange';
+    }
+    return 'purple';
 };

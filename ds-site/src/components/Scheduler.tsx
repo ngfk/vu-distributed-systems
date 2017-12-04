@@ -12,8 +12,8 @@ export interface SchedulerProps {
 
 export class Scheduler extends React.Component<SchedulerProps> {
     public render(): JSX.Element {
-        const { state } = this.props.model;
-        const backgroundColor = getNodeColor(state);
+        const { jobCount, isDown } = this.props.model;
+        const backgroundColor = getNodeColor(jobCount, isDown);
 
         return (
             <div

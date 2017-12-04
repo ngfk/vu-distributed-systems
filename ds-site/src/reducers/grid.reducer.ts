@@ -2,7 +2,6 @@ import { createReducer } from '@ngfk/ts-redux';
 
 import { GridActionMap } from '../actions/grid.actions';
 import { Cluster, Grid, Scheduler, Worker } from '../models/grid';
-import { NodeState } from '../models/node';
 import { adjustNode } from '../utils/grid-adjuster';
 import { uuid } from '../utils/uuid';
 
@@ -19,8 +18,8 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
         for (let s = 0; s < payload.schedulers; s++) {
             schedulers.push({
                 id: uuid(),
-                state: NodeState.Online,
-                jobs: 0
+                jobCount: 0,
+                isDown: false
             });
         }
 
@@ -30,16 +29,16 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
             for (let w = 0; w < payload.workers; w++) {
                 workers.push({
                     id: uuid(),
-                    state: NodeState.Online,
-                    jobs: 0
+                    jobCount: 0,
+                    isDown: false
                 });
             }
 
             clusters.push({
                 resourceManager: {
                     id: uuid(),
-                    state: NodeState.Online,
-                    jobs: 0
+                    jobCount: 0,
+                    isDown: false
                 },
                 workers
             });
@@ -55,20 +54,20 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
     GRID_SETUP: (state, payload) => {
         const schedulers: Scheduler[] = payload.schedulers.map(id => ({
             id,
-            state: NodeState.Online,
-            jobs: 0
+            isDown: false,
+            jobCount: 0
         }));
 
         const clusters: Cluster[] = payload.clusters.map(gcs => ({
             resourceManager: {
                 id: gcs.resourceManager,
-                state: NodeState.Online,
-                jobs: 0
+                isDown: false,
+                jobCount: 0
             },
             workers: gcs.workers.map(id => ({
                 id,
-                state: NodeState.Online,
-                jobs: 0
+                isDown: false,
+                jobCount: 0
             }))
         }));
 
@@ -79,26 +78,15 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
             clusters
         };
     },
-    GRID_STATE: (state, payload) => {
-        return adjustNode(state, payload.id, payload.type, node => ({
-            ...node,
-            state: payload.state
-        }));
-    },
     GRID_QUEUE: (state, payload) => {
         return adjustNode(state, payload.id, payload.type, node => {
-            if (
-                node.state === NodeState.Offline ||
-                node.state === NodeState.Unreachable
-            ) {
+            if (node.isDown === true) {
                 return node;
             }
 
-            const nodeState = node.jobs > 0 ? NodeState.Busy : NodeState.Online;
             return {
                 ...node,
-                state: nodeState,
-                jobs: payload.jobs
+                jobCount: payload.jobs
             };
         });
     },
@@ -106,12 +94,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
     GRID_STOP: state => state,
     GRID_TOGGLE: (state, payload) => {
         return adjustNode(state, payload.id, payload.type, node => {
-            const nodeState =
-                node.state === NodeState.Offline
-                    ? NodeState.Online
-                    : NodeState.Offline;
-
-            return { ...node, state: nodeState };
+            return { ...node, isDown: !node.isDown };
         });
     }
 });

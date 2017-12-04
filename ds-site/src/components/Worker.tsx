@@ -2,23 +2,23 @@ import * as React from 'react';
 
 import { GridActionCreators } from '../actions/grid.actions';
 import { Worker as WorkerModel } from '../models/grid';
-import { NodeState, NodeType } from '../models/node';
+import { NodeType } from '../models/node';
 import { getNodeColor } from '../utils/node-color';
 
 export interface WorkerProps {
     model: WorkerModel;
-    clusterState: NodeState;
+    clusterState: boolean;
     gridToggle: GridActionCreators['gridToggle'];
 }
 
 export class Worker extends React.Component<WorkerProps> {
     public render(): JSX.Element {
-        const state =
-            this.props.clusterState === NodeState.Offline
-                ? NodeState.Unreachable
-                : this.props.model.state;
+        const { model } = this.props;
+        const unreachable = this.props.clusterState;
 
-        const backgroundColor = getNodeColor(state);
+        const backgroundColor = unreachable
+            ? 'gray'
+            : getNodeColor(model.jobCount, model.isDown);
 
         return (
             <div

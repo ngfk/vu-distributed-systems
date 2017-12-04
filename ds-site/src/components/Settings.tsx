@@ -49,8 +49,8 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
                         <div className="settings__label">Schedulers</div>
                         <input
                             type="range"
-                            min="2"
-                            max="10"
+                            min={2}
+                            max={10}
                             value={schedulers}
                             onChange={this.onSchedulers}
                         />
@@ -60,8 +60,8 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
                         <div className="settings__label">Clusters</div>
                         <input
                             type="range"
-                            min="10"
-                            max="50"
+                            min={10}
+                            max={50}
                             value={clusters}
                             onChange={this.onClusters}
                         />
@@ -71,8 +71,8 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
                         <div className="settings__label">Workers</div>
                         <input
                             type="range"
-                            min="1"
-                            max="32"
+                            min={1}
+                            max={32}
                             value={workers}
                             onChange={this.onWorkers}
                         />
@@ -91,7 +91,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
         event.persist();
         this.setState(state => ({
             ...state,
-            schedulers: event.target.value
+            schedulers: parseInt(event.target.value, 10)
         }));
         this.renderGrid();
     };
@@ -100,7 +100,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
         event.persist();
         this.setState(state => ({
             ...state,
-            clusters: event.target.value
+            clusters: parseInt(event.target.value, 10)
         }));
         this.renderGrid();
     };
@@ -109,13 +109,14 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
         event.persist();
         this.setState(state => ({
             ...state,
-            workers: event.target.value
+            workers: parseInt(event.target.value, 10)
         }));
         this.renderGrid();
     };
 
     private onReset = () => {
         this.setState(this.initialState);
+        setTimeout(() => this.renderGrid(), 0);
     };
 
     private onStart = () => {

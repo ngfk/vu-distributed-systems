@@ -18,7 +18,7 @@ export class Cluster extends React.Component<ClusterProps> {
             <Worker
                 key={worker.id}
                 model={worker}
-                clusterState={model.resourceManager.state}
+                clusterState={model.resourceManager.isDown}
                 gridToggle={gridToggle}
             />
         ));
