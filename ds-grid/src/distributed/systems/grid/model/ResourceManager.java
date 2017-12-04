@@ -44,17 +44,11 @@ public class ResourceManager extends GridNode implements Runnable {
 	 */
 	private HashMap<Socket, Worker.STATUS> workers;
 
-	public ResourceManager(SimulationContext context, List<Socket> workers) {
+	public ResourceManager(SimulationContext context) {
 		super(context, GridNode.TYPE.RESOURCE_MANAGER);
 
 		this.status = STATUS.AVAILABLE;
-		this.workers = new HashMap<Socket, Worker.STATUS>();
 		this.activeJobs = new ArrayList<ActiveJob>();
-		this.workerObjects = new ArrayList<Worker>();
-		
-		for (int i = 0; i < workers.size(); i ++) {
-			this.workers.put(workers.get(i), Worker.STATUS.AVAILABLE);
-		}
 	}
 
 	public void toggleState() {
@@ -332,14 +326,26 @@ public class ResourceManager extends GridNode implements Runnable {
 		return null;
 	}
 
-	public void addWorker(Worker worker) {
-		workerObjects.add(worker);
+//	public void addWorker(Worker worker) {
+//		workerObjects.add(worker);
+//	}
+	
+	
+	public void setWorkerSockets(List<Socket> workers) {
+		this.workers = new HashMap<Socket, Worker.STATUS>();
+		for (int i = 0; i < workers.size(); i ++) {
+			this.workers.put(workers.get(i), Worker.STATUS.AVAILABLE);
+		}
 	}
 	
+	
+	// only for GUI
 	public void setWorkers(ArrayList<Worker> workers) {
+		this.workerObjects = new ArrayList<Worker>();
 		workerObjects = workers;
 	}
 
+	// only for GUI
 	public ArrayList<Worker> getWorkers() {
 		return workerObjects;
 	}

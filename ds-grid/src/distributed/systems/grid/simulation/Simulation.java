@@ -24,22 +24,23 @@ public class Simulation {
 		List<Socket> rmSockets = new ArrayList<Socket>();
 
 		List<ResourceManager> resourceManagers = new ArrayList<ResourceManager>();
-		for (int i = 0; i < clusterCount; i++) {
+		for (int i = 0; i < clusterCount; i++) {			
+			ResourceManager newResourceManager = new ResourceManager(this.context);
+			resourceManagers.add(newResourceManager);
+			Socket rmSocket = newResourceManager.getSocket();
+			rmSockets.add(rmSocket);
+			
+			// CREATE WORKERS AFTER RM :)
 			List<Socket> workerSockets = new ArrayList<Socket>();
 			ArrayList<Worker> workers = new ArrayList<Worker>();
-			
 			for (int j = 0; j < workerCount; j++) {
 				Worker worker = new Worker(this.context);
 				workers.add(worker);
 				workerSockets.add(worker.getSocket());
 			}
 			
-			ResourceManager newResourceManager = new ResourceManager(this.context, workerSockets);
+			newResourceManager.setWorkerSockets(workerSockets);
 			newResourceManager.setWorkers(workers); // only for GUI
-			resourceManagers.add(newResourceManager);
-			
-			Socket rmSocket = newResourceManager.getSocket();
-			rmSockets.add(rmSocket);
 		}
 
 		List<Scheduler> schedulers = new ArrayList<Scheduler>();
