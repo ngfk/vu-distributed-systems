@@ -3,6 +3,7 @@ import { Middleware } from 'redux';
 import { GridActionMap } from '../actions/grid.actions';
 import {
     GridMessageInit,
+    GridMessageStart,
     GridMessageStop,
     GridMessageToggle,
     GridMessageType,
@@ -140,6 +141,11 @@ export const gridMiddleware: GridMiddleware = grid => store => next => action =>
                     workers: payload.workers
                 }
             };
+            grid.send(message);
+            return next(action);
+        }
+        case 'GRID_START': {
+            const message: GridMessageStart = { type: GridMessageType.Start };
             grid.send(message);
             return next(action);
         }

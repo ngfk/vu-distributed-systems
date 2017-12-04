@@ -97,6 +97,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
 
         return state;
     },
+    GRID_START: state => state,
     GRID_STOP: state => state,
     GRID_TOGGLE: (state, payload) => {
         return adjustNode(state, payload.id, payload.type, node => {

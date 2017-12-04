@@ -16,6 +16,7 @@ export interface AppProps {
 }
 
 export interface AppState {
+    initialized: boolean;
     clusterCount: number;
     workerCount: number;
     schedulerCount: number;
@@ -26,6 +27,7 @@ class App extends React.Component<AppProps, AppState> {
         super(props);
 
         this.state = {
+            initialized: false,
             clusterCount: 0,
             workerCount: 0,
             schedulerCount: 0
@@ -64,6 +66,11 @@ class App extends React.Component<AppProps, AppState> {
                             onChange={this.onChangeWorker}
                         />
                         <input type="submit" value="Send!" />
+                        <input
+                            type="button"
+                            value="Start!"
+                            onClick={this.onStart}
+                        />
                     </div>
                 </form>
                 <Grid model={grid} actions={actions} />
@@ -84,14 +91,32 @@ class App extends React.Component<AppProps, AppState> {
     };
 
     private onSubmit = (event: React.FormEvent<any>) => {
+        this.initialize();
+        event.preventDefault();
+    };
+
+    private onStart = () => {
+        if (!this.state.initialized) {
+            this.setState(state => ({
+                ...state,
+                schedulerCount: state.schedulerCount || 5,
+                clusterCount: state.clusterCount || 20,
+                workerCount: state.workerCount || 50
+            }));
+            this.initialize();
+        }
+
+        this.props.actions.gridStart(void 0);
+    };
+
+    private initialize(): void {
         this.props.actions.gridInit({
             schedulers: this.state.schedulerCount,
             clusters: this.state.clusterCount,
             workers: this.state.workerCount
         });
-
-        event.preventDefault();
-    };
+        this.setState({ initialized: true });
+    }
 }
 
 const mapStateToProps = (state: State) => ({

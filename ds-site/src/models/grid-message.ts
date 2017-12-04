@@ -10,6 +10,7 @@ export enum GridMessageType {
     Setup = 'setup',
     State = 'state',
     Queue = 'queue',
+    Start = 'start',
     Stop = 'stop',
     Toggle = 'toggle'
 }
@@ -42,6 +43,10 @@ export interface GridMessageQueue extends GridMessage {
     readonly jobs: number;
 }
 
+export interface GridMessageStart extends GridMessage {
+    readonly type: GridMessageType.Start;
+}
+
 export interface GridMessageStop extends GridMessage {
     readonly type: GridMessageType.Stop;
 }
@@ -57,6 +62,7 @@ export interface GridMessageToggle extends GridMessage {
  */
 export type OutgoingGridMessage =
     | GridMessageInit
+    | GridMessageStart
     | GridMessageStop
     | GridMessageToggle;
 
