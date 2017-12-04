@@ -17,16 +17,18 @@ export class Grid extends React.Component<GridProps> {
 
         const users = <User />;
 
-        const schedulers = model.schedulers.map(scheduler => (
+        const schedulers = model.schedulers.map((scheduler, i) => (
             <Scheduler
+                nr={i}
                 key={scheduler.id}
                 model={scheduler}
                 gridToggle={actions.gridToggle}
             />
         ));
 
-        const clusters = model.clusters.map(cluster => (
+        const clusters = model.clusters.map((cluster, i) => (
             <Cluster
+                nr={i}
                 key={cluster.resourceManager.id}
                 model={cluster}
                 gridToggle={actions.gridToggle}
@@ -36,7 +38,7 @@ export class Grid extends React.Component<GridProps> {
         return (
             <div className="grid">
                 <div className="grid__users">{users}</div>
-                <div>Job queue: {model.schedulerJobs}</div>
+                <div>Jobs: {model.jobCount}</div>
                 <div className="grid__schedulers-container">
                     <div className="grid__schedulers">{schedulers}</div>
                 </div>

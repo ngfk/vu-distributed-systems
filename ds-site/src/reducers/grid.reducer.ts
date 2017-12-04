@@ -5,8 +5,8 @@ import { Cluster, Grid, Scheduler, Worker } from '../models/grid';
 import { adjustNode } from '../utils/grid-adjuster';
 
 const initial: Grid = {
-    user: '',
-    schedulerJobs: 0,
+    user: '0',
+    jobCount: 0,
     schedulers: [],
     clusters: []
 };
@@ -44,8 +44,8 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
         }
 
         return {
-            user: 'u',
-            schedulerJobs: 0,
+            user: '0',
+            jobCount: 0,
             schedulers,
             clusters
         };
@@ -72,7 +72,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
 
         return {
             user: payload.user,
-            schedulerJobs: 0,
+            jobCount: 0,
             schedulers,
             clusters
         };

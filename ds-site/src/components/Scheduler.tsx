@@ -6,13 +6,15 @@ import { NodeType } from '../models/node';
 import { getNodeColor } from '../utils/node-color';
 
 export interface SchedulerProps {
+    nr: number;
     model: SchedulerModel;
     gridToggle: GridActionCreators['gridToggle'];
 }
 
 export class Scheduler extends React.Component<SchedulerProps> {
     public render(): JSX.Element {
-        const { jobCount, isDown } = this.props.model;
+        const { nr, model } = this.props;
+        const { jobCount, isDown } = model;
         const backgroundColor = getNodeColor(jobCount, isDown);
 
         return (
@@ -21,7 +23,8 @@ export class Scheduler extends React.Component<SchedulerProps> {
                 onClick={this.handleClick}
                 style={{ backgroundColor }}
             >
-                <div className="scheduler__label">Scheduler</div>
+                <div className="scheduler__label">scheduler #{nr}</div>
+                <div className="scheduler__jobs">{jobCount}</div>
             </div>
         );
     }

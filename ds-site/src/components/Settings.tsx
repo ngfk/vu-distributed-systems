@@ -28,7 +28,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
 
         // Create debounced version of gridInit.
         const { gridInit } = this.props.actions;
-        this.debouncedGridInit = debounce(gridInit, 200);
+        this.debouncedGridInit = debounce(gridInit, 500);
 
         // Render grid with initial state.
         const { schedulers, clusters, workers } = this.state;

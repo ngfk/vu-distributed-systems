@@ -6,13 +6,14 @@ import { Cluster as ClusterModel } from '../models/grid';
 import { ResourceManager } from './ResourceManager';
 
 export interface ClusterProps {
+    nr: number;
     model: ClusterModel;
     gridToggle: GridActionCreators['gridToggle'];
 }
 
 export class Cluster extends React.Component<ClusterProps> {
     public render(): JSX.Element {
-        const { model, gridToggle } = this.props;
+        const { nr, model, gridToggle } = this.props;
 
         const workers = model.workers.map(worker => (
             <Worker
@@ -27,6 +28,7 @@ export class Cluster extends React.Component<ClusterProps> {
             <div className="cluster">
                 <div>Cluster</div>
                 <ResourceManager
+                    nr={nr}
                     key={model.resourceManager.id}
                     model={model.resourceManager}
                     gridToggle={gridToggle}

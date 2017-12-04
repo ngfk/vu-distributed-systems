@@ -1,6 +1,6 @@
 export interface Grid {
     readonly user: string;
-    readonly schedulerJobs: number;
+    readonly jobCount: number;
     readonly schedulers: Scheduler[];
     readonly clusters: Cluster[];
 }

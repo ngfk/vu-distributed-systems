@@ -6,13 +6,15 @@ import { NodeType } from '../models/node';
 import { getNodeColor } from '../utils/node-color';
 
 export interface ResourceManagerProps {
+    nr: number;
     model: ResourceManagerModel;
     gridToggle: GridActionCreators['gridToggle'];
 }
 
 export class ResourceManager extends React.Component<ResourceManagerProps> {
     public render(): JSX.Element {
-        const { jobCount, isDown } = this.props.model;
+        const { nr, model } = this.props;
+        const { jobCount, isDown } = model;
         const backgroundColor = getNodeColor(jobCount, isDown);
 
         return (
@@ -22,9 +24,9 @@ export class ResourceManager extends React.Component<ResourceManagerProps> {
                 style={{ backgroundColor }}
             >
                 <div className="resource-manager__label">
-                    <div>Resource manager</div>
-                    <div>Job queue: {jobCount}</div>
+                    resource-manager #{nr}
                 </div>
+                <div className="resource-manager__jobs">{jobCount}</div>
             </div>
         );
     }
