@@ -2,18 +2,38 @@ import { createReducer } from '@ngfk/ts-redux';
 
 import { GridActionMap } from '../actions/grid.actions';
 import { Cluster, Grid, Scheduler } from '../models/grid';
-import { NodeState, NodeType } from '../models/node';
-import { adjustNode, adjustResourceManager } from '../utils/grid-adjuster';
+import { NodeState } from '../models/node';
+import { adjustNode } from '../utils/grid-adjuster';
 
 const initial: Grid = {
     user: 'f9391477-16b2-5e31-9b30-d3483c9a0607',
     schedulerJobs: 6,
     schedulers: [
-        { id: '0df164f4-feee-511e-859d-b2b0d35c31a2', state: NodeState.Busy },
-        { id: '382e60e7-5e8e-54bb-a403-1e447a0443a0', state: NodeState.Online },
-        { id: 'b675ef6e-1546-527a-98ec-7d8c73292294', state: NodeState.Online },
-        { id: '0881fd93-bb79-5f62-bc34-3add5b92952f', state: NodeState.Online },
-        { id: '8d1fbca8-381f-5b8e-bd0c-617677688040', state: NodeState.Online }
+        {
+            id: '0df164f4-feee-511e-859d-b2b0d35c31a2',
+            state: NodeState.Busy,
+            jobs: 2
+        },
+        {
+            id: '382e60e7-5e8e-54bb-a403-1e447a0443a0',
+            state: NodeState.Online,
+            jobs: 0
+        },
+        {
+            id: 'b675ef6e-1546-527a-98ec-7d8c73292294',
+            state: NodeState.Online,
+            jobs: 0
+        },
+        {
+            id: '0881fd93-bb79-5f62-bc34-3add5b92952f',
+            state: NodeState.Online,
+            jobs: 0
+        },
+        {
+            id: '8d1fbca8-381f-5b8e-bd0c-617677688040',
+            state: NodeState.Online,
+            jobs: 0
+        }
     ],
     clusters: [
         {
@@ -25,7 +45,8 @@ const initial: Grid = {
             workers: [
                 {
                     id: '7020eb53-4f19-5b50-9bec-70a508513216',
-                    state: NodeState.Online
+                    state: NodeState.Online,
+                    jobs: 0
                 }
             ]
         },
@@ -38,7 +59,8 @@ const initial: Grid = {
             workers: [
                 {
                     id: '75c55640-8c36-5c5a-826e-0286777ff204',
-                    state: NodeState.Online
+                    state: NodeState.Online,
+                    jobs: 0
                 }
             ]
         }
@@ -50,7 +72,8 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
     GRID_SETUP: (state, payload) => {
         const schedulers: Scheduler[] = payload.schedulers.map(id => ({
             id,
-            state: NodeState.Online
+            state: NodeState.Online,
+            jobs: 0
         }));
 
         const clusters: Cluster[] = payload.clusters.map(gcs => ({
@@ -61,7 +84,8 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
             },
             workers: gcs.workers.map(id => ({
                 id,
-                state: NodeState.Online
+                state: NodeState.Online,
+                jobs: 0
             }))
         }));
 
@@ -79,23 +103,21 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
         }));
     },
     GRID_QUEUE: (state, payload) => {
-        if (payload.type === NodeType.Scheduler) {
-            return { ...state, schedulerJobs: payload.jobs };
-        }
+        return adjustNode(state, payload.id, payload.type, node => {
+            if (
+                node.state === NodeState.Offline ||
+                node.state === NodeState.Unreachable
+            ) {
+                return node;
+            }
 
-        if (payload.type === NodeType.ResourceManager) {
-            const clusters = adjustResourceManager(
-                state.clusters,
-                payload.id,
-                resourceManager => ({
-                    ...resourceManager,
-                    jobs: payload.jobs
-                })
-            );
-            return { ...state, clusters };
-        }
-
-        return state;
+            const nodeState = node.jobs > 0 ? NodeState.Busy : NodeState.Online;
+            return {
+                ...node,
+                state: nodeState,
+                jobs: payload.jobs
+            };
+        });
     },
     GRID_START: state => state,
     GRID_STOP: state => state,

@@ -24,7 +24,6 @@ grid.subscribe(message => {
     switch (message.type) {
         case GridMessageType.Setup:
             store.dispatch('GRID_SETUP', message.grid);
-            console.log('setup', message);
             break;
         case GridMessageType.Queue:
             store.dispatch('GRID_QUEUE', {
@@ -32,7 +31,6 @@ grid.subscribe(message => {
                 type: message.nodeType,
                 jobs: message.jobs
             });
-            console.log('jobqueue', message);
             break;
         case GridMessageType.State:
             store.dispatch('GRID_STATE', {
@@ -40,7 +38,6 @@ grid.subscribe(message => {
                 type: message.nodeType,
                 state: message.nodeState
             });
-            console.log('state', message);
             break;
     }
 });

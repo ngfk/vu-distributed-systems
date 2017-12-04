@@ -10,6 +10,7 @@ export interface Grid {
 export interface Scheduler {
     readonly id: string;
     readonly state: NodeState;
+    readonly jobs: number;
 }
 
 export interface Cluster {
@@ -26,6 +27,7 @@ export interface ResourceManager {
 export interface Worker {
     readonly id: string;
     readonly state: NodeState;
+    readonly jobs: number;
 }
 
 export interface GridSetup {
