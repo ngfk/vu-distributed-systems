@@ -108,7 +108,8 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 */
 	private void jobResultConfirmationHandler(Message message) {
 		activeJob = null;
-		if (this.status != STATUS.DEAD);{
+		this.sendQueue(0);
+		if (this.status != STATUS.DEAD) {
 			status = Worker.STATUS.AVAILABLE;
 //			message.senderSocket.sendMessage(getAliveMessage()); // update status to RM
 		}
@@ -126,6 +127,7 @@ public class Worker extends GridNode implements ISocketCommunicator {
 		sendJobConfirmationToRM(message.senderSocket, message.getValue());
 		activeJob = new ActiveJob(message.getJob(), message.senderSocket, null); // activeJob.scheduler here is a resourceManager
 		activeJob.setStatus(Job.STATUS.RUNNING);
+		this.sendQueue(1);
 		executeActiveJob();
 	}
 

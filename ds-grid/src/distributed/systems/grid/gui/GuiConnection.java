@@ -72,18 +72,18 @@ public class GuiConnection {
 			case "init":
 				GuiMessageInit initMessage = gson.fromJson(message, GuiMessageInit.class);
 				GuiMessageInitSizes sizes = initMessage.sizes;
-
 				this.context = new SimulationContext().register(this);
 				new Simulation(this.context, sizes.schedulers, sizes.clusters, sizes.workers);
-			break;
-			case "setup":
-				System.out.println("setup message received");
+				break;
+			case "start":
+				this.context.startSimulation();
+				break;
+			case "stop":
+				this.context.stopSimulation();
 				break;
 			case "toggle":
-				System.out.println("toggle message received");
 				GuiMessageToggle toggleMessage = gson.fromJson(message, GuiMessageToggle.class);
-
-				System.out.println("Toggling node id " + toggleMessage.nodeId + " of type " + toggleMessage.nodeType);
+				this.context.toggleNode(toggleMessage.nodeId, toggleMessage.nodeType);
 				break;
 			default:
 				break;
@@ -94,13 +94,23 @@ public class GuiConnection {
 	}
 
 	public void sendSetup(GridSetup setup) {
-		GuiMessageSetup gridMessageSetup = new GuiMessageSetup(setup);
-		System.out.println(gson.toJson(gridMessageSetup));
-		this.send(gson.toJson(gridMessageSetup));
+		GuiMessageSetup guiMessageSetup = new GuiMessageSetup(setup);
+		this.send(gson.toJson(guiMessageSetup));
 	}
 
+	public void sendState(String nodeId, NodeType nodeType, NodeState nodeState) {
+		GuiMessageState guiMessageState = new GuiMessageState(nodeId, nodeType, nodeState);
+		this.send(gson.toJson(guiMessageState));
+	}
+
+	public void sendQueue(String nodeId, NodeType nodeType, int jobCount) {
+		GuiMessageQueue guiMessageQueue = new GuiMessageQueue(nodeId, nodeType, jobCount);
+		this.send(gson.toJson(guiMessageQueue));
+	}
+	
 	private void send(String message) {
 		try {
+			System.out.println(message);
 			session.getRemote().sendString(message);
 		} catch (IOException e) {
 			System.out.println("Error sending websocket packet.");

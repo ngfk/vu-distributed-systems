@@ -16,7 +16,7 @@ import distributed.systems.grid.model.Worker;
 
 /**
  * The SimulationContext class is used to hold the grid state for
- * synchronization with the interface front-end.
+* synchronization with the interface front-end.
  */
 public class SimulationContext {
 	
@@ -112,15 +112,14 @@ public class SimulationContext {
 	 * @return The simulation context
 	 */
 	public SimulationContext register(GridNode node) {
-		if (node instanceof User) {
+		if (node instanceof User)
 			return this.register((User) node);
-		} else if (node instanceof Scheduler) {
+		else if (node instanceof Scheduler)
 			return this.register((Scheduler) node);
-		} else if (node instanceof ResourceManager) {
+		else if (node instanceof ResourceManager)
 			return this.register((ResourceManager) node);
-		} else if (node instanceof Worker) {
+		else if (node instanceof Worker)
 			return this.register((Worker) node);
-		}
 
 		return this;
 	}
@@ -140,11 +139,11 @@ public class SimulationContext {
 	 * @return The node index
 	 */
 	public int getNr(GridNode node) {
-		if (node instanceof Scheduler) {
+		if (node instanceof Scheduler)
 			return this.schedulers.indexOf(node);
-		} else if (node instanceof ResourceManager) {
+		else if (node instanceof ResourceManager)
 			return this.resourceManagers.indexOf(node);
-		} else if (node instanceof Worker) {
+		else if (node instanceof Worker) {
 			for (int i = 0; i < this.resourceManagers.size(); i++) {
 				ResourceManager rm = this.resourceManagers.get(i);
 				List<Worker> workers = this.workers.get(rm.getId());
@@ -231,11 +230,14 @@ public class SimulationContext {
 	 * @param nodeType The type of the node that has a change in state
 	 * @param nodeState The new state of the node
 	 */
-	public void sendState(String nodeId, NodeType nodeType, NodeState nodeState) {
-		// TODO 
-		// - no-op if no connection was registered
-		// - check existence of node
-		// - forward to connection
+	public void sendState(String nodeId, GridNode.TYPE nodeType, NodeState nodeState) {
+		if (this.connection == null) return;
+
+		NodeType type = this.getNodeType(nodeType);
+		GridNode node = this.findNode(nodeId, type);
+		if (node != null) {
+			this.connection.sendState(nodeId, type, nodeState);
+		}
 	}
 
 	/**
@@ -245,11 +247,14 @@ public class SimulationContext {
 	 * @param nodeType The type of the node that has a change in job count
 	 * @param jobCount The new job count of the node
 	 */
-	public void sendQueue(String nodeId, NodeType nodeType, int jobCount) {
-		// TODO 
-		// - no-op if no connection was registered
-		// - check existence of node
-		// - forward to connection
+	public void sendQueue(String nodeId, GridNode.TYPE nodeType, int jobCount) {
+		if (this.connection == null) return;
+
+		NodeType type = this.getNodeType(nodeType);
+		GridNode node = this.findNode(nodeId, type);
+		if (node != null) {
+			this.connection.sendQueue(nodeId, type, jobCount);
+		}
 	}
 	
 	/**
@@ -295,5 +300,42 @@ public class SimulationContext {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Find the GridNode instance with the provided id and type.
+	 * @param nodeId The worker id
+	 * @param nodeTpe The worker type
+	 * @return The Worker instance
+	 */
+	private GridNode findNode(String nodeId, NodeType nodeType) {
+		switch (nodeType) {
+		case SCHEDULER:
+			return this.findScheduler(nodeId);
+		case RESOURCE_MANAGER:
+			return this.findResourceManager(nodeId);
+		case WORKER:
+			return this.findResourceManager(nodeId);
+		default:
+			return null;
+		}
+	}
+
+	/**
+	 * Matches the GridNode type to the NodeType.
+	 * @param type The GridNode type
+	 * @return The node type
+	 */
+	private NodeType getNodeType(GridNode.TYPE type) {
+		switch (type) {
+		case SCHEDULER:
+			return NodeType.SCHEDULER;
+		case RESOURCE_MANAGER:
+			return NodeType.RESOURCE_MANAGER;
+		case WORKER:
+			return NodeType.WORKER;
+		default:
+			return null;
+		}
 	}
 }

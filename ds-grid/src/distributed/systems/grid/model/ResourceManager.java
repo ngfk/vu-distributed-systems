@@ -155,6 +155,7 @@ public class ResourceManager extends GridNode implements Runnable {
 		System.out.println(">> ResourceManager has received new job -> starting to process job");
 		ActiveJob aj = new ActiveJob(message.getJob(), message.senderSocket, null);
 		activeJobs.add(aj);
+		this.sendQueue(this.activeJobs.size());
 		sendJobConfirmationToScheduler(message.senderSocket, message.getValue());
 
 		tryExecuteJob(aj);
@@ -196,6 +197,7 @@ public class ResourceManager extends GridNode implements Runnable {
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
 		activeJobs.remove(aj);
+		this.sendQueue(this.activeJobs.size());
 	}
 	
 	/**

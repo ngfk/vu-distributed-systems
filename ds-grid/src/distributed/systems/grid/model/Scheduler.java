@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 
 import distributed.systems.grid.data.ActiveJob;
-import distributed.systems.grid.model.ResourceManager.STATUS;
 import distributed.systems.grid.simulation.SimulationContext;
 
 /**
@@ -64,88 +63,80 @@ public class Scheduler extends GridNode {
 	 * send a message to a scheduler, saying that we received a job.
 	 */
 	public void sendJobConfirmationRequestMessage(Socket scheduler, Job job) {
-		if(status != STATUS.DEAD){
-			if (scheduler == socket) {
-				return;
-			} // dont send to self
-			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
-			message.attachJob(job);
-			scheduler.sendMessage(message);
-		}
+		if (status == STATUS.DEAD || scheduler == socket) return;
+		
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
+		message.attachJob(job);
+		scheduler.sendMessage(message);
 	}
 
 	/**
 	 * send a message to a scheduler, saying that we received the job result
 	 */
 	public void sendJobResultConfirmationRequestMessage(Socket scheduler, Job job) {
-		if(status != STATUS.DEAD){
-			if (scheduler == socket) {
-				return;
-			} // dont send to self
-			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
-			message.attachJob(job);
-			scheduler.sendMessage(message);
-		}
+		if (status == STATUS.DEAD || scheduler == socket) return;
+
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
+		message.attachJob(job);
+		scheduler.sendMessage(message);
 	}
 
 	/**
 	 * confirm to scheduler that we noted that he has received its jobresult
 	 */
 	public void sendJobResultConfirmationConfirmation(Socket scheduler, int jobId) {
-		if(status != STATUS.DEAD){
-			if (scheduler == socket) {
-				return;
-			} // dont send to self
-			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.ACKNOWLEDGEMENT, jobId, socket);
-			scheduler.sendMessage(message);
-		}
+		if (status == STATUS.DEAD || scheduler == socket) return;
+
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.ACKNOWLEDGEMENT, jobId, socket);
+		scheduler.sendMessage(message);
 	}
 
 	/**
 	 * send a message to a scheduler, saying that we confirmed your received job
 	 */
 	public void sendJobConfirmationMessage(Socket scheduler, int jobId) {
-		if(status != STATUS.DEAD){
-			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
-			scheduler.sendMessage(message);
-		}
+		if (status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
+		scheduler.sendMessage(message);
 	}
 
 	/**
 	 * send a request to execute a job to a resourcemanager(cluster) 
 	 */
 	public void sendRequestJobExecutionMessage(Socket rm, Job job) {
-		if(status != STATUS.DEAD){
-			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
-			message.attachJob(job);
-			rm.sendMessage(message);
-		}
+		if (status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.REQUEST, job.getId(), socket);
+		message.attachJob(job);
+		rm.sendMessage(message);
 	}
 
 	/**
 	 * confirm to user that we have received the job
 	 */
 	public void sendJobConfirmationToUser(Socket user, int jobId) {
-		if(status != STATUS.DEAD){
-			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
-			user.sendMessage(message);
-		}
+		if (status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
+		user.sendMessage(message);
 	}
 
 	public void sendJobResultToUser(Socket user, Job job) {
-		if(status != STATUS.DEAD){
-			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
-			message.attachJob(job);
-			user.sendMessage(message);
-		}
+		if (status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.RESULT, job.getId(), socket);
+		message.attachJob(job);
+		user.sendMessage(message);
 	}
 
 	public void sendPingRequestMessage(Socket recv) {
-		if(status != STATUS.DEAD){
-			Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.PING, 0, socket);
-			recv.sendMessage(message);
-		}
+		if (status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.PING, 0, socket);
+		recv.sendMessage(message);
 	}
+
 	/* ========================================================================
 	 * 	Receive messages below
 	 * ===================================================================== */
@@ -164,6 +155,7 @@ public class Scheduler extends GridNode {
 
 		ActiveJob aj = new ActiveJob(job, socket, schedulerSockets);
 		activeJobs.add(aj);
+		this.sendQueue(this.activeJobs.size());
 
 		for (Socket ss : schedulerSockets) {
 			sendJobConfirmationRequestMessage(ss, job);
@@ -184,6 +176,7 @@ public class Scheduler extends GridNode {
 		Job job = message.getJob();
 		ActiveJob aj = new ActiveJob(job, message.senderSocket, null); // recognize that it  belongs to another scheduler, due to the socket
 		activeJobs.add(aj);
+		this.sendQueue(this.activeJobs.size());
 		sendJobConfirmationMessage(message.senderSocket, job.getId());
 	}
 
@@ -221,6 +214,7 @@ public class Scheduler extends GridNode {
 		if (aj.isDone()) {
 			System.out.println("<< Scheduler done with job (since we're the only schedulre)");
 			activeJobs.remove(aj);
+			this.sendQueue(this.activeJobs.size());
 			return;
 		}
 
@@ -242,6 +236,7 @@ public class Scheduler extends GridNode {
 		ActiveJob aj = getActiveJob(jobId);
 		sendJobResultConfirmationConfirmation(message.senderSocket, jobId);
 		activeJobs.remove(aj);
+		this.sendQueue(this.activeJobs.size());
 	}
 
 	/**
@@ -254,6 +249,7 @@ public class Scheduler extends GridNode {
 		if (aj.isDone()) {
 			System.out.printf("<< Schedulers done with job (todo: %d)\n", activeJobs.size() -1);
 			activeJobs.remove(aj);
+			this.sendQueue(this.activeJobs.size());
 		}
 	}
 

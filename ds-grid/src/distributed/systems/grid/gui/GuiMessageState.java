@@ -1,11 +1,11 @@
 package distributed.systems.grid.gui;
 
 public class GuiMessageState extends GuiMessage {
-	public int nodeId;
+	public String nodeId;
 	public NodeType nodeType;
 	public NodeState nodeState;
 
-	public GuiMessageState(int id, NodeType type, NodeState state) {
+	public GuiMessageState(String id, NodeType type, NodeState state) {
 		this.type = "state";
 		this.nodeId = id;
 		this.nodeType = type;
