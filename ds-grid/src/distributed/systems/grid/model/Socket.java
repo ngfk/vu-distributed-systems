@@ -51,7 +51,6 @@ public class Socket {
 	 * If we send a message using this socket, ensure that it ends up at the right receiver
 	 */
 	public void sendMessage(Message message) {
-		node.onMessageReceived(message);
 		new Thread(new Runnable() {
 			public void run() {
 				asyncSend(message);

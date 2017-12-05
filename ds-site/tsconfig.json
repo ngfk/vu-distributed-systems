@@ -1,20 +1,34 @@
 {
     "compilerOptions": {
-        "outDir": "build",
-        "module": "esnext",
+        // Basic Options
         "target": "es5",
-        "lib": ["es6", "dom"],
+        "module": "commonjs",
+        "lib": ["esnext", "dom"],
+        "allowJs": false,
+        "checkJs": false,
+        "declaration": true,
         "sourceMap": true,
-        "allowJs": true,
+        "downlevelIteration": true,
+        "skipLibCheck": true,
         "jsx": "react",
-        "moduleResolution": "node",
-        "rootDir": "src",
-        "forceConsistentCasingInFileNames": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
+        "outDir": "build",
+
+        // Strict Type-Checking Options
+        "strict": true,
         "noImplicitAny": true,
         "strictNullChecks": true,
-        "suppressImplicitAnyIndexErrors": true
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+
+        // Additional Checks
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": false,
+
+        // Module Resolution Options
+        "moduleResolution": "node"
     },
+    "include": ["src"],
     "exclude": ["node_modules", "build", "webpack"]
 }
