@@ -10,55 +10,24 @@ import distributed.systems.grid.simulation.SimulationContext;
 /**
  * The computer that is pushing jobs to our System
  */
-public class User extends GridNode implements Runnable {
-
-	private boolean running;
-	private Thread thread;
-	private int jobCount;
+public class User extends GridNode {
 
 	private List<ActiveJob> activeJobs;
 	private List<Socket> schedulers;
+	private int jobCount;
 	
 	public User(SimulationContext context, List<Socket> schedulers) {
 		super(context, GridNode.TYPE.USER);
 
-		this.running = true;
-		this.thread = null;
-		this.jobCount = 0;
-
 		this.activeJobs = new ArrayList<ActiveJob>();
 		this.schedulers = schedulers;
+		this.jobCount = 0;
 
 		// Create jobs if configured in context, used in `StartDebug.java` for
 		// testing purposes.
 		for (int i = 0; i < context.getStartAutomatically(); i++) {
 			Job job = new Job((int) (Math.random() * 5000));
 			executeJob(job);
-		}
-	}
-
-	/**
-	 * Starts the user thread, distributing jobs to resource managers.
-	 */
-	public void start() {
-		if (this.thread != null) this.stop();
-		this.running = true;
-		this.thread = new Thread(this);
-		this.thread.run();
-	}
-	
-	/**
-	 * Stops the user thread.
-	 */
-	public void stop() {
-		if (this.thread == null) return;
-		
-		try {
-			this.running = false;
-			this.thread.join();
-			this.thread = null;
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -72,19 +41,14 @@ public class User extends GridNode implements Runnable {
 
 	/**
 	 * Loop that produces the jobs.
+	 * 
+	 * Note: this runs in an infinite loop, with 200ms sleep.
 	 */
-	public void run() {
-		while (this.running) {
-			// Add a new job to the system that takes up random time
-			Job job = new Job((int) (Math.random() * 5000));
-			executeJob(job);
-
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				assert (false) : "Simulation runtread was interrupted";
-			}
-		}
+	public void runNode() throws InterruptedException {
+		// Add a new job to the system that takes up random time
+		Job job = new Job((int) (Math.random() * 5000));
+		executeJob(job);
+		Thread.sleep(2000);
 	}
 
 	/**

@@ -3,6 +3,7 @@ package distributed.systems.grid.simulation;
 import java.util.ArrayList;
 import java.util.List;
 
+import distributed.systems.grid.model.GridNode;
 import distributed.systems.grid.model.ResourceManager;
 import distributed.systems.grid.model.Scheduler;
 import distributed.systems.grid.model.Socket;
@@ -16,9 +17,11 @@ import distributed.systems.grid.model.Worker;
 public class Simulation {
 	
 	private SimulationContext context;
+	private List<GridNode> nodes;
 	
 	public Simulation(SimulationContext context, int schedulerCount, int clusterCount, int workerCount) {
 		this.context = context.register(this);
+		this.nodes = new ArrayList<GridNode>();
 		
 		List<Socket> schedulerSockets = new ArrayList<Socket>();
 		List<Socket> rmSockets = new ArrayList<Socket>();
@@ -55,15 +58,21 @@ public class Simulation {
 		}
 
 		System.out.printf(">> Done with initializing all nodes\n");
-		new User(this.context, schedulerSockets);
+		User user = new User(this.context, schedulerSockets);
 		this.context.sendSetup();
+
+		this.nodes.add(user);
+		this.nodes.addAll(schedulers);
+		this.nodes.addAll(resourceManagers);
 	}
 
 	public void start() {
-		this.context.stopSimulation();
+		for (GridNode node : this.nodes)
+			node.start();
 	}
 
 	public void stop() {
-		this.context.stopSimulation();
+		for (GridNode node : this.nodes)
+			node.stop();
 	}
 }

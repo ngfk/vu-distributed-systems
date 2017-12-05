@@ -21,6 +21,7 @@ import distributed.systems.grid.model.Worker;
 public class SimulationContext {
 	
 	private GuiConnection connection;
+	private Simulation simulation;
 
 	private User user;
 	private List<Scheduler> schedulers = new ArrayList<Scheduler>();
@@ -54,8 +55,7 @@ public class SimulationContext {
 	 * @return The simulation context
 	 */
 	public SimulationContext register(Simulation simulation) {
-		// This is not actually required, for now.
-		// this.simulation = simulation;
+		this.simulation = simulation;
 		return this;
 	}
 	
@@ -161,15 +161,14 @@ public class SimulationContext {
 	 * Triggered by the front-end, starts running the simulation.
 	 */
 	public void startSimulation() {
-		this.user.start();
+		this.simulation.start();
 	}
 
 	/**
 	 * Triggered by the front-end, stops running the simulation.
 	 */
 	public void stopSimulation() {
-		// TODO Not sure if this is the only thread that has to be stopped.
-		this.user.stop();
+		this.simulation.stop();
 	}
 
 	/**

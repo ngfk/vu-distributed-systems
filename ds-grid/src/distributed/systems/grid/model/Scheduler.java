@@ -44,6 +44,43 @@ public class Scheduler extends GridNode {
 	}
 
 	/**
+	 * The thread that checks
+	 *  - if the schedulers are still alive // TODO
+	 *  - if the resourceManagers are still alive
+	 * 
+	 *  = SchedulerOnDie -> ?
+	 *  = ResourceManagerOnDie -> ?
+	 * 
+	 * Note: this runs in an infinite loop, with 200ms sleep.
+	 */
+	public void runNode() {
+		// TODO previously this run was implemented but never started, now it 
+		// does start but I don't know if the implementation was finished so
+		// i'll just leave it as a comment below...
+
+		// // Check RM's for active jobs
+		// for (int i = 0; i < activeJobs.size(); i++) {
+		// 	if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
+		// 		Socket rmSocket = activeJobs.get(i).getRm();
+				
+		// 		if (!rmSocket.lastAliveIn(500L)) { 
+		// 			// declare rm dead
+		// 			executeJob(activeJobs.get(i));
+		// 		}
+		// 	}
+		// }
+		
+		// // Update inactive RM's
+		// for (int i = 0; i < rmSockets.size(); i++) {
+		// 	Socket rmSocket = rmSockets.get(i);
+		// 	if (!rmSocket.lastAliveIn(200L)) {
+		// 		// Request status message // TODO
+		// 		sendPingRequestMessage(rmSocket);
+		// 	}
+		// }
+	}
+
+	/**
 	 * Used during initialization, a scheduler should know about all other
 	 * schedulers.
 	 */
@@ -367,44 +404,5 @@ public class Scheduler extends GridNode {
 		}
 		assert (activeSchedulers.size() > 0);
 		return activeSchedulers;
-	}
-	
-	/**
-	 * The thread that checks
-	 *  - if the schedulers are still alive // TODO
-	 *  - if the resourceManagers are still alive
-	 * 
-	 *  = SchedulerOnDie -> ?
-	 *  = ResourceManagerOnDie -> ?
-	 */
-	public void run() {
-		// TODO thread needs to be ran.. I think this should also be wrapped in a infinite loop
-
-		// Check RM's for active jobs
-		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
-				Socket rmSocket = activeJobs.get(i).getRm();
-				
-				if (!rmSocket.lastAliveIn(500L)) { 
-					// declare rm dead
-					executeJob(activeJobs.get(i));
-				}
-			}
-		}
-		
-		// Update inactive RM's
-		for (int i = 0; i < rmSockets.size(); i++) {
-			Socket rmSocket = rmSockets.get(i);
-			if (!rmSocket.lastAliveIn(200L)) {
-				// Request status message // TODO
-				sendPingRequestMessage(rmSocket);
-			}
-		}
-		
-		try {
-			Thread.sleep(100L);
-		} catch (InterruptedException e) {
-			assert (false) : "Simulation runtread was interrupted";
-		}
 	}
 }

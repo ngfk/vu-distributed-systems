@@ -41,6 +41,16 @@ public class Worker extends GridNode implements ISocketCommunicator {
 			: STATUS.DEAD;
 	}
 
+	/**
+	 * Note: this runs in an infinite loop, with 200ms sleep.
+	 */
+	public void runNode() {
+		// TODO Don't think a worker has to do something here?
+		
+		// If a worker does need to do something they have to be added to the
+		// node list in `Simulation.java`.
+	}
+
 	/*
 	 * ======================================================================== 
 	 * Send messages below
@@ -109,7 +119,7 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	private void jobResultConfirmationHandler(Message message) {
 		activeJob = null;
 		this.sendQueue(0);
-		
+
 		if (this.status != STATUS.DEAD) {
 			status = Worker.STATUS.AVAILABLE;
 			// message.senderSocket.sendMessage(getAliveMessage()); // update status to RM
