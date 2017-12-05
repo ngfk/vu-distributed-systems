@@ -41,5 +41,11 @@ export class Simulation {
             s.registerResourceManagers(rmSockets);
             s.registerSchedulers(schedulerSockets);
         });
+
+        this.user.registerSchedulers(schedulerSockets);
+    }
+
+    public start(): void {
+        this.user.test();
     }
 }

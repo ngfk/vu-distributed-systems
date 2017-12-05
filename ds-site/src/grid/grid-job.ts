@@ -1,3 +1,4 @@
+import { randomRange } from '../utils/random';
 import { GridSocket } from './grid-socket';
 
 export enum JobStatus {
@@ -7,7 +8,7 @@ export enum JobStatus {
 }
 
 export class GridJob {
-    private id: string;
+    public readonly id = randomRange(1, Number.MAX_SAFE_INTEGER);
 
     private status: JobStatus;
     private result: number;
