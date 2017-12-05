@@ -18,26 +18,27 @@ public class Worker extends GridNode implements ISocketCommunicator {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
 	
-//	private Socket rmSocket; // socket to access the resource manager that belongs to the worker
-
-	STATUS status;
-	private int totalExecutionTime; // maybe track this at some point
+	private STATUS status;
 	private ActiveJob activeJob;
+
+	// maybe track this at some point
+	// private int totalExecutionTime; 
 
 	public Worker(SimulationContext context) {
 		super(context, GridNode.TYPE.WORKER);
-//		this.rmSocket = rmSocket;
-		this.totalExecutionTime = 0;
+
 		this.status = STATUS.AVAILABLE;
-//		rmSocket.sendMessage(getAliveMessage());
+		this.activeJob = null;
+		// this.totalExecutionTime = 0;
 	}
 
+	/**
+	 * Triggered from the interface.
+	 */
 	public void toggleState() {
-		if (this.status == STATUS.DEAD) {
-			this.status = STATUS.AVAILABLE;
-		} else {
-			this.status = STATUS.DEAD;
-		}
+		this.status = this.status == STATUS.DEAD
+			? STATUS.AVAILABLE
+			: STATUS.DEAD;
 	}
 
 	/*
@@ -46,41 +47,40 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 * =====================================================================
 	 */
 	private void workerStatusHandler(Socket rmSocket) {
-		if (this.status != STATUS.DEAD);{
-			rmSocket.sendMessage(getAliveMessage()); // update status to RM
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		rmSocket.sendMessage(getAliveMessage()); // update status to RM
 	}
 	
 	/**
 	 * send job confirm message to RM
 	 */
 	private void sendJobConfirmationToRM(Socket rmSocket, int value) {
-		if (this.status != STATUS.DEAD){
-			Message message = new Message(Message.SENDER.WORKER, Message.TYPE.CONFIRMATION, value, socket);
-			rmSocket.sendMessage(message);
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.CONFIRMATION, value, socket);
+		rmSocket.sendMessage(message);
 	}
 
 	/**
 	 * send job result back to the RM
 	 */
 	private void sendJobResultToRM() {
+		if (this.status == STATUS.DEAD) return;
 		assert (activeJob != null);
+
 		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.RESULT, activeJob.getJob().getId(), socket);
-		if (this.status != STATUS.DEAD){
-			message.attachJob(activeJob.getJob());
-			activeJob.getScheduler().sendMessage(message);
-		}
+		message.attachJob(activeJob.getJob());
+		activeJob.getScheduler().sendMessage(message);
 	}
 	
 	/**
 	 * Reply to the PING job status request from RM
 	 */
 	private void sendJobStatusToRM(Socket rmSocket) {
-		int jobId = 0;
-		if (activeJob != null) {
-			jobId = activeJob.getJob().getId();
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		int jobId = activeJob != null ? activeJob.getJob().getId() : 0;
 		Message message = new Message(Message.SENDER.WORKER, Message.TYPE.PING, jobId, socket);
 		rmSocket.sendMessage(message);
 	}
@@ -95,9 +95,9 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 * when the rm asks the job status (more like a 'hey are you still alive message?')
 	 */
 	private void jobStatusRequestHandler(Message message) {
-		if (this.status != STATUS.DEAD){
-			sendJobStatusToRM(message.senderSocket);
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		sendJobStatusToRM(message.senderSocket);
 	}
 
 	/**
@@ -109,9 +109,10 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	private void jobResultConfirmationHandler(Message message) {
 		activeJob = null;
 		this.sendQueue(0);
+		
 		if (this.status != STATUS.DEAD) {
 			status = Worker.STATUS.AVAILABLE;
-//			message.senderSocket.sendMessage(getAliveMessage()); // update status to RM
+			// message.senderSocket.sendMessage(getAliveMessage()); // update status to RM
 		}
 	}
 

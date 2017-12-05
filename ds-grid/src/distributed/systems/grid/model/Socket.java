@@ -10,7 +10,6 @@ public class Socket {
 	private ISocketCommunicator node;
 	private long lastAlive;
 	
-	
 	Socket(ISocketCommunicator node) {
 		this.node = node; // the node where the message is going through
 		isAlive();
@@ -52,7 +51,6 @@ public class Socket {
 	 * If we send a message using this socket, ensure that it ends up at the right receiver
 	 */
 	public void sendMessage(Message message) {
-
 		new Thread(new Runnable() {
 			public void run() {
 				asyncSend(message);
@@ -77,5 +75,4 @@ public class Socket {
 				message.senderSocket.getNr(), node.getType(), node.getNr(), message.getType(), message.getValue());
 		node.onMessageReceived(message);
 	}
-
 }
