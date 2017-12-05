@@ -70,19 +70,19 @@ public class ResourceManager extends GridNode {
 		if (status == STATUS.DEAD) return;
 
 		// for every active-unfinished job periodically check if the worker is still alive
-		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
-				Socket worker = activeJobs.get(i).getWorker();
+		for (int i = 0; i < this.activeJobs.size(); i++) {
+			if (this.activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
+				Socket worker = this.activeJobs.get(i).getWorker();
 				
 				// we did not hear from this guy for a loong time
 				if (!worker.lastAliveIn(500L)) { // declare worker dead
 					workers.put(worker, Worker.STATUS.DEAD);
-					tryExecuteJob(activeJobs.get(i));
+					tryExecuteJob(this.activeJobs.get(i));
 				}
 				
 				// did not hear from this worker in a slightly long time
 				else if (!worker.lastAliveIn(200L)) { // request ping message
-					sendPingRequestMessage(worker, activeJobs.get(i).getJob().getId());
+					sendPingRequestMessage(worker, this.activeJobs.get(i).getJob().getId());
 				}
 			}
 		}
@@ -192,7 +192,7 @@ public class ResourceManager extends GridNode {
 	private void jobRequestHandler(Message message) {
 		System.out.println(">> ResourceManager has received new job -> starting to process job");
 		ActiveJob aj = new ActiveJob(message.getJob(), message.senderSocket, null);
-		activeJobs.add(aj);
+		this.activeJobs.add(aj);
 		this.sendQueue(this.activeJobs.size());
 		sendJobConfirmationToScheduler(message.senderSocket, message.getValue());
 
@@ -234,7 +234,7 @@ public class ResourceManager extends GridNode {
 	public void jobResultConfirmationHandler(Message message) {
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
-		activeJobs.remove(aj);
+		this.activeJobs.remove(aj);
 		this.sendQueue(this.activeJobs.size());
 	}
 	
@@ -290,7 +290,7 @@ public class ResourceManager extends GridNode {
 				jobRequestHandler(message);
 				return;
 			}
-			if (message.getType() == Message.TYPE.CONFIRMATION) {
+			if (message.getType() == Message.TYPE.ACKNOWLEDGEMENT) {
 				jobResultConfirmationHandler(message);
 				return;
 			}
@@ -349,18 +349,18 @@ public class ResourceManager extends GridNode {
 	}
 
 	public ActiveJob getActiveJob(int jobId) {
-		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).getJob().getId() == jobId) {
-				return activeJobs.get(i);
+		for (int i = 0; i < this.activeJobs.size(); i++) {
+			if (this.activeJobs.get(i).getJob().getId() == jobId) {
+				return this.activeJobs.get(i);
 			}
 		}
 		return null;
 	}
 
 	public ActiveJob getQueuedJob() {
-		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).getStatus() == Job.STATUS.WAITING) {
-				return activeJobs.get(i);
+		for (int i = 0; i < this.activeJobs.size(); i++) {
+			if (this.activeJobs.get(i).getStatus() == Job.STATUS.WAITING) {
+				return this.activeJobs.get(i);
 			}
 		}
 		return null;

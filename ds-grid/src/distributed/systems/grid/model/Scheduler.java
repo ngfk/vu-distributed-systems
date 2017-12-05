@@ -54,6 +54,17 @@ public class Scheduler extends GridNode {
 	 * Note: this runs in an infinite loop, with 200ms sleep.
 	 */
 	public void runNode() {
+
+		ArrayList<Socket> schedulerSockets = getActiveSchedulers();
+		
+		// ping other schedulers for aliveness
+		for (Socket ss : schedulerSockets) {
+			sendPingRequestMessage(ss);
+			if (!ss.lastAliveIn(200L)){
+				schedulers.put(ss, Scheduler.STATUS.DEAD);
+			}
+		}
+
 		// TODO previously this run was implemented but never started, now it 
 		// does start but I don't know if the implementation was finished so
 		// i'll just leave it as a comment below...
@@ -78,6 +89,7 @@ public class Scheduler extends GridNode {
 		// 		sendPingRequestMessage(rmSocket);
 		// 	}
 		// }
+		
 	}
 
 	/**
@@ -163,7 +175,7 @@ public class Scheduler extends GridNode {
 
 	public void sendPingRequestMessage(Socket recv) {
 		if (status == STATUS.DEAD) return;
-
+		System.out.println(">> Scheduler sent ping request");
 		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.PING, 0, socket);
 		recv.sendMessage(message);
 	}
@@ -185,7 +197,7 @@ public class Scheduler extends GridNode {
 				schedulerSockets.size() - 1);
 
 		ActiveJob aj = new ActiveJob(job, socket, schedulerSockets);
-		activeJobs.add(aj);
+		this.activeJobs.add(aj);
 		this.sendQueue(this.activeJobs.size());
 
 		for (Socket ss : schedulerSockets) {
@@ -206,7 +218,7 @@ public class Scheduler extends GridNode {
 	public void schedulerJobRequestHandler(Message message) {
 		Job job = message.getJob();
 		ActiveJob aj = new ActiveJob(job, message.senderSocket, null); // recognize that it  belongs to another scheduler, due to the socket
-		activeJobs.add(aj);
+		this.activeJobs.add(aj);
 		this.sendQueue(this.activeJobs.size());
 		sendJobConfirmationMessage(message.senderSocket, job.getId());
 	}
@@ -233,6 +245,7 @@ public class Scheduler extends GridNode {
 		ActiveJob aj = getActiveJob(message.getValue());
 		aj.markAsDone(socket);
 		sendJobResultToUser(aj.getJob().getUser(), aj.getJob());
+		sendJobResultConfirmationConfirmation(message.senderSocket, aj.getJob().getId());
 	}
 
 	/**
@@ -244,7 +257,7 @@ public class Scheduler extends GridNode {
 
 		if (aj.isDone()) {
 			System.out.println("<< Scheduler done with job (since we're the only schedulre)");
-			activeJobs.remove(aj);
+			this.activeJobs.remove(aj);
 			this.sendQueue(this.activeJobs.size());
 			return;
 		}
@@ -266,7 +279,7 @@ public class Scheduler extends GridNode {
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
 		sendJobResultConfirmationConfirmation(message.senderSocket, jobId);
-		activeJobs.remove(aj);
+		this.activeJobs.remove(aj);
 		this.sendQueue(this.activeJobs.size());
 	}
 
@@ -278,10 +291,19 @@ public class Scheduler extends GridNode {
 		aj.markAsDone(message.senderSocket);
 
 		if (aj.isDone()) {
-			System.out.printf("<< Schedulers done with job (todo: %d)\n", activeJobs.size() -1);
-			activeJobs.remove(aj);
+			System.out.printf("<< Schedulers done with job (todo: %d)\n", this.activeJobs.size() -1);
+			this.activeJobs.remove(aj);
 			this.sendQueue(this.activeJobs.size());
 		}
+	}
+
+	/**
+	 * Scheduler has acknowledged that we received the results
+	 */
+	public void schedulerRespondStatusHandler(Message message) {
+		if (this.status == STATUS.DEAD) return;
+		
+		message.senderSocket.sendMessage(getAliveMessage()); // update status to RM
 	}
 
 	/**
@@ -293,6 +315,7 @@ public class Scheduler extends GridNode {
 	 */
 	public void onMessageReceived(Message message) {
 		if (status == STATUS.DEAD){
+			return;
 			// cant do mahn
 		}
 		
@@ -317,6 +340,9 @@ public class Scheduler extends GridNode {
 			}
 			if (message.getType() == Message.TYPE.ACKNOWLEDGEMENT) {
 				schedulerJobResultAcknowledgementHandler(message);
+			}
+			if (message.getType() == Message.TYPE.STATUS) {
+				schedulerRespondStatusHandler(message);
 			}
 		}
 		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
@@ -376,9 +402,9 @@ public class Scheduler extends GridNode {
 	}
 
 	public ActiveJob getActiveJob(int jobId) {
-		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).getJob().getId() == jobId) {
-				return activeJobs.get(i);
+		for (int i = 0; i < this.activeJobs.size(); i++) {
+			if (this.activeJobs.get(i).getJob().getId() == jobId) {
+				return this.activeJobs.get(i);
 			}
 		}
 		return null;
@@ -404,5 +430,10 @@ public class Scheduler extends GridNode {
 		}
 		assert (activeSchedulers.size() > 0);
 		return activeSchedulers;
+	}
+
+	private Message getAliveMessage() {
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.STATUS, status.ordinal(), socket); // enum -> int
+		return message;
 	}
 }
