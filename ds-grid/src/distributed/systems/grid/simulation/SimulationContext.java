@@ -315,7 +315,7 @@ public class SimulationContext {
 		case RESOURCE_MANAGER:
 			return this.findResourceManager(nodeId);
 		case WORKER:
-			return this.findResourceManager(nodeId);
+			return this.findWorker(nodeId);
 		default:
 			return null;
 		}

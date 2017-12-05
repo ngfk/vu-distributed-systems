@@ -335,9 +335,10 @@ public class Scheduler extends GridNode {
 		for (int i = 0; i < rmSockets.size(); i++) {
 			Socket rmSocket = rmSockets.get(i);
 			
-			if (rmSocket.lastAliveIn(200L)) {
+			// TODO Revert this, and debug why the lastAlive is not good
+//			if (rmSocket.lastAliveIn(200L)) {
 				activeRms.add(rmSocket);
-			}
+//			}
 		}
 		return activeRms;
 	}

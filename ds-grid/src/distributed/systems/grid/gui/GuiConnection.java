@@ -77,7 +77,8 @@ public class GuiConnection {
 				this.context.startSimulation();
 				break;
 			case "stop":
-				this.context.stopSimulation();
+				if(context != null)
+					this.context.stopSimulation();
 				break;
 			case "toggle":
 				GuiMessageToggle toggleMessage = gson.fromJson(message, GuiMessageToggle.class);
