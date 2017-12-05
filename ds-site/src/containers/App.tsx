@@ -5,31 +5,19 @@ import { bindActionCreators } from 'redux';
 import { ActionCreators, actionCreators } from '../actions/actions';
 import { Grid } from '../components/Grid';
 import { Settings } from '../components/Settings';
-import { Grid as GridModel } from '../models/grid';
 import { State } from '../reducers/reducer';
 
 // tslint:disable-next-line
 const logo = require('./ludwig.jpg');
 
 export interface AppProps {
-    grid: GridModel;
+    state: State;
     actions: ActionCreators;
 }
 
 class App extends React.Component<AppProps> {
-    constructor(props: AppProps) {
-        super(props);
-
-        this.state = {
-            initialized: false,
-            clusterCount: 0,
-            workerCount: 0,
-            schedulerCount: 0
-        };
-    }
-
     public render(): JSX.Element {
-        const { actions, grid } = this.props;
+        const { actions, state } = this.props;
 
         return (
             <div className="app">
@@ -41,14 +29,14 @@ class App extends React.Component<AppProps> {
                 <div className="app__settings">
                     <Settings actions={actions} />
                 </div>
-                <Grid model={grid} actions={actions} />
+                <Grid {...state} actions={actions} />
             </div>
         );
     }
 }
 
 const mapStateToProps = (state: State) => ({
-    grid: state.grid
+    state: { ...state }
 });
 
 const mapDispatchToProps = (dispatch: any) => ({

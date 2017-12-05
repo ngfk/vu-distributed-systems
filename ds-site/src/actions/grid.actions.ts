@@ -1,28 +1,17 @@
 import { ActionFactory } from '@ngfk/ts-redux';
 
-import { GridSetup, User } from '../models/grid';
-import { NodeType } from '../models/node';
+import { GridSetupParams } from '../models/grid-setup';
 
 export interface GridActionMap {
-    GRID_INIT: {
-        schedulers: number;
-        clusters: number;
-        workers: number;
-    };
-    GRID_SETUP: GridSetup;
-    GRID_QUEUE: { id: string; type: NodeType; jobs: number };
-    GRID_START: { schedulers: number; clusters: number; workers: number };
+    GRID_START: GridSetupParams;
     GRID_STOP: void;
-    GRID_TOGGLE: { id: string; type: NodeType };
 }
 
 const factory = new ActionFactory<GridActionMap>();
 
 export const gridActionCreators = {
-    gridInit: factory.creator('GRID_INIT'),
     gridStart: factory.creator('GRID_START'),
-    gridStop: factory.creator('GRID_STOP'),
-    gridToggle: factory.creator('GRID_TOGGLE')
+    gridStop: factory.creator('GRID_STOP')
 };
 
 export type GridActionCreators = typeof gridActionCreators;

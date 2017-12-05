@@ -1,6 +1,6 @@
 import { Middleware } from 'redux';
 
-import { GridActionMap } from '../actions/grid.actions';
+import { ActionMap } from '../actions/actions';
 import {
     GridMessageStart,
     GridMessageStop,
@@ -9,6 +9,7 @@ import {
     IncomingGridMessage,
     OutgoingGridMessage
 } from '../models/grid-message';
+import { NodeType } from '../models/node-type';
 
 const DEFAULT_URL = 'ws://localhost:4000/connection';
 const BASE_DELAY = 200;
@@ -114,11 +115,7 @@ export class GridConnection {
             throw new Error(invalidMessageErr + message.data);
         }
 
-        const accept = [
-            GridMessageType.Setup,
-            GridMessageType.Queue,
-            GridMessageType.State
-        ];
+        const accept = [GridMessageType.Setup, GridMessageType.Queue];
 
         // Throw error on messages with invalid structure.
         if (
@@ -146,9 +143,18 @@ export const gridMiddleware: GridMiddleware = grid => store => next => action =>
     // safe, so this function simply uses a lot of casting.
     const p: any = (action as any).payload;
 
+    const toggle = (id: string, type: NodeType) => {
+        const message: GridMessageToggle = {
+            type: GridMessageType.Toggle,
+            nodeId: id,
+            nodeType: type
+        };
+        grid.send(message);
+    };
+
     switch (action.type) {
         case 'GRID_START': {
-            const payload = p as GridActionMap['GRID_START'];
+            const payload = p as ActionMap['GRID_START'];
             const message: GridMessageStart = {
                 type: GridMessageType.Start,
                 sizes: {
@@ -158,24 +164,29 @@ export const gridMiddleware: GridMiddleware = grid => store => next => action =>
                 }
             };
             grid.send(message);
-            return next(action);
+            break;
         }
         case 'GRID_STOP': {
             const message: GridMessageStop = { type: GridMessageType.Stop };
             grid.send(message);
-            return next(action);
+            break;
         }
-        case 'GRID_TOGGLE': {
-            const payload = p as GridActionMap['GRID_TOGGLE'];
-            const message: GridMessageToggle = {
-                type: GridMessageType.Toggle,
-                nodeId: payload.id,
-                nodeType: payload.type
-            };
-            grid.send(message);
-            return next(action);
+        case 'SCHEDULER_TOGGLE': {
+            const payload = p as ActionMap['SCHEDULER_TOGGLE'];
+            toggle(payload.id, NodeType.Scheduler);
+            break;
         }
-        default:
-            return next(action);
+        case 'RESOURCE_MANAGER_TOGGLE': {
+            const payload = p as ActionMap['RESOURCE_MANAGER_TOGGLE'];
+            toggle(payload.id, NodeType.ResourceManager);
+            break;
+        }
+        case 'WORKER_TOGGLE': {
+            const payload = p as ActionMap['WORKER_TOGGLE'];
+            toggle(payload.id, NodeType.Worker);
+            break;
+        }
     }
+
+    return next(action);
 };

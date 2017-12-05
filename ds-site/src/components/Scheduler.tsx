@@ -1,21 +1,21 @@
 import * as React from 'react';
 
-import { GridActionCreators } from '../actions/grid.actions';
-import { Scheduler as SchedulerModel } from '../models/grid';
-import { NodeType } from '../models/node';
+import { ActionCreators } from '../actions/actions';
+import { SchedulerModel } from '../models/scheduler';
 import { getNodeColor } from '../utils/node-color';
 
 export interface SchedulerProps {
     nr: number;
-    model: SchedulerModel;
-    gridToggle: GridActionCreators['gridToggle'];
+    model?: SchedulerModel;
+    actions: ActionCreators;
 }
 
 export class Scheduler extends React.Component<SchedulerProps> {
     public render(): JSX.Element {
         const { nr, model } = this.props;
-        const { jobCount, isDown } = model;
-        const backgroundColor = getNodeColor(jobCount, isDown);
+        const backgroundColor = model
+            ? getNodeColor(model.jobCount, model.isDown)
+            : 'gray';
 
         return (
             <div
@@ -24,15 +24,16 @@ export class Scheduler extends React.Component<SchedulerProps> {
                 style={{ backgroundColor }}
             >
                 <div className="scheduler__label">scheduler: {nr}</div>
-                <div className="scheduler__jobs">{jobCount}</div>
+                <div className="scheduler__jobs">{model && model.jobCount}</div>
             </div>
         );
     }
 
     private handleClick = () => {
-        this.props.gridToggle({
-            id: this.props.model.id,
-            type: NodeType.Scheduler
+        if (!this.props.model) return;
+
+        this.props.actions.schedulerToggle({
+            id: this.props.model.id
         });
     };
 }

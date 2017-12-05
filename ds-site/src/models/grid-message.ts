@@ -1,5 +1,5 @@
-import { GridSetup } from './grid';
-import { NodeState, NodeType } from './node';
+import { GridSetup } from './grid-setup';
+import { NodeType } from './node-type';
 
 export interface GridMessage {
     readonly type: GridMessageType;
@@ -7,7 +7,6 @@ export interface GridMessage {
 
 export enum GridMessageType {
     Setup = 'setup',
-    State = 'state',
     Queue = 'queue',
     Start = 'start',
     Stop = 'stop',
@@ -17,13 +16,6 @@ export enum GridMessageType {
 export interface GridMessageSetup extends GridMessage {
     readonly type: GridMessageType.Setup;
     readonly grid: GridSetup;
-}
-
-export interface GridMessageState extends GridMessage {
-    readonly type: GridMessageType.State;
-    readonly nodeId: string;
-    readonly nodeType: NodeType;
-    readonly nodeState: NodeState;
 }
 
 export interface GridMessageQueue extends GridMessage {
@@ -63,7 +55,4 @@ export type OutgoingGridMessage =
 /**
  * Only includes the grid messages that are from the grid back-end.
  */
-export type IncomingGridMessage =
-    | GridMessageSetup
-    | GridMessageState
-    | GridMessageQueue;
+export type IncomingGridMessage = GridMessageSetup | GridMessageQueue;

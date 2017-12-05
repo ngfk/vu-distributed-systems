@@ -1,10 +1,11 @@
 import * as React from 'react';
 
-import { GridActionCreators } from '../actions/grid.actions';
+import { ActionCreators } from '../actions/actions';
+import { GridSetupActionCreators } from '../actions/grid-setup.actions';
 import { debounce } from '../utils/debounce';
 
 export interface SettingsProps {
-    actions: GridActionCreators;
+    actions: ActionCreators;
 }
 
 export interface SettingsState {
@@ -20,7 +21,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
         workers: 2
     };
 
-    private debouncedGridInit: GridActionCreators['gridInit'];
+    private debouncedGridInit: GridSetupActionCreators['gridInit'];
 
     constructor(props: SettingsProps) {
         super(props);

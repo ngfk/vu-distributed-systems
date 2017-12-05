@@ -98,7 +98,6 @@ body {
 }
 
 .grid .grid__clusters {
-    padding: 10px;
     display: flex;
     flex-flow: row wrap;
     justify-content: center;

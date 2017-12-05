@@ -1,21 +1,21 @@
 import * as React from 'react';
 
-import { GridActionCreators } from '../actions/grid.actions';
-import { ResourceManager as ResourceManagerModel } from '../models/grid';
-import { NodeType } from '../models/node';
+import { ActionCreators } from '../actions/actions';
+import { ResourceManagerModel } from '../models/resource-manager';
 import { getNodeColor } from '../utils/node-color';
 
 export interface ResourceManagerProps {
     nr: number;
-    model: ResourceManagerModel;
-    gridToggle: GridActionCreators['gridToggle'];
+    model?: ResourceManagerModel;
+    actions: ActionCreators;
 }
 
 export class ResourceManager extends React.Component<ResourceManagerProps> {
     public render(): JSX.Element {
         const { nr, model } = this.props;
-        const { jobCount, isDown } = model;
-        const backgroundColor = getNodeColor(jobCount, isDown);
+        const backgroundColor = model
+            ? getNodeColor(model.jobCount, model.isDown)
+            : 'gray';
 
         return (
             <div
@@ -26,15 +26,18 @@ export class ResourceManager extends React.Component<ResourceManagerProps> {
                 <div className="resource-manager__label">
                     resource-manager: {nr}
                 </div>
-                <div className="resource-manager__jobs">{jobCount}</div>
+                <div className="resource-manager__jobs">
+                    {model && model.jobCount}
+                </div>
             </div>
         );
     }
 
     private handleClick = () => {
-        this.props.gridToggle({
-            id: this.props.model.id,
-            type: NodeType.ResourceManager
+        if (!this.props.model) return;
+
+        this.props.actions.resourceManagerToggle({
+            id: this.props.model.id
         });
     };
 }

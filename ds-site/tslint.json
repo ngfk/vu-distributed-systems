@@ -71,7 +71,6 @@
         "new-parens": true,
         "no-angle-bracket-type-assertion": true,
         "no-consecutive-blank-lines": [true],
-        "object-literal-key-quotes": [true, "consistent"],
         "object-literal-shorthand": true,
         // "semicolon": [true, "always"],
         "variable-name": [true, "check-format", "ban-keywords"],
