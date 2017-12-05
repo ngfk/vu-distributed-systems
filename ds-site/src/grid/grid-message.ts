@@ -1,4 +1,5 @@
-import { GridNode } from './grid-node';
+import { NodeType } from '../models/node-type';
+import { GridJob } from './grid-job';
 import { GridSocket } from './grid-socket';
 
 export enum MessageType {
@@ -11,8 +12,16 @@ export enum MessageType {
 }
 
 export class GridMessage {
-    private sender: GridNode;
-    private type: MessageType;
+    private job: GridJob;
 
-    private socket: GridSocket;
+    constructor(
+        public readonly socket: GridSocket,
+        public readonly sender: NodeType,
+        public readonly type: MessageType,
+        public readonly value: number
+    ) {}
+
+    public attachJob(job: GridJob): void {
+        this.job = job.copy();
+    }
 }

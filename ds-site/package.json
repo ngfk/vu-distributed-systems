@@ -24,7 +24,9 @@
         "redux": "^3.7.2"
     },
     "nodemonConfig": {
-        "watch": ["src/**/*.ts"],
+        "watch": [
+            "src/**/*.ts"
+        ],
         "exec": "ts-node",
         "quiet": true,
         "events": {

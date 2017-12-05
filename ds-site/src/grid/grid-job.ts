@@ -19,4 +19,8 @@ export class GridJob {
     public switchOrigin(origin: GridSocket): void {
         this.origin = origin;
     }
+
+    public copy(): GridJob {
+        return new GridJob(this.origin, this.duration);
+    }
 }
