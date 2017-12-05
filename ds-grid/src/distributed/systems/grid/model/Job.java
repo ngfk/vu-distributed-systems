@@ -39,6 +39,10 @@ public class Job {
 	public int getId() {
 		return id;
 	}
+	
+	public int getDuration() {
+		return duration;
+	}
 
 	public Socket getUser() {
 		return user;
