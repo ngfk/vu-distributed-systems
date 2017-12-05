@@ -24,7 +24,7 @@ export class ResourceManager extends React.Component<ResourceManagerProps> {
                 style={{ backgroundColor }}
             >
                 <div className="resource-manager__label">
-                    resource-manager #{nr}
+                    resource-manager: {nr}
                 </div>
                 <div className="resource-manager__jobs">{jobCount}</div>
             </div>

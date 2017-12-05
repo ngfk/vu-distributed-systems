@@ -23,7 +23,7 @@ export class Scheduler extends React.Component<SchedulerProps> {
                 onClick={this.handleClick}
                 style={{ backgroundColor }}
             >
-                <div className="scheduler__label">scheduler #{nr}</div>
+                <div className="scheduler__label">scheduler: {nr}</div>
                 <div className="scheduler__jobs">{jobCount}</div>
             </div>
         );
