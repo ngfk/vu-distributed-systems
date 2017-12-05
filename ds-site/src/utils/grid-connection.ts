@@ -80,6 +80,7 @@ export class GridConnection {
             this.connect(url);
         }, this.reconnectDelay);
 
+        // tslint:disable-next-line
         window.onunload = () => {};
     }
 
