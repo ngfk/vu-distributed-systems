@@ -20,7 +20,7 @@ public class User extends GridNode implements Runnable {
 	private List<Socket> schedulers;
 	
 	public User(SimulationContext context, List<Socket> schedulers) {
-		super(context, GridNode.TYPE.SCHEDULER);
+		super(context, GridNode.TYPE.USER);
 
 		this.running = true;
 		this.thread = null;
@@ -101,7 +101,6 @@ public class User extends GridNode implements Runnable {
 		message.attachJob(job);
 
 		scheduler.sendMessage(message);
-		this.sendQueue(jobCount++);		
 	}
 
 	private void sendJobResultConfirmation(Socket scheduler, int jobId) {
@@ -116,6 +115,7 @@ public class User extends GridNode implements Runnable {
 	private void jobConfirmationHandler(Message message) {
 		ActiveJob aj = getActiveJob(message.getValue());
 		aj.setStatus(Job.STATUS.RUNNING);
+		this.sendQueue(jobCount++);
 	}
 
 	/**

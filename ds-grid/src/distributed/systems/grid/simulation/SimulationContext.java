@@ -179,6 +179,8 @@ public class SimulationContext {
 	 */
 	public void toggleNode(String nodeId, NodeType nodeType) {
 		switch (nodeType) {
+		case USER:
+			break;
 		case SCHEDULER:
 			this.findScheduler(nodeId).toggleState();
 			break;
@@ -249,9 +251,10 @@ public class SimulationContext {
 	 */
 	public void sendQueue(String nodeId, GridNode.TYPE nodeType, int jobCount) {
 		if (this.connection == null) return;
-
+		
 		NodeType type = this.getNodeType(nodeType);
 		GridNode node = this.findNode(nodeId, type);
+		
 		if (node != null) {
 			this.connection.sendQueue(nodeId, type, jobCount);
 		}
@@ -310,6 +313,8 @@ public class SimulationContext {
 	 */
 	private GridNode findNode(String nodeId, NodeType nodeType) {
 		switch (nodeType) {
+		case USER: 
+			return this.user;
 		case SCHEDULER:
 			return this.findScheduler(nodeId);
 		case RESOURCE_MANAGER:
@@ -328,6 +333,8 @@ public class SimulationContext {
 	 */
 	private NodeType getNodeType(GridNode.TYPE type) {
 		switch (type) {
+		case USER:
+			return NodeType.USER;
 		case SCHEDULER:
 			return NodeType.SCHEDULER;
 		case RESOURCE_MANAGER:

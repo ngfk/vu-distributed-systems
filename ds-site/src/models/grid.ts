@@ -44,6 +44,7 @@ export interface GridClusterSetup {
 }
 
 export interface GridNodeMap {
+    user: User;
     scheduler: Scheduler;
     'resource-manager': ResourceManager;
     worker: Worker;

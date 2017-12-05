@@ -4,6 +4,7 @@ import {
     GridNodeMap,
     ResourceManager,
     Scheduler,
+    User,
     Worker
 } from '../models/grid';
 import { NodeType } from '../models/node';
@@ -63,6 +64,10 @@ export const adjustNode = <T extends NodeType>(
     modifier: Modifier<GridNodeMap[T]>
 ): Grid => {
     switch (type) {
+        case NodeType.User: {
+            const user: User = modifier(grid.user);
+            return { ...grid, user };
+        }
         case NodeType.Scheduler: {
             const schedulers = adjustScheduler(
                 grid.schedulers,

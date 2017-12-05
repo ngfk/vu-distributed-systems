@@ -105,8 +105,14 @@ public class GuiConnection {
 	}
 
 	public void sendQueue(String nodeId, NodeType nodeType, int jobCount) {
+		if(nodeType == NodeType.USER) {
+			System.out.println("User being send");
+		}
 		GuiMessageQueue guiMessageQueue = new GuiMessageQueue(nodeId, nodeType, jobCount);
 		this.send(gson.toJson(guiMessageQueue));
+		if(nodeType == NodeType.USER) {
+			System.out.println("User has been send");
+		}
 	}
 	
 	private void send(String message) {
