@@ -1,8 +1,12 @@
 export interface Grid {
-    readonly user: string;
-    readonly jobCount: number;
+    readonly user: User;
     readonly schedulers: Scheduler[];
     readonly clusters: Cluster[];
+}
+
+export interface User {
+    readonly id: string;
+    readonly jobCount: number;
 }
 
 export interface Scheduler {
@@ -29,7 +33,7 @@ export interface Worker {
 }
 
 export interface GridSetup {
-    readonly user: string;
+    readonly user: User;
     readonly schedulers: string[];
     readonly clusters: GridClusterSetup[];
 }

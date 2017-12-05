@@ -14,6 +14,7 @@ public class User extends GridNode implements Runnable {
 
 	private boolean running;
 	private Thread thread;
+	private int jobCount;
 
 	private List<ActiveJob> activeJobs;
 	private List<Socket> schedulers; // this should only store the active schedulers
@@ -26,6 +27,7 @@ public class User extends GridNode implements Runnable {
 
 		this.running = true;
 		this.thread = null;
+		this.jobCount = 0;
 
 		this.activeJobs = new ArrayList<ActiveJob>();
 		this.schedulers = schedulers;
@@ -72,7 +74,7 @@ public class User extends GridNode implements Runnable {
 			executeJob(job);
 
 			try {
-				Thread.sleep(200);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				assert (false) : "Simulation runtread was interrupted";
 			}
@@ -93,6 +95,7 @@ public class User extends GridNode implements Runnable {
 		message.attachJob(job);
 
 		scheduler.sendMessage(message);
+		this.sendQueue(jobCount++);		
 	}
 
 	private void sendJobResultConfirmation(Socket scheduler, int jobId) {

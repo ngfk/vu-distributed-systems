@@ -1,12 +1,11 @@
 import { createReducer } from '@ngfk/ts-redux';
 
 import { GridActionMap } from '../actions/grid.actions';
-import { Cluster, Grid, Scheduler, Worker } from '../models/grid';
+import { Cluster, Grid, Scheduler, User, Worker } from '../models/grid';
 import { adjustNode } from '../utils/grid-adjuster';
 
 const initial: Grid = {
-    user: '0',
-    jobCount: 0,
+    user: { id: '', jobCount: 0 },
     schedulers: [],
     clusters: []
 };
@@ -44,8 +43,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
         }
 
         return {
-            user: '0',
-            jobCount: 0,
+            user: { id: '0', jobCount: 0 },
             schedulers,
             clusters
         };
@@ -71,7 +69,7 @@ export const gridReducer = createReducer<Grid, GridActionMap>(initial, {
         }));
 
         return {
-            user: payload.user,
+            user: { id: payload.user.id, jobCount: 0 },
             jobCount: 0,
             schedulers,
             clusters

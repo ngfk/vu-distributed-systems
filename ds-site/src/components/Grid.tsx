@@ -38,7 +38,7 @@ export class Grid extends React.Component<GridProps> {
         return (
             <div className="grid">
                 <div className="grid__users">{users}</div>
-                <div>Jobs: {model.jobCount}</div>
+                <div>Jobs: {model.user.jobCount}</div>
                 <div className="grid__schedulers-container">
                     <div className="grid__schedulers">{schedulers}</div>
                 </div>
