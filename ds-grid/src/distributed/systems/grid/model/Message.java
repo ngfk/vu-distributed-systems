@@ -43,7 +43,7 @@ public class Message {
 
 	public Socket senderSocket; // socket that the receiver can use, to reply to the sender. 
 	private Job job; // jobs can be send over sockets
-	private ArrayList<Socket> sockets; // socket lists can be send in a message 
+	// private ArrayList<Socket> sockets; // socket lists can be send in a message 
 
 	private SENDER sender; // ubink
 	private TYPE type;
@@ -65,7 +65,7 @@ public class Message {
 	}
 
 	public void attachSockets(ArrayList<Socket> sockets) {
-		this.sockets = new ArrayList<>(sockets); // copy
+		// this.sockets = new ArrayList<>(sockets); // copy
 	}
 
 	/* go-getters bellow */

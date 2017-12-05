@@ -40,7 +40,6 @@ public class Simulation {
 			}
 			
 			newResourceManager.setWorkerSockets(workerSockets);
-			newResourceManager.setWorkers(workers); // only for GUI
 		}
 
 		List<Scheduler> schedulers = new ArrayList<Scheduler>();

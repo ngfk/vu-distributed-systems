@@ -34,32 +34,27 @@ public class Scheduler extends GridNode {
 		this.activeJobs = new ArrayList<ActiveJob>();
 	}
 
+	/**
+	 * Triggered from the interface.
+	 */
 	public void toggleState() {
-		if (this.status == STATUS.DEAD) {
-			this.status = STATUS.RUNNING;
-		} else {
-			this.status = STATUS.DEAD;
-		}
-	}
-
-	/* a scheduler should know about all other schedulers */
-	public void setSchedulers(List<Socket> schedulerSockets) {
-		schedulers = new HashMap<Socket, Scheduler.STATUS>();
-
-		for (int i = 0; i < schedulerSockets.size(); i++) {
-			schedulers.put(schedulerSockets.get(i), STATUS.RUNNING);
-		}
-	}
-
-	public ArrayList<Socket> getSchedulers() {
-		ArrayList<Socket> list = new ArrayList<Socket>();
-		list.addAll(schedulers.keySet());
-		list.add(socket); // add self
-		return list;
+		this.status = this.status == STATUS.DEAD
+			? STATUS.RUNNING
+			: STATUS.DEAD;
 	}
 
 	/**
-	 * send a message to a scheduler, saying that we received a job.
+	 * Used during initialization, a scheduler should know about all other
+	 * schedulers.
+	 */
+	public void setSchedulers(List<Socket> schedulerSockets) {
+		this.schedulers = new HashMap<Socket, Scheduler.STATUS>();
+		for (int i = 0; i < schedulerSockets.size(); i++)
+			this.schedulers.put(schedulerSockets.get(i), STATUS.RUNNING);
+	}
+
+	/**
+	 * Send a message to a scheduler, saying that we received a job.
 	 */
 	public void sendJobConfirmationRequestMessage(Socket scheduler, Job job) {
 		if (status == STATUS.DEAD || scheduler == socket) return;
@@ -411,6 +406,5 @@ public class Scheduler extends GridNode {
 		} catch (InterruptedException e) {
 			assert (false) : "Simulation runtread was interrupted";
 		}
-		
 	}
 }

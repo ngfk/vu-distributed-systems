@@ -17,11 +17,8 @@ public class User extends GridNode implements Runnable {
 	private int jobCount;
 
 	private List<ActiveJob> activeJobs;
-	private List<Socket> schedulers; // this should only store the active schedulers
+	private List<Socket> schedulers;
 	
-	/**
-	 * Every user should at least know about 2 schedulers
-	 */
 	public User(SimulationContext context, List<Socket> schedulers) {
 		super(context, GridNode.TYPE.SCHEDULER);
 
@@ -40,6 +37,9 @@ public class User extends GridNode implements Runnable {
 		}
 	}
 
+	/**
+	 * Starts the user thread, distributing jobs to resource managers.
+	 */
 	public void start() {
 		if (this.thread != null) this.stop();
 		this.running = true;
@@ -47,6 +47,9 @@ public class User extends GridNode implements Runnable {
 		this.thread.run();
 	}
 	
+	/**
+	 * Stops the user thread.
+	 */
 	public void stop() {
 		if (this.thread == null) return;
 		
@@ -59,6 +62,9 @@ public class User extends GridNode implements Runnable {
 		}
 	}
 
+	/**
+	 * Triggered from the interface.
+	 */
 	public void toggleState() {
 		// NOOP, the user's state cannot be toggled.
 		// cool story bro
@@ -139,7 +145,6 @@ public class User extends GridNode implements Runnable {
 				jobResultHandler(message);
 			}
 		}
-
 	}
 
 	// TODO detect when scheduler is down.

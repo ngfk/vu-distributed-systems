@@ -31,11 +31,9 @@ public class ResourceManager extends GridNode implements Runnable {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
 	
-	public ArrayList<Worker> workerObjects; // this is only to help drawing the interface!
+	private STATUS status;
 	private ArrayList<ActiveJob> activeJobs;
 
-	private STATUS status;
-	
 	/**
 	 * This is an hashmap of the worker nodes
 	 *  The idea is that since we cannot access the worker just by referencing their object 
@@ -51,12 +49,13 @@ public class ResourceManager extends GridNode implements Runnable {
 		this.activeJobs = new ArrayList<ActiveJob>();
 	}
 
+	/**
+	 * Triggered from the interface.
+	 */
 	public void toggleState() {
-		if (this.status == STATUS.DEAD) {
-			this.status = STATUS.AVAILABLE;
-		} else {
-			this.status = STATUS.DEAD;
-		}
+		this.status = this.status == STATUS.DEAD
+			? STATUS.AVAILABLE
+			: STATUS.DEAD;
 	}
 
 	/* ========================================================================
@@ -66,70 +65,69 @@ public class ResourceManager extends GridNode implements Runnable {
 	 * Check if the worker is still dead by sending it a status request message
 	 */
 	private void sendRequestStatusMessage(Socket worker) {
-		if (status != STATUS.DEAD ) {
-			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
-			worker.sendMessage(message);
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 0, socket);
+		worker.sendMessage(message);
 	}
 	
 	/**
 	 * confirmation message to the scheduler that it received the job correctly
 	 */
 	private void sendJobConfirmationToScheduler(Socket scheduler, int value) {
-		if (status != STATUS.DEAD ) {
-			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
-			scheduler.sendMessage(message);
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
+		scheduler.sendMessage(message);
 	}
 
 	/**
 	 * Request to a worker for it to start executing some code
 	 */
 	private void sendJobRequestToWorker(Socket worker, Job job) {
-		if (status != STATUS.DEAD ) {
-			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.REQUEST, job.getId(), socket);
-			message.attachJob(job);
-			worker.sendMessage(message);
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.REQUEST, job.getId(), socket);
+		message.attachJob(job);
+		worker.sendMessage(message);
 	}
 
 	/**
 	 * Confirmation to a worker that it received its result correctly
 	 */
 	private void sendJobResultConfirmationToWorker(Socket worker, int value) {
-		if (status != STATUS.DEAD ) {
-			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
-			worker.sendMessage(message);
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.CONFIRMATION, value, socket);
+		worker.sendMessage(message);
 	}
 
 	/**
 	 * send job result back to the cluster
 	 */
 	private void sendJobResultToCluster(ActiveJob aj) {
-		if (status != STATUS.DEAD ) {
-			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.RESULT, aj.getJob().getId(),
-				socket);
-			message.attachJob(aj.getJob());
-			aj.getScheduler().sendMessage(message);
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.RESULT, aj.getJob().getId(), socket);
+		message.attachJob(aj.getJob());
+		aj.getScheduler().sendMessage(message);
 	}
 
 	/**
 	 * request job status from worker
 	 */
 	private void sendPingRequestMessage(Socket worker, int jobId) { 
-		if (status != STATUS.DEAD ) {
-			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.PING, 0, socket);
-			worker.sendMessage(message);
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.PING, 0, socket);
+		worker.sendMessage(message);
 	}
 	
 	private void sendStatus(Socket recv) {
-		if (status != STATUS.DEAD ) {
-			Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 1, socket);
-			recv.sendMessage(message);
-		}
+		if (this.status == STATUS.DEAD) return;
+
+		Message message = new Message(Message.SENDER.RESOURCE_MANAGER, Message.TYPE.STATUS, 1, socket);
+		recv.sendMessage(message);
 	}
 
 	/* ========================================================================
@@ -328,28 +326,11 @@ public class ResourceManager extends GridNode implements Runnable {
 		return null;
 	}
 
-//	public void addWorker(Worker worker) {
-//		workerObjects.add(worker);
-//	}
-	
-	
 	public void setWorkerSockets(List<Socket> workers) {
 		this.workers = new HashMap<Socket, Worker.STATUS>();
 		for (int i = 0; i < workers.size(); i ++) {
 			this.workers.put(workers.get(i), Worker.STATUS.AVAILABLE);
 		}
-	}
-	
-	
-	// only for GUI
-	public void setWorkers(ArrayList<Worker> workers) {
-		this.workerObjects = new ArrayList<Worker>();
-		workerObjects = workers;
-	}
-
-	// only for GUI
-	public ArrayList<Worker> getWorkers() {
-		return workerObjects;
 	}
 	
 	public ArrayList<Socket> getDeadWorkers(){
