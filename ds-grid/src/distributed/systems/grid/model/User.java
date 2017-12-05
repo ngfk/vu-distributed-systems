@@ -49,7 +49,7 @@ public class User extends GridNode {
 		// Add a new job to the system that takes up random time
 		Job job = new Job((int) (Math.random() * 5000));
 		executeJob(job);
-		Thread.sleep(2000);
+		Thread.sleep(200);
 	}
 
 	/**

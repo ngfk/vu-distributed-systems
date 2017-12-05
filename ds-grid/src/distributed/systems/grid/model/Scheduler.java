@@ -54,6 +54,17 @@ public class Scheduler extends GridNode {
 	 * Note: this runs in an infinite loop, with 200ms sleep.
 	 */
 	public void runNode() {
+
+		ArrayList<Socket> schedulerSockets = getActiveSchedulers();
+		
+		// ping other schedulers for aliveness
+		for (Socket ss : schedulerSockets) {
+			sendPingRequestMessage(ss);
+			if (!ss.lastAliveIn(200L)){
+				schedulers.put(ss, Scheduler.STATUS.DEAD);
+			}
+		}
+
 		// TODO previously this run was implemented but never started, now it 
 		// does start but I don't know if the implementation was finished so
 		// i'll just leave it as a comment below...
@@ -78,6 +89,7 @@ public class Scheduler extends GridNode {
 		// 		sendPingRequestMessage(rmSocket);
 		// 	}
 		// }
+		
 	}
 
 	/**
@@ -163,7 +175,7 @@ public class Scheduler extends GridNode {
 
 	public void sendPingRequestMessage(Socket recv) {
 		if (status == STATUS.DEAD) return;
-
+		System.out.println(">> Scheduler sent ping request");
 		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.PING, 0, socket);
 		recv.sendMessage(message);
 	}
@@ -286,6 +298,15 @@ public class Scheduler extends GridNode {
 	}
 
 	/**
+	 * Scheduler has acknowledged that we received the results
+	 */
+	public void schedulerRespondStatusHandler(Message message) {
+		if (this.status == STATUS.DEAD) return;
+		
+		message.senderSocket.sendMessage(getAliveMessage()); // update status to RM
+	}
+
+	/**
 	 * Types of messages we expect here:
 	 * 
 	 * - Message from a scheduler, saying that it is accepting a new job
@@ -294,6 +315,7 @@ public class Scheduler extends GridNode {
 	 */
 	public void onMessageReceived(Message message) {
 		if (status == STATUS.DEAD){
+			return;
 			// cant do mahn
 		}
 		
@@ -318,6 +340,9 @@ public class Scheduler extends GridNode {
 			}
 			if (message.getType() == Message.TYPE.ACKNOWLEDGEMENT) {
 				schedulerJobResultAcknowledgementHandler(message);
+			}
+			if (message.getType() == Message.TYPE.STATUS) {
+				schedulerRespondStatusHandler(message);
 			}
 		}
 		if (message.getSender() == Message.SENDER.RESOURCE_MANAGER) {
@@ -405,5 +430,10 @@ public class Scheduler extends GridNode {
 		}
 		assert (activeSchedulers.size() > 0);
 		return activeSchedulers;
+	}
+
+	private Message getAliveMessage() {
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.STATUS, status.ordinal(), socket); // enum -> int
+		return message;
 	}
 }
