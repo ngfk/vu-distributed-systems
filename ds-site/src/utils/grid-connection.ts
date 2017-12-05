@@ -81,7 +81,7 @@ export class GridConnection {
         }, this.reconnectDelay);
 
         // tslint:disable-next-line
-        window.onunload = () => {};
+        window.onbeforeunload = () => {};
     }
 
     /**
@@ -92,7 +92,7 @@ export class GridConnection {
     private onOpen(): void {
         this.reconnectDelay = BASE_DELAY;
 
-        window.onunload = () => {
+        window.onbeforeunload = () => {
             const message: GridMessageStop = { type: GridMessageType.Stop };
             this.send(message);
         };

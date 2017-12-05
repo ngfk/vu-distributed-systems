@@ -112,6 +112,7 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
         const { schedulers, clusters, workers } = this.initialState;
         this.setState(this.initialState);
         this.renderGrid(schedulers, clusters, workers);
+        this.props.actions.gridStop(void 0);
     };
 
     private onStart = () => {
