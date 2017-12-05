@@ -1,6 +1,7 @@
 package distributed.systems.grid.gui;
 
 import java.io.IOException;
+import java.util.concurrent.Semaphore;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -20,6 +21,7 @@ import distributed.systems.grid.simulation.SimulationContext;
 
 @WebSocket
 public class GuiConnection {
+	private static Semaphore semaphore = new Semaphore(1);
 	private static Gson gson = new Gson();
 	private static JsonParser jsonParser = new JsonParser();
 
@@ -109,10 +111,16 @@ public class GuiConnection {
 	
 	private void send(String message) {
 		try {
+			semaphore.acquire();
 			System.out.println(message);
 			session.getRemote().sendString(message);
+		} catch (InterruptedException e1) {
+			System.out.println("Semaphore acquire interrupted?");
+			e1.printStackTrace();
 		} catch (IOException e) {
 			System.out.println("Error sending websocket packet.");
 		}
+		
+		semaphore.release();
 	}
 }

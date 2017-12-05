@@ -33,7 +33,7 @@ public class User extends GridNode implements Runnable {
 		// Create jobs if configured in context, used in `StartDebug.java` for
 		// testing purposes.
 		for (int i = 0; i < context.getStartAutomatically(); i++) {
-			Job job = new Job(8000 + (int) (Math.random() * 5000));
+			Job job = new Job((int) (Math.random() * 5000));
 			executeJob(job);
 		}
 	}
@@ -68,11 +68,11 @@ public class User extends GridNode implements Runnable {
 	public void run() {
 		while (this.running) {
 			// Add a new job to the system that takes up random time
-			Job job = new Job(8000 + (int) (Math.random() * 5000));
+			Job job = new Job((int) (Math.random() * 5000));
 			executeJob(job);
 
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(200);
 			} catch (InterruptedException e) {
 				assert (false) : "Simulation runtread was interrupted";
 			}
