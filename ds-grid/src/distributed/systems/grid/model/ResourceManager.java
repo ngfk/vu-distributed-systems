@@ -26,7 +26,7 @@ import distributed.systems.grid.simulation.SimulationContext;
  * 	If the resourceManager comes back to life, it might have an outdated / invalid workers list.
  *  but this will be fixed whenever the workers start sending their I am alive message again.
  */
-public class ResourceManager extends GridNode implements Runnable {
+public class ResourceManager extends GridNode {
 	public static enum STATUS {
 		AVAILABLE, RESERVED, BUSY, DEAD // TODO DEAD.
 	}
@@ -56,6 +56,46 @@ public class ResourceManager extends GridNode implements Runnable {
 		this.status = this.status == STATUS.DEAD
 			? STATUS.AVAILABLE
 			: STATUS.DEAD;
+	}
+
+	/**
+	 * The thread that checks if the workers are still alive
+	 *  - WorkerOnDie -> send active job to other worker.
+	 *  
+	 *  TODO. check if workers are alive again
+	 * 
+	 * Note: this runs in an infinite loop, with 200ms sleep.
+	 */
+	public void runNode() {
+		if (status == STATUS.DEAD) return;
+
+		// for every active-unfinished job periodically check if the worker is still alive
+		for (int i = 0; i < activeJobs.size(); i++) {
+			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
+				Socket worker = activeJobs.get(i).getWorker();
+				
+				// we did not hear from this guy for a loong time
+				if (!worker.lastAliveIn(500L)) { // declare worker dead
+					workers.put(worker, Worker.STATUS.DEAD);
+					tryExecuteJob(activeJobs.get(i));
+				}
+				
+				// did not hear from this worker in a slightly long time
+				else if (!worker.lastAliveIn(200L)) { // request ping message
+					sendPingRequestMessage(worker, activeJobs.get(i).getJob().getId());
+				}
+			}
+		}
+		
+		// for every dead worker, check if he's alive again
+		ArrayList<Socket> deadWorkers = getDeadWorkers();
+		for (int i = 0; i < deadWorkers.size(); i++) {
+			Socket worker = deadWorkers.get(i);
+			if (!worker.lastAliveIn(10000L)) { // check if worker is alive only after long intervals
+				worker.isAlive();
+				sendRequestStatusMessage(worker);
+			}
+		}
 	}
 
 	/* ========================================================================
@@ -344,48 +384,5 @@ public class ResourceManager extends GridNode implements Runnable {
 		}
 		
 		return deadWorkers;
-	}
-
-	/**
-	 * The thread that checks if the workers are still alive
-	 *  - WorkerOnDie -> send active job to other worker.
-	 *  
-	 *  TODO. check if workers are alive again
-	 */
-	public void run() {
-		if (status != STATUS.DEAD ) {
-			// for every active-unfinished job periodically check if the worker is still alive
-			for (int i = 0; i < activeJobs.size(); i++) {
-				if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
-					Socket worker = activeJobs.get(i).getWorker();
-					
-					// we did not hear from this guy for a loong time
-					if (!worker.lastAliveIn(500L)) { // declare worker dead
-						workers.put(worker, Worker.STATUS.DEAD);
-						tryExecuteJob(activeJobs.get(i));
-					}
-					
-					// did not hear from this worker in a slightly long time
-					else if (!worker.lastAliveIn(200L)) { // request ping message
-						sendPingRequestMessage(worker, activeJobs.get(i).getJob().getId());
-					}
-				}
-			}
-			// for every dead worker, check if he's alive again
-			ArrayList<Socket> deadWorkers = getDeadWorkers();
-			for (int i = 0; i < deadWorkers.size(); i++) {
-				Socket worker = deadWorkers.get(i);
-				if (!worker.lastAliveIn(10000L)) { // check if worker is alive only after long intervals
-					worker.isAlive();
-					sendRequestStatusMessage(worker);
-				}
-			}
-			
-			try {
-				Thread.sleep(100L);
-			} catch (InterruptedException e) {
-				assert (false) : "Simulation runtread was interrupted";
-			}
-		}
 	}
 }
