@@ -118,7 +118,7 @@ public class Scheduler extends GridNode {
 	public void sendJobResultConfirmationConfirmation(Socket scheduler, int jobId) {
 		if (status == STATUS.DEAD || scheduler == socket) return;
 
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.ACKNOWLEDGEMENT, jobId, socket);
 		scheduler.sendMessage(message);
 	}
 
@@ -185,7 +185,7 @@ public class Scheduler extends GridNode {
 				schedulerSockets.size() - 1);
 
 		ActiveJob aj = new ActiveJob(job, socket, schedulerSockets);
-		activeJobs.add(aj);
+		this.activeJobs.add(aj);
 		this.sendQueue(this.activeJobs.size());
 
 		for (Socket ss : schedulerSockets) {
@@ -206,7 +206,7 @@ public class Scheduler extends GridNode {
 	public void schedulerJobRequestHandler(Message message) {
 		Job job = message.getJob();
 		ActiveJob aj = new ActiveJob(job, message.senderSocket, null); // recognize that it  belongs to another scheduler, due to the socket
-		activeJobs.add(aj);
+		this.activeJobs.add(aj);
 		this.sendQueue(this.activeJobs.size());
 		sendJobConfirmationMessage(message.senderSocket, job.getId());
 	}
@@ -245,7 +245,7 @@ public class Scheduler extends GridNode {
 
 		if (aj.isDone()) {
 			System.out.println("<< Scheduler done with job (since we're the only schedulre)");
-			activeJobs.remove(aj);
+			this.activeJobs.remove(aj);
 			this.sendQueue(this.activeJobs.size());
 			return;
 		}
@@ -267,7 +267,7 @@ public class Scheduler extends GridNode {
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
 		sendJobResultConfirmationConfirmation(message.senderSocket, jobId);
-		activeJobs.remove(aj);
+		this.activeJobs.remove(aj);
 		this.sendQueue(this.activeJobs.size());
 	}
 
@@ -279,8 +279,8 @@ public class Scheduler extends GridNode {
 		aj.markAsDone(message.senderSocket);
 
 		if (aj.isDone()) {
-			System.out.printf("<< Schedulers done with job (todo: %d)\n", activeJobs.size() -1);
-			activeJobs.remove(aj);
+			System.out.printf("<< Schedulers done with job (todo: %d)\n", this.activeJobs.size() -1);
+			this.activeJobs.remove(aj);
 			this.sendQueue(this.activeJobs.size());
 		}
 	}
@@ -377,9 +377,9 @@ public class Scheduler extends GridNode {
 	}
 
 	public ActiveJob getActiveJob(int jobId) {
-		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).getJob().getId() == jobId) {
-				return activeJobs.get(i);
+		for (int i = 0; i < this.activeJobs.size(); i++) {
+			if (this.activeJobs.get(i).getJob().getId() == jobId) {
+				return this.activeJobs.get(i);
 			}
 		}
 		return null;

@@ -60,7 +60,7 @@ public class User extends GridNode {
 		int schedulerId = rand.nextInt(schedulers.size());
 
 		Socket scheduler = schedulers.get(schedulerId);
-		activeJobs.add(new ActiveJob(job, scheduler, null));
+		this.activeJobs.add(new ActiveJob(job, scheduler, null));
 
 		Message message = new Message(Message.SENDER.USER, Message.TYPE.REQUEST, job.getId(), socket);
 		message.attachJob(job);
@@ -93,7 +93,7 @@ public class User extends GridNode {
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
 		sendJobResultConfirmation(message.senderSocket, jobId);
-		activeJobs.remove(aj);
+		this.activeJobs.remove(aj);
 	}
 
 	/**
@@ -118,9 +118,9 @@ public class User extends GridNode {
 	 * Get activeJob by jobId
 	 */
 	public ActiveJob getActiveJob(int jobId) {
-		for (int i = 0; i < activeJobs.size(); i++) {
-			if (activeJobs.get(i).getJob().getId() == jobId) {
-				return activeJobs.get(i);
+		for (int i = 0; i < this.activeJobs.size(); i++) {
+			if (this.activeJobs.get(i).getJob().getId() == jobId) {
+				return this.activeJobs.get(i);
 			}
 		}
 		return null;
