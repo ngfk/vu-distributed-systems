@@ -21,12 +21,12 @@ import distributed.systems.grid.simulation.SimulationContext;
 
 @WebSocket
 public class GuiConnection {
-	private static Semaphore semaphore = new Semaphore(1);
 	private static Gson gson = new Gson();
 	private static JsonParser jsonParser = new JsonParser();
-
+	
 	private Session session;
 	private SimulationContext context;
+	private Semaphore semaphore = new Semaphore(1);
 
 	/**
 	 * Called if a WebSocket connection closes.
@@ -81,7 +81,7 @@ public class GuiConnection {
 				this.context.startSimulation();
 				break;
 			case "stop":
-				if(context != null)
+				if (context != null)
 					this.context.stopSimulation();
 				break;
 			case "toggle":
@@ -114,7 +114,7 @@ public class GuiConnection {
 	private void send(String message) {
 		try {
 			semaphore.acquire();
-			System.out.println(message);
+			// System.out.println(message);
 			session.getRemote().sendString(message);
 		} catch (InterruptedException e1) {
 			System.out.println("Semaphore acquire interrupted?");

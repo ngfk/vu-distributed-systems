@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
+
+import com.google.common.util.concurrent.RateLimiter;
 
 import distributed.systems.grid.gui.GuiConnection;
-import distributed.systems.grid.gui.NodeState;
 import distributed.systems.grid.gui.NodeType;
 import distributed.systems.grid.model.GridNode;
 import distributed.systems.grid.model.ResourceManager;
@@ -20,6 +22,18 @@ import distributed.systems.grid.model.Worker;
  */
 public class SimulationContext {
 	
+	public class Tuple<X, Y, Z> { 
+		  public final X x; 
+		  public final Y y;
+		  public final Z z;
+		  
+		  public Tuple(X x, Y y, Z z) { 
+		    this.x = x; 
+		    this.y = y; 
+		    this.z = z;
+	  	} 
+	} 
+	
 	private GuiConnection connection;
 	private Simulation simulation;
 
@@ -27,7 +41,11 @@ public class SimulationContext {
 	private List<Scheduler> schedulers = new ArrayList<Scheduler>();
 	private List<ResourceManager> resourceManagers = new ArrayList<ResourceManager>();
 	private Map<String, List<Worker>> workers = new HashMap<String, List<Worker>>();
-
+	
+	private List<Tuple<String, NodeType, Integer>> queue = new ArrayList<Tuple<String, NodeType, Integer>>();
+	private Semaphore queueLock = new Semaphore(1);
+	private RateLimiter queueLimiter = RateLimiter.create(1);
+	
 	private int startAutomatically = 0;
 
 	/**
@@ -225,23 +243,6 @@ public class SimulationContext {
 	}
 	
 	/**
-	 * Sends a 'state' message to the connected websocket. If no socket is
-	 * registered this method is a simple no-op.
-	 * @param nodeId The id of the node that has a change in state
-	 * @param nodeType The type of the node that has a change in state
-	 * @param nodeState The new state of the node
-	 */
-	public void sendState(String nodeId, GridNode.TYPE nodeType, NodeState nodeState) {
-		if (this.connection == null) return;
-
-		NodeType type = this.getNodeType(nodeType);
-		GridNode node = this.findNode(nodeId, type);
-		if (node != null) {
-			this.connection.sendState(nodeId, type, nodeState);
-		}
-	}
-
-	/**
 	 * Sends a 'queue' message to the connected websocket. If no socket is
 	 * registered this method is a simple no-op.
 	 * @param nodeId The id of the node that has a change in job count
@@ -254,8 +255,22 @@ public class SimulationContext {
 		NodeType type = this.getNodeType(nodeType);
 		GridNode node = this.findNode(nodeId, type);
 		
-		if (node != null) {
-			this.connection.sendQueue(nodeId, type, jobCount);
+		try {
+			this.queueLock.acquire();
+			this.queue.add(new Tuple<String, NodeType, Integer>(nodeId, type, jobCount));
+			
+			if (node != null && this.queueLimiter.tryAcquire()) {
+				for (Tuple<String, NodeType, Integer> tuple : this.queue) {
+					this.connection.sendQueue(tuple.x, tuple.y, tuple.z);
+				}
+				
+				this.queue.clear();
+			}
+			
+			this.queueLock.release();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	

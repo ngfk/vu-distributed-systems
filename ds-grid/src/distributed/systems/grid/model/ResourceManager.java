@@ -190,7 +190,7 @@ public class ResourceManager extends GridNode {
 	 *  - try executing the job
 	 */
 	private void jobRequestHandler(Message message) {
-		System.out.println(">> ResourceManager has received new job -> starting to process job");
+		// System.out.println(">> ResourceManager has received new job -> starting to process job");
 		ActiveJob aj = new ActiveJob(message.getJob(), message.senderSocket, null);
 		this.activeJobs.add(aj);
 		this.sendQueue(this.activeJobs.size());
@@ -216,7 +216,7 @@ public class ResourceManager extends GridNode {
 	 * When we receive a jobresult from a worker node
 	 */
 	public void jobResultHandler(Message message) {
-		System.out.println("<< ResourceManager done with job");
+		// System.out.println("<< ResourceManager done with job");
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
 		aj.setStatus(Job.STATUS.CLOSED);

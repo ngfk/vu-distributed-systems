@@ -175,7 +175,7 @@ public class Scheduler extends GridNode {
 
 	public void sendPingRequestMessage(Socket recv) {
 		if (status == STATUS.DEAD) return;
-		System.out.println(">> Scheduler sent ping request");
+		// System.out.println(">> Scheduler sent ping request");
 		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.PING, 0, socket);
 		recv.sendMessage(message);
 	}
@@ -193,8 +193,8 @@ public class Scheduler extends GridNode {
 		assert (!hasActiveJob(job.getId())); // job already present.. ?how why what
 
 		ArrayList<Socket> schedulerSockets = getActiveSchedulers();
-		System.out.printf(">> Scheduler has received job -> Waiting for %d scheduler confirmations\n",
-				schedulerSockets.size() - 1);
+		// System.out.printf(">> Scheduler has received job -> Waiting for %d scheduler confirmations\n",
+		// 		schedulerSockets.size() - 1);
 
 		ActiveJob aj = new ActiveJob(job, socket, schedulerSockets);
 		this.activeJobs.add(aj);
@@ -256,7 +256,7 @@ public class Scheduler extends GridNode {
 		aj.setStatus(Job.STATUS.CLOSED);
 
 		if (aj.isDone()) {
-			System.out.println("<< Scheduler done with job (since we're the only schedulre)");
+			// System.out.println("<< Scheduler done with job (since we're the only schedulre)");
 			this.activeJobs.remove(aj);
 			this.sendQueue(this.activeJobs.size());
 			return;
@@ -275,7 +275,7 @@ public class Scheduler extends GridNode {
 	 *  - confirm to scheduler
 	 */
 	public void schedulerJobResultConfirmationHandler(Message message) {
-		System.out.println("<< Scheduler done tracking neighbours job");
+		// System.out.println("<< Scheduler done tracking neighbours job");
 		int jobId = message.getValue();
 		ActiveJob aj = getActiveJob(jobId);
 		sendJobResultConfirmationConfirmation(message.senderSocket, jobId);
@@ -291,7 +291,7 @@ public class Scheduler extends GridNode {
 		aj.markAsDone(message.senderSocket);
 
 		if (aj.isDone()) {
-			System.out.printf("<< Schedulers done with job (todo: %d)\n", this.activeJobs.size() -1);
+			// System.out.printf("<< Schedulers done with job (todo: %d)\n", this.activeJobs.size() -1);
 			this.activeJobs.remove(aj);
 			this.sendQueue(this.activeJobs.size());
 		}
@@ -359,7 +359,7 @@ public class Scheduler extends GridNode {
 	 * 	Class functions
 	 * ===================================================================== */
 	public void handleExecuteJob(ActiveJob aj) {
-		System.out.println(">> Scheduler got job confirmations from all other schedulers -> starting to process job");
+		// System.out.println(">> Scheduler got job confirmations from all other schedulers -> starting to process job");
 		sendJobConfirmationToUser(aj.getJob().getUser(), aj.getJob().getId());
 		executeJob(aj);
 	}

@@ -107,27 +107,19 @@ export class GridConnection {
     private onMessage(message: MessageEvent): void {
         const invalidMessageErr = 'Invalid message received from grid:\n';
 
-        // Attempt to parse the JSON data
         let data: any;
         try {
+            // Attempt to parse the JSON data
             data = JSON.parse(message.data);
         } catch {
             throw new Error(invalidMessageErr + message.data);
         }
 
-        const accept = [GridMessageType.Setup, GridMessageType.Queue];
-
-        // Throw error on messages with invalid structure.
-        if (
-            !data ||
-            typeof data.type !== 'string' ||
-            accept.indexOf(data.type) < 0
-        ) {
-            const json = JSON.stringify(data, undefined, 4);
-            throw new Error(invalidMessageErr + json);
+        if (Array.isArray(data)) {
+            data.forEach(d => this.observers.forEach(observer => observer(d)));
+        } else {
+            this.observers.forEach(observer => observer(data));
         }
-
-        this.observers.forEach(observer => observer(data));
     }
 }
 

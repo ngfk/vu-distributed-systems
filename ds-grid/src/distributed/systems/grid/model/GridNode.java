@@ -1,8 +1,8 @@
 package distributed.systems.grid.model;
 
-import distributed.systems.grid.gui.NodeState;
-import distributed.systems.grid.simulation.SimulationContext;
 import java.util.UUID;
+
+import distributed.systems.grid.simulation.SimulationContext;
 
 public abstract class GridNode implements ISocketCommunicator, Runnable {
     public static enum TYPE {
@@ -43,14 +43,6 @@ public abstract class GridNode implements ISocketCommunicator, Runnable {
 
     public Socket getSocket() {
         return this.socket;
-    }
-
-    public void setIdle() {
-        this.context.sendState(this.id, this.type, NodeState.ONLINE);
-    }
-
-    public void setBusy() {
-        this.context.sendState(this.id, this.type, NodeState.BUSY);
     }
 
     public void sendQueue(int jobCount) {

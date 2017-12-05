@@ -133,7 +133,7 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 * - start executing ... -> after x seconds send result to RM
 	 */
 	private void jobRequestHandler(Message message) {
-		System.out.println(">> Worker received job -> starting to proces Job");
+		// System.out.println(">> Worker received job -> starting to proces Job");
 		status = STATUS.BUSY;
 		sendJobConfirmationToRM(message.senderSocket, message.getValue());
 		activeJob = new ActiveJob(message.getJob(), message.senderSocket, null); // activeJob.scheduler here is a resourceManager
@@ -197,7 +197,7 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	 * - ..await result confirmation
 	 */
 	private void jobDoneHandler() {
-		System.out.println("<< Worker done with job");
+		// System.out.println("<< Worker done with job");
 		activeJob.setStatus(Job.STATUS.CLOSED);
 		sendJobResultToRM();
 	}

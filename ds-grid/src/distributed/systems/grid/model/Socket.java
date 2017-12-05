@@ -36,7 +36,7 @@ public class Socket {
 	}
 	
 	public void debugLastAliveIn(long delta) {
-		System.out.printf("%d >= %d - %d\n", this.lastAlive, System.currentTimeMillis(), delta);
+		// System.out.printf("%d >= %d - %d\n", this.lastAlive, System.currentTimeMillis(), delta);
 	}
 
 	public String getId() {
@@ -51,6 +51,7 @@ public class Socket {
 	 * If we send a message using this socket, ensure that it ends up at the right receiver
 	 */
 	public void sendMessage(Message message) {
+		node.onMessageReceived(message);
 		new Thread(new Runnable() {
 			public void run() {
 				asyncSend(message);
@@ -59,7 +60,7 @@ public class Socket {
 	}
 
 	/**
-	 * sends the messages in a non-blocking way with some delay (simulate traffic on a network)
+	 * Sends the messages in a non-blocking way with some delay (simulate traffic on a network)
 	 */
 	public void asyncSend(Message message) {
 		Random rand = new Random();
@@ -71,8 +72,8 @@ public class Socket {
 			Thread.currentThread().interrupt();
 		}
 
-		System.out.printf("[Socket(%d) -- %s(%d)->%s(%d) %s: %s]\n", delay, message.getSender(),
-				message.senderSocket.getNr(), node.getType(), node.getNr(), message.getType(), message.getValue());
+		// System.out.printf("[Socket(%d) -- %s(%d)->%s(%d) %s: %s]\n", delay, message.getSender(),
+		// 		message.senderSocket.getNr(), node.getType(), node.getNr(), message.getType(), message.getValue());
 		node.onMessageReceived(message);
 	}
 }
