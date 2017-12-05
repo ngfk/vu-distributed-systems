@@ -1,3 +1,3 @@
-import { GridBase } from './grid-base';
+import { GridNode } from './grid-node';
 
-export class GridResourceManager extends GridBase {}
+export class GridResourceManager extends GridNode {}
