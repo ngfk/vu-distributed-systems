@@ -1,4 +1,4 @@
-import { GridSetup } from './grid-setup';
+import { GridSetup, GridSetupParams } from './grid-setup';
 import { NodeType } from './node-type';
 
 export interface GridMessage {
@@ -6,11 +6,17 @@ export interface GridMessage {
 }
 
 export enum GridMessageType {
+    Init = 'init',
     Setup = 'setup',
     Queue = 'queue',
     Start = 'start',
     Stop = 'stop',
     Toggle = 'toggle'
+}
+
+export interface GridMessageInit extends GridMessage {
+    readonly type: GridMessageType.Init;
+    readonly sizes: GridSetupParams;
 }
 
 export interface GridMessageSetup extends GridMessage {
@@ -27,11 +33,6 @@ export interface GridMessageQueue extends GridMessage {
 
 export interface GridMessageStart extends GridMessage {
     readonly type: GridMessageType.Start;
-    readonly sizes: {
-        readonly schedulers: number;
-        readonly clusters: number;
-        readonly workers: number;
-    };
 }
 
 export interface GridMessageStop extends GridMessage {
@@ -48,6 +49,7 @@ export interface GridMessageToggle extends GridMessage {
  * Only includes the grid messages that are going to the grid back-end.
  */
 export type OutgoingGridMessage =
+    | GridMessageInit
     | GridMessageStart
     | GridMessageStop
     | GridMessageToggle;

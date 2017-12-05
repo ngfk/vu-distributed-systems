@@ -12,13 +12,25 @@ import { GridMessageType } from './models/grid-message';
 import { NodeType } from './models/node-type';
 import { reducer, State } from './reducers/reducer';
 import registerServiceWorker from './registerServiceWorker';
-import { GridConnection, gridMiddleware } from './utils/grid-connection';
+import {
+    GridConnection,
+    gridMiddleware,
+    Unsubscribe
+} from './utils/grid-connection';
+import { throttle } from './utils/throttle';
 
 // Grid connection & redux store
 const grid = new GridConnection();
 const enhancer = window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose;
 const middleware = applyMiddleware(gridMiddleware(grid));
 const store = createStore<State, ActionMap>(reducer, enhancer(middleware));
+
+// Monkey patch the redux subscribe function to add a debounce
+const originalSubscribe = store.subscribe;
+store.subscribe = (listener: () => void): Unsubscribe => {
+    const debouncedListener = throttle(() => listener(), 200);
+    return originalSubscribe(() => debouncedListener());
+};
 
 // Render React components
 ReactDOM.render(
@@ -44,6 +56,8 @@ grid.subscribe(message => {
         store.dispatch('SCHEDULER_INIT', schedulers);
         store.dispatch('RESOURCE_MANAGER_INIT', resourceManagers);
         store.dispatch('WORKER_INIT', workers);
+
+        grid.send({ type: GridMessageType.Start });
 
         return;
     }

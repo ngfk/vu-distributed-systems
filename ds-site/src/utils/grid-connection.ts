@@ -2,7 +2,7 @@ import { Middleware } from 'redux';
 
 import { ActionMap } from '../actions/actions';
 import {
-    GridMessageStart,
+    GridMessageInit,
     GridMessageStop,
     GridMessageToggle,
     GridMessageType,
@@ -155,8 +155,9 @@ export const gridMiddleware: GridMiddleware = grid => store => next => action =>
     switch (action.type) {
         case 'GRID_START': {
             const payload = p as ActionMap['GRID_START'];
-            const message: GridMessageStart = {
-                type: GridMessageType.Start,
+            // First init, start it sent after rendering.
+            const message: GridMessageInit = {
+                type: GridMessageType.Init,
                 sizes: {
                     schedulers: payload.schedulers,
                     clusters: payload.clusters,

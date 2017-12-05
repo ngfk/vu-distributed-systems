@@ -20,7 +20,6 @@
         "react-dom": "^16.1.1",
         "react-redux": "^5.0.6",
         "react-scripts-ts": "^2.8.0",
-        "redux": "^3.7.2",
-        "react-redux-form": "1.16.2"
+        "redux": "^3.7.2"
     }
 }
