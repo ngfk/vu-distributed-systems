@@ -17,6 +17,7 @@ public class User extends GridNode {
 	private int jobCount;
 	
 	public User(SimulationContext context, List<Socket> schedulers) {
+
 		super(context, GridNode.TYPE.USER);
 
 		this.activeJobs = new ArrayList<ActiveJob>();

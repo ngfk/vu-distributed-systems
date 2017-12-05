@@ -118,7 +118,7 @@ public class Scheduler extends GridNode {
 	public void sendJobResultConfirmationConfirmation(Socket scheduler, int jobId) {
 		if (status == STATUS.DEAD || scheduler == socket) return;
 
-		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.ACKNOWLEDGEMENT, jobId, socket);
+		Message message = new Message(Message.SENDER.SCHEDULER, Message.TYPE.CONFIRMATION, jobId, socket);
 		scheduler.sendMessage(message);
 	}
 
@@ -233,6 +233,7 @@ public class Scheduler extends GridNode {
 		ActiveJob aj = getActiveJob(message.getValue());
 		aj.markAsDone(socket);
 		sendJobResultToUser(aj.getJob().getUser(), aj.getJob());
+		sendJobResultConfirmationConfirmation(message.senderSocket, aj.getJob().getId());
 	}
 
 	/**
