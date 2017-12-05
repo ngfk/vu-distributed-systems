@@ -15,7 +15,6 @@ import distributed.systems.grid.simulation.SimulationContext;
  * The list of other schedulers is hard-coded
  * The list of resourceManagers is flexible
  * The list of users is flexible
- *
  */
 public class Scheduler extends GridNode {
 	public static enum STATUS {
@@ -382,8 +381,10 @@ public class Scheduler extends GridNode {
 	 *  = SchedulerOnDie -> ?
 	 *  = ResourceManagerOnDie -> ?
 	 */
-	public void run() { // TODO thread needs to be ran.. I think this should also be wrapped in a infinite loop
-		// check RM's for active jobs
+	public void run() {
+		// TODO thread needs to be ran.. I think this should also be wrapped in a infinite loop
+
+		// Check RM's for active jobs
 		for (int i = 0; i < activeJobs.size(); i++) {
 			if (activeJobs.get(i).getStatus() == Job.STATUS.RUNNING) {
 				Socket rmSocket = activeJobs.get(i).getRm();
@@ -395,11 +396,11 @@ public class Scheduler extends GridNode {
 			}
 		}
 		
-		// update inactive RM's
+		// Update inactive RM's
 		for (int i = 0; i < rmSockets.size(); i++) {
 			Socket rmSocket = rmSockets.get(i);
 			if (!rmSocket.lastAliveIn(200L)) {
-				// request status message // TODO
+				// Request status message // TODO
 				sendPingRequestMessage(rmSocket);
 			}
 		}

@@ -13,12 +13,11 @@ import distributed.systems.grid.simulation.SimulationContext;
 public class User extends GridNode implements Runnable {
 
 	private boolean running;
-	
+	private Thread thread;
+
 	private List<ActiveJob> activeJobs;
 	private List<Socket> schedulers; // this should only store the active schedulers
 	
-	private Thread thread;
-
 	/**
 	 * Every user should at least know about 2 schedulers
 	 */
@@ -26,6 +25,8 @@ public class User extends GridNode implements Runnable {
 		super(context, GridNode.TYPE.SCHEDULER);
 
 		this.running = true;
+		this.thread = null;
+
 		this.activeJobs = new ArrayList<ActiveJob>();
 		this.schedulers = schedulers;
 
@@ -61,10 +62,12 @@ public class User extends GridNode implements Runnable {
 		// cool story bro
 	}
 
-	/* loop that produces the jobs */
+	/**
+	 * Loop that produces the jobs.
+	 */
 	public void run() {
 		while (this.running) {
-			/* Add a new job to the system that take up random time */
+			// Add a new job to the system that takes up random time
 			Job job = new Job(8000 + (int) (Math.random() * 5000));
 			executeJob(job);
 
@@ -77,7 +80,7 @@ public class User extends GridNode implements Runnable {
 	}
 
 	/**
-	 * should send a new job to a scheduler
+	 * Should send a new job to a scheduler.
 	 */
 	public void executeJob(Job job) {
 		Random rand = new Random();
@@ -98,7 +101,7 @@ public class User extends GridNode implements Runnable {
 	}
 
 	/**
-	 * whenever a scheduler confirms that it received a job from the user
+	 * Whenever a scheduler confirms that it received a job from the user.
 	 *  - update activejob status
 	 */
 	private void jobConfirmationHandler(Message message) {
@@ -107,11 +110,10 @@ public class User extends GridNode implements Runnable {
 	}
 
 	/**
-	 * whenever the user gets the jobresult back from the schedulers.
+	 * Whenever the user gets the jobresult back from the schedulers.
 	 * 	- confirm to scheduler that job is received 
 	 *  - Everything about this job can be deleted!
 	 *  - remove job from activejobs
-	 *  
 	 */
 	private void jobResultHandler(Message message) {
 		int jobId = message.getValue();
@@ -122,7 +124,6 @@ public class User extends GridNode implements Runnable {
 
 	/**
 	 * Types of messages we expect here:
-	 * 
 	 * - Message from a scheduler, saying that it has accepted the job and its going to start executing
 	 * - Message from a scheduler, saying that it has completed executing a job
 	 */
@@ -138,10 +139,10 @@ public class User extends GridNode implements Runnable {
 
 	}
 
-	//TODO detect when scheduler is down.
+	// TODO detect when scheduler is down.
 
 	/**
-	 * get activeJob by jobId
+	 * Get activeJob by jobId
 	 */
 	public ActiveJob getActiveJob(int jobId) {
 		for (int i = 0; i < activeJobs.size(); i++) {
