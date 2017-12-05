@@ -4,7 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "react-scripts-ts start",
+        "start:site": "react-scripts-ts start",
+        "start:grid": "nodemon ./src/grid/index.ts",
         "build": "react-scripts-ts build"
     },
     "keywords": [],
@@ -21,5 +22,14 @@
         "react-redux": "^5.0.6",
         "react-scripts-ts": "^2.8.0",
         "redux": "^3.7.2"
+    },
+    "nodemonConfig": {
+        "watch": ["src/**/*.ts"],
+        "exec": "ts-node",
+        "quiet": true,
+        "events": {
+            "start": "clear",
+            "restart": "clear"
+        }
     }
 }
