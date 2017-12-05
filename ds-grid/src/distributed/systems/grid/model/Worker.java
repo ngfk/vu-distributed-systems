@@ -170,7 +170,23 @@ public class Worker extends GridNode implements ISocketCommunicator {
 	private void executeActiveJob() {
 		activeJob.getJob().setResult(17);
 		totalExecutionTime += 17;
+		for (int i = 0; i <= totalExecutionTime * 1000; i++) {
+			sum(i*3);
+		}		
 		jobDoneHandler();
+	}
+
+
+	/**
+	 *  just a dummy computation for the worker to perform
+	 * 
+	 */
+	public static int sum(int n){
+		int sum = 0;
+		for (int i = 0; i <= n; i++) {
+			sum += i;
+		}
+		return sum;
 	}
 
 	/**
