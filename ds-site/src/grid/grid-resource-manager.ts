@@ -7,7 +7,7 @@ import { GridNode, NodeStatus } from './grid-node';
 import { GridSocket } from './grid-socket';
 
 export class GridResourceManager extends GridNode {
-    private jobs: GridActiveJob[] = [];
+    private jobs = new Set<GridActiveJob>();
     private workers = new Map<GridSocket, NodeStatus>();
 
     constructor(context: GridContext) {
@@ -22,12 +22,11 @@ export class GridResourceManager extends GridNode {
 
     public async run(): Promise<void> {
         // For every active-unfinished job periodically check if the worker is still alive
-        for (let i = 0; i < this.jobs.length; i++) {
-            if (this.jobs[i].status !== JobStatus.Running) continue;
-
-            const worker = this.jobs[i].workerSocket;
-            this.pingWorker(worker);
-        }
+        // for (let i = 0; i < this.jobs.size; i++) {
+        //     if (this.jobs[i].status !== JobStatus.Running) continue;
+        //     const worker = this.jobs[i].workerSocket;
+        //     this.pingWorker(worker);
+        // }
     }
 
     public onMessage(message: GridMessage): void {
@@ -77,8 +76,8 @@ export class GridResourceManager extends GridNode {
         const socket = message.senderSocket;
         const activeJob = new GridActiveJob(message.getJob(), socket);
 
-        this.jobs.push(activeJob);
-        this.sendJobCount(this.jobs.length);
+        this.jobs.add(activeJob);
+        this.sendJobCount(this.jobs.size);
 
         const newMessage = this.createMessage(
             MessageType.Confirmation,
@@ -91,58 +90,37 @@ export class GridResourceManager extends GridNode {
 
     private onSchedulerAcknowledgement(message: GridMessage): void {
         const jobId = message.value;
-        const aj = this.getActiveJob(jobId);
-        this.jobs = this.jobs.filter(a => a !== aj);
-        this.sendJobCount(this.jobs.length);
+        const aj = this.findActiveJob(jobId);
+        this.jobs.delete(aj);
+        this.sendJobCount(this.jobs.size);
     }
 
     private requestStatusWorker(worker: GridSocket) {
         if (this.status === NodeStatus.Dead) return;
 
-        const message = new GridMessage(
-            this.socket,
-            NodeType.ResourceManager,
-            MessageType.Request,
-            0
-        );
+        const message = this.createMessage(MessageType.Request, '0');
         worker.send(message);
     }
 
     private pingWorker(worker: GridSocket) {
         if (this.status === NodeStatus.Dead) return;
 
-        const message = new GridMessage(
-            this.socket,
-            NodeType.ResourceManager,
-            MessageType.Ping,
-            0
-        );
+        const message = this.createMessage(MessageType.Ping, '0');
         worker.send(message);
     }
 
     private sendStatus(recv: GridSocket): void {
         if (this.status === NodeStatus.Dead) return;
 
-        recv.send(
-            new GridMessage(
-                this.socket,
-                NodeType.ResourceManager,
-                MessageType.Status,
-                1
-            )
-        );
+        recv.send(this.createMessage(MessageType.Status, '1'));
     }
 
     private getAvailableWorker(): GridSocket | undefined {
-        let result: GridSocket | undefined;
-        this.workers.forEach((entry, key) => {
-            if (entry === NodeStatus.Available) {
-                result = key;
-                return;
-            }
-        });
+        for (let [key, value] of this.workers) {
+            if (value === NodeStatus.Available) return key;
+        }
 
-        return result;
+        return undefined;
     }
 
     private sendJobRequestToWorker(worker: GridSocket, job: GridJob) {
@@ -166,7 +144,7 @@ export class GridResourceManager extends GridNode {
     }
 
     private getQueuedJob(): GridActiveJob | undefined {
-        for (let i = 0; i < this.jobs.length; i++) {
+        for (let i = 0; i < this.jobs.size; i++) {
             if (this.jobs[i].status === JobStatus.Waiting) {
                 return this.jobs[i];
             }
@@ -182,34 +160,19 @@ export class GridResourceManager extends GridNode {
 
     private onWorkerStatus(message: GridMessage): void {
         const workerSocket = message.senderSocket;
-        const newStatus: NodeStatus = message.value;
+        const newStatus: NodeStatus = parseInt(message.value, 10);
         this.workers.set(workerSocket, newStatus);
     }
 
     private onWorkerConfirmation(message: GridMessage): void {
         this.workers.set(message.senderSocket, NodeStatus.Busy);
-        const activeJob = this.getActiveJob(message.value);
+        const activeJob = this.findActiveJob(message.value);
         activeJob.status = JobStatus.Running;
     }
 
     private onWorkerPing(message: GridMessage): void {
         const worker = message.senderSocket;
         this.workers.set(worker, NodeStatus.Available);
-    }
-
-    private sendJobResultConfirmationToWorker(
-        socket: GridSocket,
-        jobId: number
-    ) {
-        if (this.status === NodeStatus.Dead) return;
-
-        const message = new GridMessage(
-            socket,
-            NodeType.ResourceManager,
-            MessageType.Confirmation,
-            jobId
-        );
-        socket.send(message);
     }
 
     private sendJobResultToCluster(aj: GridActiveJob): void {
@@ -229,21 +192,25 @@ export class GridResourceManager extends GridNode {
 
     private onWorkerResult(message: GridMessage): void {
         const jobId = message.value;
-        const aj = this.getActiveJob(jobId);
+        const aj = this.findActiveJob(jobId);
         aj.status = JobStatus.Closed;
         aj.job = message.getJob();
         this.workers.set(message.senderSocket, NodeStatus.Available);
 
-        this.sendJobResultConfirmationToWorker(message.senderSocket, jobId);
+        // Confirmation to worker
+        const workerMessage = this.createMessage(
+            MessageType.Confirmation,
+            jobId
+        );
+        message.senderSocket.send(workerMessage);
         this.sendJobResultToCluster(aj);
     }
 
-    private getActiveJob(jobId: number): GridActiveJob {
-        for (let i = 0; i < this.jobs.length; i++) {
-            if (this.jobs[i].job.id === jobId) {
-                return this.jobs[i];
-            }
+    private findActiveJob(jobId: string): GridActiveJob {
+        for (let key of this.jobs.keys()) {
+            if (key.job.id === jobId) return key;
         }
-        throw new Error('No active jobs');
+
+        throw Error('Unknown active job: ' + jobId);
     }
 }

@@ -11,7 +11,7 @@ import { GridSocket } from './grid-socket';
 export class GridScheduler extends GridNode {
     private schedulers = new Map<GridSocket, NodeStatus>();
     private resourceManagers: GridSocket[];
-    private jobs: GridActiveJob[] = [];
+    private jobs = new Set<GridActiveJob>();
 
     constructor(context: GridContext) {
         super(context, NodeType.Scheduler);
@@ -96,8 +96,8 @@ export class GridScheduler extends GridNode {
         const activeSchedulers = this.getActiveSchedulers();
         const activeJob = new GridActiveJob(job, this.socket, activeSchedulers);
 
-        this.jobs.push(activeJob);
-        this.sendJobCount(this.jobs.length);
+        this.jobs.add(activeJob);
+        this.sendJobCount(this.jobs.size);
 
         // edge case where there are no other sockets
         if (activeSchedulers.length === 0) {
@@ -117,12 +117,6 @@ export class GridScheduler extends GridNode {
         const activeJob = this.findActiveJob(message.value);
         activeJob.status = JobStatus.Closed;
         const job = activeJob.job;
-
-        if (activeJob.isFinished()) {
-            this.jobs = this.jobs.filter(j => j !== activeJob);
-            this.sendJobCount(this.jobs.length);
-            return;
-        }
 
         // Synchronize with other schedulers
         for (const scheduler of this.getActiveSchedulers()) {
@@ -146,8 +140,8 @@ export class GridScheduler extends GridNode {
     private onSchedulerRequest(message: GridMessage): void {
         const job = message.getJob();
         const activeJob = new GridActiveJob(job, message.senderSocket);
-        this.jobs.push(activeJob);
-        this.sendJobCount(this.jobs.length);
+        this.jobs.add(activeJob);
+        this.sendJobCount(this.jobs.size);
 
         const newMessage = this.createMessage(MessageType.Confirmation, job.id);
         message.senderSocket.send(newMessage);
@@ -178,8 +172,8 @@ export class GridScheduler extends GridNode {
             activeJob.job.id
         );
         message.senderSocket.send(newMessage);
-        this.jobs = this.jobs.filter(j => j !== activeJob);
-        this.sendJobCount(this.jobs.length);
+        this.jobs.delete(activeJob);
+        this.sendJobCount(this.jobs.size);
     }
 
     private onSchedulerAcknowledgement(message: GridMessage): void {
@@ -187,8 +181,8 @@ export class GridScheduler extends GridNode {
         activeJob.markAsDone(message.senderSocket);
 
         if (activeJob.isFinished()) {
-            this.jobs = this.jobs.filter(j => j !== activeJob);
-            this.sendJobCount(this.jobs.length);
+            this.jobs.delete(activeJob);
+            this.sendJobCount(this.jobs.size);
         }
     }
 
@@ -200,10 +194,12 @@ export class GridScheduler extends GridNode {
         return sockets;
     }
 
-    private findActiveJob(jobId: number): GridActiveJob {
-        const result = this.jobs.find(activeJob => activeJob.job.id === jobId);
-        if (!result) throw Error('Unknown active job: ' + jobId);
-        return result;
+    private findActiveJob(jobId: string): GridActiveJob {
+        for (let key of this.jobs.keys()) {
+            if (key.job.id === jobId) return key;
+        }
+
+        throw Error('Unknown active job: ' + jobId);
     }
 
     private executeJob(activeJob: GridActiveJob): void {

@@ -1,4 +1,4 @@
-import { randomRange } from '../utils/random';
+import { uuid } from '../utils/uuid';
 import { GridSocket } from './grid-socket';
 
 export enum JobStatus {
@@ -8,16 +8,11 @@ export enum JobStatus {
 }
 
 export class GridJob {
-    public readonly id: number;
+    public readonly id = uuid();
     private status: JobStatus;
     private result: number;
 
-    constructor(
-        private origin: GridSocket,
-        public readonly duration: number,
-        id?: number
-    ) {
-        this.id = id || randomRange(1, Number.MAX_SAFE_INTEGER);
+    constructor(private origin: GridSocket, public readonly duration: number) {
         this.status = JobStatus.Waiting;
     }
 
@@ -31,9 +26,5 @@ export class GridJob {
 
     public getOrigin(): GridSocket {
         return this.origin;
-    }
-
-    public copy(): GridJob {
-        return new GridJob(this.origin, this.duration, this.id);
     }
 }

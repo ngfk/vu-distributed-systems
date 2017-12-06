@@ -18,7 +18,7 @@ export class GridMessage {
         public readonly senderSocket: GridSocket,
         public readonly sender: NodeType,
         public readonly type: MessageType,
-        public readonly value: number
+        public readonly value: string
     ) {}
 
     public getJob(): GridJob {
@@ -26,6 +26,6 @@ export class GridMessage {
     }
 
     public attachJob(job: GridJob): void {
-        this.job = job.copy();
+        this.job = job;
     }
 }

@@ -47,7 +47,7 @@ export abstract class GridNode {
                 : NodeStatus.Dead;
     }
 
-    public createMessage(type: MessageType, value = 0): GridMessage {
+    public createMessage(type: MessageType, value = '0'): GridMessage {
         return new GridMessage(this.socket, this.type, type, value);
     }
 

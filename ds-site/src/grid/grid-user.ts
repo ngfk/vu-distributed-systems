@@ -9,7 +9,7 @@ import { GridSocket } from './grid-socket';
 
 export class GridUser extends GridNode {
     private schedulers: GridSocket[] = [];
-    private jobs: GridActiveJob[] = [];
+    private jobs = new Set<GridActiveJob>();
 
     constructor(context: GridContext) {
         super(context, NodeType.User);
@@ -22,6 +22,7 @@ export class GridUser extends GridNode {
     public async run(): Promise<void> {
         const job = new GridJob(this.socket, randomRange(0, 5000));
         this.executeJob(job);
+        // await delay(10000);
     }
 
     public onMessage(message: GridMessage): void {
@@ -38,17 +39,17 @@ export class GridUser extends GridNode {
     private onConfirmation(message: GridMessage): void {
         const activeJob = this.findActiveJob(message.value);
         activeJob.status = JobStatus.Running;
-        this.jobs.push(activeJob);
-        this.sendJobCount(this.jobs.length);
     }
 
     private onResult(message: GridMessage): void {
         const jobId = message.value;
-        const activeJob = this.findActiveJob(jobId);
+
         const newMessage = this.createMessage(MessageType.Confirmation, jobId);
         message.senderSocket.send(newMessage);
-        this.jobs = this.jobs.filter(j => j !== activeJob);
-        this.sendJobCount(this.jobs.length);
+
+        const activeJob = this.findActiveJob(jobId);
+        this.jobs.delete(activeJob);
+        this.sendJobCount(this.jobs.size);
     }
 
     private executeJob(job: GridJob): void {
@@ -58,14 +59,16 @@ export class GridUser extends GridNode {
         const message = this.createMessage(MessageType.Request, job.id);
         message.attachJob(job);
 
-        this.jobs.push(new GridActiveJob(job));
-        this.sendJobCount(this.jobs.length);
+        this.jobs.add(new GridActiveJob(job));
+        this.sendJobCount(this.jobs.size);
         scheduler.send(message);
     }
 
-    private findActiveJob(jobId: number): GridActiveJob {
-        const result = this.jobs.find(activeJob => activeJob.job.id === jobId);
-        if (!result) throw Error('Unknown active job: ' + jobId);
-        return result;
+    private findActiveJob(jobId: string): GridActiveJob {
+        for (let key of this.jobs.keys()) {
+            if (key.job.id === jobId) return key;
+        }
+
+        throw Error('Unknown active job: ' + jobId);
     }
 }

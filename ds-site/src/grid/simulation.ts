@@ -1,4 +1,5 @@
 import { GridSetup } from '../models/grid-setup';
+import { delay } from '../utils/delay';
 import { GridContext } from './grid-context';
 import { GridResourceManager } from './grid-resource-manager';
 import { GridScheduler } from './grid-scheduler';
@@ -12,7 +13,7 @@ export class Simulation {
     private resourceManagers: GridResourceManager[] = [];
     private workers: { [id: string]: GridWorker[] } = {};
 
-    constructor(context: GridContext) {
+    constructor(private context: GridContext) {
         this.user = new GridUser(context);
 
         const rmSockets: GridSocket[] = [];
@@ -49,9 +50,16 @@ export class Simulation {
     }
 
     public async start(): Promise<void> {
-        this.user.start();
-        this.schedulers.forEach(s => s.start());
-        this.resourceManagers.forEach(rm => rm.start());
+        if (!this.context.jobs) {
+            this.user.start();
+            this.schedulers.forEach(s => s.start());
+            this.resourceManagers.forEach(rm => rm.start());
+        } else {
+            for (let i = 0; i < this.context.jobs; i++) {
+                this.user.run();
+                await delay(200);
+            }
+        }
     }
 
     public stop(): void {
