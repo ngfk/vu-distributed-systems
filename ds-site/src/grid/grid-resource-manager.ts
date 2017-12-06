@@ -39,7 +39,7 @@ export class GridResourceManager extends GridNode {
     }
 
     public getActiveJob(jobId: number): GridActiveJob {
-        const activeJobs = [...this.activeJobs.values()];
+        const activeJobs = Array.from(this.activeJobs.values());
 
         for (let i = 0; i < activeJobs.length; i++) {
             if (activeJobs[i].job.id === jobId) {
