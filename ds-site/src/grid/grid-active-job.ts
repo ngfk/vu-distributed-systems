@@ -10,7 +10,6 @@ export enum ActiveJobStatus {
 export class GridActiveJob {
     public status: JobStatus;
     public workerSocket: GridSocket;
-    public rmSocket: GridSocket;
     private schedulers = new Map<GridSocket, ActiveJobStatus>();
 
     constructor(

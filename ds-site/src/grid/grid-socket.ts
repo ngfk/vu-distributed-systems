@@ -7,7 +7,7 @@ export class GridSocket {
     constructor(private receiver: GridNode) {}
 
     public async send(message: GridMessage): Promise<void> {
-        if (message.type !== MessageType.Ping) {
+        if (message.type === MessageType.Ping) {
             let msg = `[${message.type}]`;
             msg += ` ${message.sender} -> ${this.receiver.type}`;
             console.log(msg);

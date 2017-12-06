@@ -20,7 +20,13 @@ export class GridResourceManager extends GridNode {
     }
 
     public async run(): Promise<void> {
-        throw new Error('Method not implemented.');
+        // For every active-unfinished job periodically check if the worker is still alive
+        for (let i = 0; i < this.jobs.length; i++) {
+            if (this.jobs[i].status !== JobStatus.Running) continue;
+
+            const worker = this.jobs[i].workerSocket;
+            this.pingWorker(worker);
+        }
     }
 
     public onMessage(message: GridMessage): void {
@@ -155,6 +161,7 @@ export class GridResourceManager extends GridNode {
 
         aj.status = JobStatus.Running;
         this.workers.set(availableWorker, NodeStatus.Reserved);
+        aj.workerSocket = availableWorker;
         this.sendJobRequestToWorker(availableWorker, aj.job);
     }
 

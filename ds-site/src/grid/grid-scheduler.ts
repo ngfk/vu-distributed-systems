@@ -188,7 +188,6 @@ export class GridScheduler extends GridNode {
         if (activeJob.isFinished()) {
             this.jobs = this.jobs.filter(j => j !== activeJob);
             // REDUX
-            console.log('BOEKJE UIT');
         }
     }
 

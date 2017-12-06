@@ -52,11 +52,14 @@ export class Simulation {
     public async start(): Promise<void> {
         this.user.start();
         this.schedulers.forEach(s => s.start());
+        this.resourceManagers.forEach(rm => rm.start());
 
         this.user.test();
     }
 
     public stop(): void {
         this.user.stop();
+        this.schedulers.forEach(s => s.stop());
+        this.resourceManagers.forEach(rm => rm.stop());
     }
 }
