@@ -2,6 +2,7 @@ import { NodeType } from '../models/node-type';
 import { delay } from '../utils/delay';
 import { randomRange } from '../utils/random';
 import { GridActiveJob } from './grid-active-job';
+import { GridContext } from './grid-context';
 import { JobStatus } from './grid-job';
 import { GridMessage, MessageType } from './grid-message';
 import { GridNode, NodeStatus } from './grid-node';
@@ -12,8 +13,8 @@ export class GridScheduler extends GridNode {
     private resourceManagers: GridSocket[];
     private jobs: GridActiveJob[] = [];
 
-    constructor() {
-        super(NodeType.Scheduler);
+    constructor(context: GridContext) {
+        super(context, NodeType.Scheduler);
     }
 
     public registerResourceManagers(resourceManagers: GridSocket[]): void {
@@ -96,7 +97,7 @@ export class GridScheduler extends GridNode {
         const activeJob = new GridActiveJob(job, this.socket, activeSchedulers);
 
         this.jobs.push(activeJob);
-        // TODO dispatch on redux store
+        this.sendJobCount(this.jobs.length);
 
         // edge case where there are no other sockets
         if (activeSchedulers.length === 0) {
@@ -119,7 +120,7 @@ export class GridScheduler extends GridNode {
 
         if (activeJob.isFinished()) {
             this.jobs = this.jobs.filter(j => j !== activeJob);
-            // REDUX
+            this.sendJobCount(this.jobs.length);
             return;
         }
 
@@ -146,7 +147,7 @@ export class GridScheduler extends GridNode {
         const job = message.getJob();
         const activeJob = new GridActiveJob(job, message.senderSocket);
         this.jobs.push(activeJob);
-        // TODO dispatch on redux store
+        this.sendJobCount(this.jobs.length);
 
         const newMessage = this.createMessage(MessageType.Confirmation, job.id);
         message.senderSocket.send(newMessage);
@@ -178,7 +179,7 @@ export class GridScheduler extends GridNode {
         );
         message.senderSocket.send(newMessage);
         this.jobs = this.jobs.filter(j => j !== activeJob);
-        // REDUX
+        this.sendJobCount(this.jobs.length);
     }
 
     private onSchedulerAcknowledgement(message: GridMessage): void {
@@ -187,7 +188,7 @@ export class GridScheduler extends GridNode {
 
         if (activeJob.isFinished()) {
             this.jobs = this.jobs.filter(j => j !== activeJob);
-            // REDUX
+            this.sendJobCount(this.jobs.length);
         }
     }
 

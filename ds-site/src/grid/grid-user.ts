@@ -1,6 +1,7 @@
 import { NodeType } from '../models/node-type';
 import { randomRange } from '../utils/random';
 import { GridActiveJob } from './grid-active-job';
+import { GridContext } from './grid-context';
 import { GridJob, JobStatus } from './grid-job';
 import { GridMessage, MessageType } from './grid-message';
 import { GridNode } from './grid-node';
@@ -10,25 +11,18 @@ export class GridUser extends GridNode {
     private schedulers: GridSocket[] = [];
     private jobs: GridActiveJob[] = [];
 
-    constructor() {
-        super(NodeType.User);
-    }
-
-    /**
-     * Temporary
-     */
-    public test(): void {
-        for (let i = 0; i < 1; i++) {
-            const job = new GridJob(this.socket, randomRange(0, 5000));
-            this.executeJob(job);
-        }
+    constructor(context: GridContext) {
+        super(context, NodeType.User);
     }
 
     public registerSchedulers(schedulers: GridSocket[]): void {
         this.schedulers = schedulers;
     }
 
-    public async run(): Promise<void> {}
+    public async run(): Promise<void> {
+        const job = new GridJob(this.socket, randomRange(0, 5000));
+        this.executeJob(job);
+    }
 
     public onMessage(message: GridMessage): void {
         switch (message.type) {
@@ -44,7 +38,8 @@ export class GridUser extends GridNode {
     private onConfirmation(message: GridMessage): void {
         const activeJob = this.findActiveJob(message.value);
         activeJob.status = JobStatus.Running;
-        // REDUX
+        this.jobs.push(activeJob);
+        this.sendJobCount(this.jobs.length);
     }
 
     private onResult(message: GridMessage): void {
@@ -53,6 +48,7 @@ export class GridUser extends GridNode {
         const newMessage = this.createMessage(MessageType.Confirmation, jobId);
         message.senderSocket.send(newMessage);
         this.jobs = this.jobs.filter(j => j !== activeJob);
+        this.sendJobCount(this.jobs.length);
     }
 
     private executeJob(job: GridJob): void {
@@ -63,6 +59,7 @@ export class GridUser extends GridNode {
         message.attachJob(job);
 
         this.jobs.push(new GridActiveJob(job));
+        this.sendJobCount(this.jobs.length);
         scheduler.send(message);
     }
 

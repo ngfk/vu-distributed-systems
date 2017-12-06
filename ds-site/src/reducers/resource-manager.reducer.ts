@@ -1,14 +1,13 @@
-import { ReducerBuilder } from '@ngfk/ts-redux/dist/reducer-creation';
+import { Reducer, ReducerBuilder } from '@ngfk/ts-redux';
 
 import { ResourceManagerActionMap } from '../actions/resource-manager.actions';
 import { ResourceManagers } from '../models/resource-manager';
 
 const initial: ResourceManagers = {};
 
-export const resourceManagerReducer = new ReducerBuilder<
-    ResourceManagers,
-    ResourceManagerActionMap
->()
+export const resourceManagerReducer: Reducer<
+    ResourceManagers
+> = new ReducerBuilder<ResourceManagers, ResourceManagerActionMap>()
     .init(initial)
     .case('RESOURCE_MANAGER_INIT', (_, payload) =>
         payload.reduce(

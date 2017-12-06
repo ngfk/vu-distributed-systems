@@ -1,6 +1,7 @@
 import { NodeType } from '../models/node-type';
 import { delay } from '../utils/delay';
 import { uuid } from '../utils/uuid';
+import { GridContext } from './grid-context';
 import { GridMessage, MessageType } from './grid-message';
 import { GridSocket } from './grid-socket';
 
@@ -19,7 +20,7 @@ export abstract class GridNode {
 
     private running: boolean;
 
-    constructor(type: NodeType) {
+    constructor(private context: GridContext, type: NodeType) {
         this.id = uuid();
         this.status = NodeStatus.Available;
         this.type = type;
@@ -39,8 +40,19 @@ export abstract class GridNode {
         this.running = false;
     }
 
+    public toggleStatus(): void {
+        this.status =
+            this.status === NodeStatus.Dead
+                ? NodeStatus.Available
+                : NodeStatus.Dead;
+    }
+
     public createMessage(type: MessageType, value = 0): GridMessage {
         return new GridMessage(this.socket, this.type, type, value);
+    }
+
+    public sendJobCount(jobCount: number): void {
+        this.context.sendJobCount(this.type, this.id, jobCount);
     }
 
     public abstract async run(): Promise<void>;

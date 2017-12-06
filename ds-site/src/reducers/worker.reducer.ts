@@ -1,11 +1,14 @@
-import { ReducerBuilder } from '@ngfk/ts-redux/dist/reducer-creation';
+import { Reducer, ReducerBuilder } from '@ngfk/ts-redux';
 
 import { WorkerActionMap } from '../actions/worker.actions';
 import { Workers } from '../models/worker';
 
 const initial: Workers = {};
 
-export const workerReducer = new ReducerBuilder<Workers, WorkerActionMap>()
+export const workerReducer: Reducer<Workers> = new ReducerBuilder<
+    Workers,
+    WorkerActionMap
+>()
     .init(initial)
     .case('WORKER_INIT', (state, payload) =>
         payload.reduce(

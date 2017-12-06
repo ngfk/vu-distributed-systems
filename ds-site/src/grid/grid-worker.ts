@@ -1,6 +1,7 @@
 import { NodeType } from '../models/node-type';
 import { delay } from '../utils/delay';
 import { GridActiveJob } from './grid-active-job';
+import { GridContext } from './grid-context';
 import { JobStatus } from './grid-job';
 import { GridMessage, MessageType } from './grid-message';
 import { GridNode, NodeStatus } from './grid-node';
@@ -9,15 +10,8 @@ import { GridSocket } from './grid-socket';
 export class GridWorker extends GridNode {
     public activeJob: GridActiveJob | undefined;
 
-    constructor() {
-        super(NodeType.Worker);
-    }
-
-    public toggleState(): void {
-        this.status =
-            this.status === NodeStatus.Dead
-                ? NodeStatus.Available
-                : NodeStatus.Dead;
+    constructor(context: GridContext) {
+        super(context, NodeType.Worker);
     }
 
     public async run(): Promise<void> {
@@ -52,7 +46,7 @@ export class GridWorker extends GridNode {
         );
 
         this.activeJob.status = JobStatus.Running;
-        // TODO redux
+        this.sendJobCount(1);
 
         const executeActive = async () => {
             if (!this.activeJob) throw new Error('No active job');
@@ -60,6 +54,7 @@ export class GridWorker extends GridNode {
             await delay(this.activeJob.job.duration);
             this.activeJob.job.setResult(42);
             this.activeJob.status = JobStatus.Closed;
+            this.sendJobCount(0);
 
             this.sendJobResultToRM();
         };
@@ -133,7 +128,7 @@ export class GridWorker extends GridNode {
 
     private jobResultConfirmation(message: GridMessage) {
         this.activeJob = undefined;
-        // TODO redux
+        this.sendJobCount(0);
 
         if (this.status !== NodeStatus.Dead) {
             this.status = NodeStatus.Available;

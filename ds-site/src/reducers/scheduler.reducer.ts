@@ -1,11 +1,11 @@
-import { ReducerBuilder } from '@ngfk/ts-redux';
+import { Reducer, ReducerBuilder } from '@ngfk/ts-redux';
 
 import { SchedulerActionMap } from '../actions/scheduler.actions';
 import { Schedulers } from '../models/scheduler';
 
 const initial: Schedulers = {};
 
-export const schedulerReducer = new ReducerBuilder<
+export const schedulerReducer: Reducer<Schedulers> = new ReducerBuilder<
     Schedulers,
     SchedulerActionMap
 >()

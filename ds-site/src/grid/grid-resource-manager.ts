@@ -1,5 +1,6 @@
 import { NodeType } from '../models/node-type';
 import { GridActiveJob } from './grid-active-job';
+import { GridContext } from './grid-context';
 import { GridJob, JobStatus } from './grid-job';
 import { GridMessage, MessageType } from './grid-message';
 import { GridNode, NodeStatus } from './grid-node';
@@ -9,8 +10,8 @@ export class GridResourceManager extends GridNode {
     private jobs: GridActiveJob[] = [];
     private workers = new Map<GridSocket, NodeStatus>();
 
-    constructor() {
-        super(NodeType.ResourceManager);
+    constructor(context: GridContext) {
+        super(context, NodeType.ResourceManager);
     }
 
     public registerWorkers(workers: GridSocket[]): void {
@@ -40,13 +41,6 @@ export class GridResourceManager extends GridNode {
                 this.onWorkerMessage(message);
                 break;
         }
-    }
-
-    public toggleState(): void {
-        this.status =
-            this.status === NodeStatus.Dead
-                ? NodeStatus.Available
-                : NodeStatus.Dead;
     }
 
     private onSchedulerMessage(message: GridMessage): void {
@@ -84,7 +78,7 @@ export class GridResourceManager extends GridNode {
         const activeJob = new GridActiveJob(message.getJob(), socket);
 
         this.jobs.push(activeJob);
-        // TODO redux
+        this.sendJobCount(this.jobs.length);
 
         const newMessage = this.createMessage(
             MessageType.Confirmation,
@@ -99,7 +93,7 @@ export class GridResourceManager extends GridNode {
         const jobId = message.value;
         const aj = this.getActiveJob(jobId);
         this.jobs = this.jobs.filter(a => a !== aj);
-        // TODO redux
+        this.sendJobCount(this.jobs.length);
     }
 
     private requestStatusWorker(worker: GridSocket) {
@@ -140,13 +134,15 @@ export class GridResourceManager extends GridNode {
     }
 
     private getAvailableWorker(): GridSocket | undefined {
-        for (let [key, entry] of this.workers) {
+        let result: GridSocket | undefined;
+        this.workers.forEach((entry, key) => {
             if (entry === NodeStatus.Available) {
-                return key;
+                result = key;
+                return;
             }
-        }
+        });
 
-        return undefined;
+        return result;
     }
 
     private sendJobRequestToWorker(worker: GridSocket, job: GridJob) {

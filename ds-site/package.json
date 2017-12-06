@@ -4,6 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
+        "start": "npm run start:site",
         "start:site": "react-scripts-ts start",
         "start:grid": "nodemon ./src/grid/index.ts",
         "build": "react-scripts-ts build"
