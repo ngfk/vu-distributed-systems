@@ -7,7 +7,8 @@ import { GridSocket } from './grid-socket';
 export enum NodeStatus {
     Available,
     Busy,
-    Dead
+    Dead,
+    Reserved
 }
 
 export abstract class GridNode {

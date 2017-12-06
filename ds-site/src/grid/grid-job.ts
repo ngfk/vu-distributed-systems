@@ -14,11 +14,15 @@ export class GridJob {
 
     constructor(
         private origin: GridSocket,
-        private duration: number,
+        public readonly duration: number,
         id?: number
     ) {
         this.id = id || randomRange(1, Number.MAX_SAFE_INTEGER);
         this.status = JobStatus.Waiting;
+    }
+
+    public setResult(result: number): void {
+        this.result = result;
     }
 
     public switchOrigin(origin: GridSocket): void {
