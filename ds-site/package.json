@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
+    "homepage" : "https://ngfk.github.io/vu-distributed-systems",
     "scripts": {
         "start": "npm run start:site",
         "start:site": "react-scripts-ts start",
