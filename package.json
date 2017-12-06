@@ -3,7 +3,6 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
-
     "scripts": {
         "start": "http-server --port $PORT ds-site/build",
         "watch": "npm run --prefix=ds-site start",
