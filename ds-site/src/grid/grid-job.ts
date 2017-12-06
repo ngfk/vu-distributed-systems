@@ -7,7 +7,7 @@ export enum JobStatus {
 }
 
 export class GridJob {
-    private id: string;
+    public readonly id: string;
 
     private status: JobStatus;
     private result: number;
