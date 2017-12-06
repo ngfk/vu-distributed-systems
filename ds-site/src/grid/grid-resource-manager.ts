@@ -35,8 +35,8 @@ export class GridResourceManager extends GridNode {
                 : NodeStatus.Dead;
     }
 
-    public getActiveJob(jobId: string): GridActiveJob {
-        const activeJobs = [...this.activeJobs.values()];
+    public getActiveJob(jobId: number): GridActiveJob {
+        const activeJobs = Array.from(this.activeJobs.values());
 
         for (let i = 0; i < activeJobs.length; i++) {
             if (activeJobs[i].job.id === jobId) {
@@ -52,7 +52,7 @@ export class GridResourceManager extends GridNode {
      */
     private onSchedulerAcknowledgement(message: GridMessage): void {
         const jobId = message.value;
-        const aj = this.getActiveJob();
+        // const aj = this.getActiveJob();
     }
 
     private onSchedulerPing(message: GridMessage): void {
@@ -88,16 +88,16 @@ export class GridResourceManager extends GridNode {
     private onWorkerMessage(message: GridMessage): void {
         switch (message.type) {
             case MessageType.Acknowledgement:
-                this.onWorkerStatus(message);
+                // this.onWorkerStatus(message);
                 break;
             case MessageType.Confirmation:
-                this.onWorkerJobConfirmation(message);
+                // this.onWorkerJobConfirmation(message);
                 break;
             case MessageType.Ping:
-                this.onWorkerPingReturn(message);
+                // this.onWorkerPingReturn(message);
                 break;
             case MessageType.Result:
-                this.onWorkerResult(message);
+                // this.onWorkerResult(message);
                 break;
         }
     }
