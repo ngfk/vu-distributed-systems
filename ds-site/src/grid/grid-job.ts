@@ -13,8 +13,12 @@ export class GridJob {
     private status: JobStatus;
     private result: number;
 
-    constructor(private origin: GridSocket, private duration: number) {
+    constructor(private origin: GridSocket, public readonly duration: number) {
         this.status = JobStatus.Waiting;
+    }
+
+    public setResult(result: number): void {
+        this.result = result;
     }
 
     public switchOrigin(origin: GridSocket): void {
