@@ -38,14 +38,22 @@ export class Simulation {
         }
 
         this.schedulers.forEach(s => {
-            s.registerResourceManagers(rmSockets);
             s.registerSchedulers(schedulerSockets);
+            s.registerResourceManagers(rmSockets);
         });
 
         this.user.registerSchedulers(schedulerSockets);
+        console.log('Simulation initialized...');
     }
 
-    public start(): void {
+    public async start(): Promise<void> {
+        this.user.start();
+        this.schedulers.forEach(s => s.start());
+
         this.user.test();
+    }
+
+    public stop(): void {
+        this.user.stop();
     }
 }

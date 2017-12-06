@@ -15,7 +15,7 @@ export class GridMessage {
     private job: GridJob;
 
     constructor(
-        public readonly socket: GridSocket,
+        public readonly senderSocket: GridSocket,
         public readonly sender: NodeType,
         public readonly type: MessageType,
         public readonly value: number

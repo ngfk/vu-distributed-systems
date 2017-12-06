@@ -1,8 +1,7 @@
 import { Simulation } from './simulation';
 
 const main = () => {
-    const simulation = new Simulation(1, 1, 1);
-    console.log('Hello World!');
+    const simulation = new Simulation(2, 1, 1);
     simulation.start();
 };
 

@@ -1,7 +1,7 @@
 import { NodeType } from '../models/node-type';
 import { delay } from '../utils/delay';
 import { uuid } from '../utils/uuid';
-import { GridMessage } from './grid-message';
+import { GridMessage, MessageType } from './grid-message';
 import { GridSocket } from './grid-socket';
 
 export enum NodeStatus {
@@ -26,14 +26,20 @@ export abstract class GridNode {
     }
 
     public async start(): Promise<void> {
+        this.running = true;
+
         while (this.running) {
-            await this.run();
+            if (this.status !== NodeStatus.Dead) await this.run();
             await delay(200);
         }
     }
 
     public stop(): void {
         this.running = false;
+    }
+
+    public createMessage(type: MessageType, value = 0): GridMessage {
+        return new GridMessage(this.socket, this.type, type, value);
     }
 
     public abstract async run(): Promise<void>;

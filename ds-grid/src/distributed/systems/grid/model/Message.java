@@ -7,7 +7,7 @@ import java.util.ArrayList;
  *   TODO I think that for every request message that is send, we should have a timer checking whether the confirmation message is received (on time ? )
  *   
  *  The meaning of the messages can be found below:
- *	SENDER	| TYPE			| VALUE	| MEANING
+ *	SENDER		| TYPE			| VALUE	| MEANING
  *	- - - --- --- --- - - -
  *	user		| request		| 0		| the user is requesting the list of schedulers from a scheduler
  *	user		| confirmation	| 0		| the user is confirms that it received the scheduler list
@@ -16,21 +16,21 @@ import java.util.ArrayList;
  *	- - - --- --- --- - - -
  * scheduler	| request		| x	> 1	| the scheduler requests confirmation from all other schedulers that is going to work on jobId: x
  * scheduler	| confirmation	| x	> 1	| the scheduler gets notified by another scheduler that it has acknowledged that he is going to do jobId: x
- * scheduler	| result			| x > 1	| the scheduler sends a message to another scheduler saying that it has received the result of jobId: x
+ * scheduler	| result		| x > 1	| the scheduler sends a message to another scheduler saying that it has received the result of jobId: x
  * scheduler	|acknowledgement| x > 1	| the scheduler sends a confirmation to another scheduler saying that it noted that he had received the results of jobId: x
  * scheduler	| request		| x > 1	| the scheduler sends a message to the resourceManager, asking it to execute this job.
  * scheduler	| ping			| 0		| the scheduler sends a message to the resourceManager, asking it to verify it is alive
  * 	- - - --- --- --- - - -
  * resourceM	| confirmation	| x > 1	| the rm confirms to the scheduler that it has received jobId: x
- * resourceM	| status			| x		| the rm confirms to the scheduler that it is still living
+ * resourceM	| status		| x		| the rm confirms to the scheduler that it is still living
  * resourceM	| request		| x > 1	| the rm requests to a worker to compute job with jobId: x
  * resourceM	| confirmation	| x > 1	| the rm confirms to the worker that it has received the results of jobId: x
  * resourceM	| ping			| x > 1	| the rm requests the worker to send a status update of the job its currently working on 
  * 	- - - --- --- --- - - -
- *	worker	| confirmation	| x > 1	| the worker confirms the request to the RM of jobId: x
- *	worker	| result			| x > 1	| the worker returns result of the job to the resourceManager
- *	worker	| status			| x		| this worker is updating its status to the ResourceManager (also used to register a worker with the resourceManager)
- *	worker	| ping			| x > 1	| the worker is saying that it is busy with jobId: x (if -> 0 it means that it forgot about the job ?)
+ *	worker		| confirmation	| x > 1	| the worker confirms the request to the RM of jobId: x
+ *	worker		| result		| x > 1	| the worker returns result of the job to the resourceManager
+ *	worker		| status		| x		| this worker is updating its status to the ResourceManager (also used to register a worker with the resourceManager)
+ *	worker		| ping			| x > 1	| the worker is saying that it is busy with jobId: x (if -> 0 it means that it forgot about the job ?)
  */
 public class Message {
 	public static enum SENDER {

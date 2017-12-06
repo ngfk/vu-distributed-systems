@@ -41,13 +41,7 @@ export class GridActiveJob {
 
     public canStart(): boolean {
         const statuses = Array.from(this.schedulers.values());
-
-        for (let i = 0; i < statuses.length; i++) {
-            if (statuses[i] === ActiveJobStatus.Unconfirmed) {
-                return false;
-            }
-        }
-        return true;
+        return statuses.every(s => s === ActiveJobStatus.Confirmed);
     }
 
     public isFinished(): boolean {

@@ -28,24 +28,15 @@ export class GridUser extends GridNode {
         this.schedulers = schedulers;
     }
 
-    public async run(): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
+    public async run(): Promise<void> {}
 
-    public onMessage(message: GridMessage): void {
-        throw new Error('Method not implemented.');
-    }
+    public onMessage(message: GridMessage): void {}
 
     private executeJob(job: GridJob): void {
         const idx = randomRange(0, this.schedulers.length - 1);
         const scheduler = this.schedulers[idx];
 
-        const message = new GridMessage(
-            this.socket,
-            NodeType.User,
-            MessageType.Request,
-            job.id
-        );
+        const message = this.createMessage(MessageType.Request, job.id);
         message.attachJob(job);
 
         this.jobs.push(new GridActiveJob(job));
