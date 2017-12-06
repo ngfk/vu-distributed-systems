@@ -204,6 +204,9 @@ export class GridResourceManager extends GridNode {
         );
         message.senderSocket.send(workerMessage);
         this.sendJobResultToCluster(aj);
+
+        this.jobs.delete(aj);
+        this.sendJobCount(this.jobs.size);
     }
 
     private findActiveJob(jobId: string): GridActiveJob {

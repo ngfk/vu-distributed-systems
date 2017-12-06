@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
+    "homepage" : "https://ngfk.github.io/vu-distributed-systems",
     "scripts": {
         "start": "http-server --port $PORT ds-site/build",
         "watch": "npm run --prefix=ds-site start",
@@ -20,7 +21,6 @@
     "bugs": {
         "url": "https://github.com/ngfk/vu-distributed-systems/issues"
     },
-    "homepage": "https://github.com/ngfk/vu-distributed-systems#readme",
     "devDependencies": {
         "commitizen": "^2.9.6",
         "cz-customizable": "^5.2.0"
