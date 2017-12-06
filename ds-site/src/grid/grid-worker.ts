@@ -46,7 +46,7 @@ export class GridWorker extends GridNode {
                 this.jobStatusRequestHandler(message);
                 break;
             case MessageType.Status:
-                this.workerStatusHandler(message.socket);
+                this.workerStatusHandler(message.senderSocket);
                 break;
         }
     }
@@ -118,7 +118,7 @@ export class GridWorker extends GridNode {
 
     private jobStatusRequestHandler(message: GridMessage) {
         if (this.status === NodeStatus.Dead) return;
-        this.sendJobStatusToRM(message.socket);
+        this.sendJobStatusToRM(message.senderSocket);
     }
 
     private jobResultConfirmationHandler(message: GridMessage) {
@@ -132,8 +132,11 @@ export class GridWorker extends GridNode {
 
     private jobRequestHandler(message: GridMessage) {
         this.status = NodeStatus.Busy;
-        this.sendJobConfirmationToRM(message.socket, message.value);
-        this.activeJob = new GridActiveJob(message.getJob(), message.socket);
+        this.sendJobConfirmationToRM(message.senderSocket, message.value);
+        this.activeJob = new GridActiveJob(
+            message.getJob(),
+            message.senderSocket
+        );
         this.activeJob.status = JobStatus.Running;
         // TODO redux
         const executeActive = () => {

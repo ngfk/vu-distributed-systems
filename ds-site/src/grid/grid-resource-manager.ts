@@ -154,14 +154,17 @@ export class GridResourceManager extends GridNode {
     }
 
     private onSchedulerPing(message: GridMessage): void {
-        this.sendStatus(message.socket);
+        this.sendStatus(message.senderSocket);
     }
 
     private onSchedulerJobRequest(message: GridMessage): void {
-        const aj = new GridActiveJob(message.getJob(), message.socket);
+        const aj = new GridActiveJob(message.getJob(), message.senderSocket);
         this.activeJobs.push(aj);
         // TODO redux
-        this.sendJobConfirmationToScheduler(message.socket, message.value);
+        this.sendJobConfirmationToScheduler(
+            message.senderSocket,
+            message.value
+        );
     }
 
     /**
@@ -202,19 +205,19 @@ export class GridResourceManager extends GridNode {
     }
 
     private onWorkerStatus(message: GridMessage): void {
-        const workerSocket = message.socket;
+        const workerSocket = message.senderSocket;
         const newStatus: NodeStatus = message.value;
         this.workers.set(workerSocket, newStatus);
     }
 
     private onWorkerJobConfirmation(message: GridMessage): void {
-        this.workers.set(message.socket, NodeStatus.Busy);
+        this.workers.set(message.senderSocket, NodeStatus.Busy);
         const aj = this.getActiveJob(message.value);
         aj.status = JobStatus.Running;
     }
 
     private onWorkerPingReturn(message: GridMessage): void {
-        const worker = message.socket;
+        const worker = message.senderSocket;
         this.workers.set(worker, NodeStatus.Available);
     }
 
@@ -253,9 +256,9 @@ export class GridResourceManager extends GridNode {
         const aj = this.getActiveJob(jobId);
         aj.status = JobStatus.Closed;
         aj.job = message.getJob();
-        this.workers.set(message.socket, NodeStatus.Available);
+        this.workers.set(message.senderSocket, NodeStatus.Available);
 
-        this.sendJobResultConfirmationToWorker(message.socket, jobId);
+        this.sendJobResultConfirmationToWorker(message.senderSocket, jobId);
         this.sendJobResultToCluster(aj);
     }
 
