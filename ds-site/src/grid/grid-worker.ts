@@ -9,7 +9,7 @@ import { GridSocket } from './grid-socket';
 export class GridWorker extends GridNode {
     public activeJob: GridActiveJob | undefined;
 
-    constructor(public status: NodeStatus) {
+    constructor() {
         super(NodeType.Worker);
     }
 
@@ -27,28 +27,44 @@ export class GridWorker extends GridNode {
     public onMessage(message: GridMessage): void {
         if (this.status === NodeStatus.Dead) return;
 
-        switch (message.sender) {
-            case NodeType.ResourceManager:
-                this.onResourceManagerMessage(message);
+        switch (message.type) {
+            case MessageType.Request:
+                this.jobRequest(message);
+                break;
+            case MessageType.Confirmation:
+                this.jobResultConfirmation(message);
+                break;
+            case MessageType.Ping:
+                this.jobStatusRequest(message);
+                break;
+            case MessageType.Status:
+                this.workerStatus(message.senderSocket);
                 break;
         }
     }
 
-    private onResourceManagerMessage(message: GridMessage) {
-        switch (message.type) {
-            case MessageType.Request:
-                this.jobRequestHandler(message);
-                break;
-            case MessageType.Confirmation:
-                this.jobResultConfirmationHandler(message);
-                break;
-            case MessageType.Ping:
-                this.jobStatusRequestHandler(message);
-                break;
-            case MessageType.Status:
-                this.workerStatusHandler(message.senderSocket);
-                break;
-        }
+    private jobRequest(message: GridMessage) {
+        this.status = NodeStatus.Busy;
+        this.sendJobConfirmationToRM(message.senderSocket, message.value);
+        this.activeJob = new GridActiveJob(
+            message.getJob(),
+            message.senderSocket
+        );
+
+        this.activeJob.status = JobStatus.Running;
+        // TODO redux
+
+        const executeActive = async () => {
+            if (!this.activeJob) throw new Error('No active job');
+
+            await delay(this.activeJob.job.duration);
+            this.activeJob.job.setResult(42);
+            this.activeJob.status = JobStatus.Closed;
+
+            this.sendJobResultToRM();
+        };
+
+        executeActive();
     }
 
     private getAliveMessage(): GridMessage {
@@ -57,12 +73,12 @@ export class GridWorker extends GridNode {
             NodeType.Worker,
             MessageType.Status,
             this.status
-        ); // enum -> int
+        );
 
         return message;
     }
 
-    private workerStatusHandler(rmSocket: GridSocket) {
+    private workerStatus(rmSocket: GridSocket) {
         if (this.status === NodeStatus.Dead) return;
 
         rmSocket.send(this.getAliveMessage());
@@ -71,13 +87,7 @@ export class GridWorker extends GridNode {
     private sendJobConfirmationToRM(rmSocket: GridSocket, value: number) {
         if (this.status === NodeStatus.Dead) return;
 
-        const message = new GridMessage(
-            this.socket,
-            NodeType.Worker,
-            MessageType.Confirmation,
-            value
-        );
-
+        const message = this.createMessage(MessageType.Confirmation, value);
         rmSocket.send(message);
     }
 
@@ -116,37 +126,17 @@ export class GridWorker extends GridNode {
         rmSocket.send(message);
     }
 
-    private jobStatusRequestHandler(message: GridMessage) {
+    private jobStatusRequest(message: GridMessage) {
         if (this.status === NodeStatus.Dead) return;
         this.sendJobStatusToRM(message.senderSocket);
     }
 
-    private jobResultConfirmationHandler(message: GridMessage) {
+    private jobResultConfirmation(message: GridMessage) {
         this.activeJob = undefined;
         // TODO redux
 
         if (this.status !== NodeStatus.Dead) {
             this.status = NodeStatus.Available;
         }
-    }
-
-    private jobRequestHandler(message: GridMessage) {
-        this.status = NodeStatus.Busy;
-        this.sendJobConfirmationToRM(message.senderSocket, message.value);
-        this.activeJob = new GridActiveJob(
-            message.getJob(),
-            message.senderSocket
-        );
-        this.activeJob.status = JobStatus.Running;
-        // TODO redux
-        const executeActive = () => {
-            if (!this.activeJob) {
-                throw new Error('No active job');
-            }
-            this.activeJob.job.setResult(42);
-            delay(this.activeJob.job.duration);
-            this.activeJob.status = JobStatus.Closed;
-            this.sendJobResultToRM();
-        };
     }
 }

@@ -23,11 +23,14 @@ export class Simulation {
             this.resourceManagers.push(rm);
             rmSockets.push(rm.socket);
 
+            const workerSockets: GridSocket[] = [];
             for (let w = 0; w < workerCount; w++) {
                 const worker = new GridWorker();
                 this.workers[rm.id] = worker;
-                rm.workerSockets.push(worker.socket);
+                workerSockets.push(worker.socket);
             }
+
+            rm.registerWorkers(workerSockets);
         }
 
         const schedulerSockets: GridSocket[] = [];

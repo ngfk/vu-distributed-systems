@@ -53,7 +53,10 @@ export class GridScheduler extends GridNode {
     private onUserMessage(message: GridMessage): void {
         switch (message.type) {
             case MessageType.Request:
-                this.onUserRequestMessage(message);
+                this.onUserRequest(message);
+                break;
+            case MessageType.Confirmation:
+                this.onUserConfirmation(message);
                 break;
         }
     }
@@ -61,20 +64,32 @@ export class GridScheduler extends GridNode {
     private onSchedulerMessage(message: GridMessage): void {
         switch (message.type) {
             case MessageType.Ping:
-                this.onSchedulerPingMessage(message);
+                this.onSchedulerPing(message);
                 break;
             case MessageType.Request:
-                this.onSchedulerRequestMessage(message);
+                this.onSchedulerRequest(message);
                 break;
             case MessageType.Confirmation:
-                this.onSchedulerConfirmationMessage(message);
+                this.onSchedulerConfirmation(message);
+                break;
+            case MessageType.Result:
+                this.onSchedulerResult(message);
+                break;
+            case MessageType.Acknowledgement:
+                this.onSchedulerAcknowledgement(message);
                 break;
         }
     }
 
-    private onResourceManagerMessage(message: GridMessage): void {}
+    private onResourceManagerMessage(message: GridMessage): void {
+        switch (message.type) {
+            case MessageType.Result:
+                this.onResourceManagerResult(message);
+                break;
+        }
+    }
 
-    private onUserRequestMessage(message: GridMessage): void {
+    private onUserRequest(message: GridMessage): void {
         const job = message.getJob();
 
         const activeSchedulers = this.getActiveSchedulers();
@@ -97,7 +112,29 @@ export class GridScheduler extends GridNode {
         }
     }
 
-    private onSchedulerPingMessage(message: GridMessage): void {
+    private onUserConfirmation(message: GridMessage): void {
+        const activeJob = this.findActiveJob(message.value);
+        activeJob.status = JobStatus.Closed;
+        const job = activeJob.job;
+
+        if (activeJob.isFinished()) {
+            this.jobs = this.jobs.filter(j => j !== activeJob);
+            // REDUX
+            return;
+        }
+
+        // Synchronize with other schedulers
+        for (const scheduler of this.getActiveSchedulers()) {
+            const schedulerMessage = this.createMessage(
+                MessageType.Result,
+                job.id
+            );
+            schedulerMessage.attachJob(job);
+            scheduler.send(schedulerMessage);
+        }
+    }
+
+    private onSchedulerPing(message: GridMessage): void {
         const socket = message.senderSocket;
 
         const status = this.schedulers.get(socket);
@@ -105,7 +142,7 @@ export class GridScheduler extends GridNode {
             this.schedulers.set(socket, NodeStatus.Available);
     }
 
-    private onSchedulerRequestMessage(message: GridMessage): void {
+    private onSchedulerRequest(message: GridMessage): void {
         const job = message.getJob();
         const activeJob = new GridActiveJob(job, message.senderSocket);
         this.jobs.push(activeJob);
@@ -115,12 +152,44 @@ export class GridScheduler extends GridNode {
         message.senderSocket.send(newMessage);
     }
 
-    private onSchedulerConfirmationMessage(message: GridMessage): void {
+    private onSchedulerConfirmation(message: GridMessage): void {
         const scheduler = message.senderSocket;
         const activeJob = this.findActiveJob(message.value);
         activeJob.confirmScheduler(scheduler);
 
         if (activeJob.canStart()) this.executeJob(activeJob);
+    }
+
+    private onResourceManagerResult(message: GridMessage): void {
+        const activeJob = this.findActiveJob(message.value);
+        activeJob.markAsDone(this.socket);
+        const job = activeJob.job;
+
+        // Send result to user
+        const userMessage = this.createMessage(MessageType.Result, job.id);
+        job.getOrigin().send(userMessage);
+    }
+
+    private onSchedulerResult(message: GridMessage): void {
+        const activeJob = this.findActiveJob(message.value);
+        const newMessage = this.createMessage(
+            MessageType.Acknowledgement,
+            activeJob.job.id
+        );
+        message.senderSocket.send(newMessage);
+        this.jobs = this.jobs.filter(j => j !== activeJob);
+        // REDUX
+    }
+
+    private onSchedulerAcknowledgement(message: GridMessage): void {
+        const activeJob = this.findActiveJob(message.value);
+        activeJob.markAsDone(message.senderSocket);
+
+        if (activeJob.isFinished()) {
+            this.jobs = this.jobs.filter(j => j !== activeJob);
+            // REDUX
+            console.log('BOEKJE UIT');
+        }
     }
 
     private getActiveSchedulers(): GridSocket[] {

@@ -46,6 +46,6 @@ export class GridActiveJob {
 
     public isFinished(): boolean {
         const statuses = Array.from(this.schedulers.values());
-        return statuses.some(s => s === ActiveJobStatus.Done);
+        return statuses.every(s => s === ActiveJobStatus.Done);
     }
 }
