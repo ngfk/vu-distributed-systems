@@ -6,14 +6,7 @@ import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { applyMiddleware, compose, Middleware } from 'redux';
 
-import { ActionMap } from './actions/actions';
-import { gridSetupActionCreators } from './actions/grid-setup.actions';
-import {
-    resourceManagerActionCreators
-} from './actions/resource-manager.actions';
-import { schedulerActionCreators } from './actions/scheduler.actions';
-import { userActionCreators } from './actions/user.actions';
-import { workerActionCreators } from './actions/worker.actions';
+import { actionCreators, ActionMap } from './actions/actions';
 import App from './containers/App';
 import { GridContext } from './grid/grid-context';
 import { Simulation } from './grid/simulation';
@@ -35,30 +28,28 @@ export const gridMiddleware: Middleware = store => next => action => {
     ) => {
         switch (nodeType) {
             case NodeType.User:
-                const userAction = userActionCreators.userJobs({
+                const userAction = actionCreators.userJobs({
                     id: nodeId,
                     jobCount
                 });
                 store.dispatch(userAction);
                 break;
             case NodeType.Scheduler:
-                const schedulerAction = schedulerActionCreators.schedulerJobs({
+                const schedulerAction = actionCreators.schedulerJobs({
                     id: nodeId,
                     jobCount
                 });
                 store.dispatch(schedulerAction);
                 break;
             case NodeType.ResourceManager:
-                const rmAction = resourceManagerActionCreators.resourceManagerJobs(
-                    {
-                        id: nodeId,
-                        jobCount
-                    }
-                );
+                const rmAction = actionCreators.resourceManagerJobs({
+                    id: nodeId,
+                    jobCount
+                });
                 store.dispatch(rmAction);
                 break;
             case NodeType.Worker:
-                const workerAction = workerActionCreators.workerJobs({
+                const workerAction = actionCreators.workerJobs({
                     id: nodeId,
                     jobCount
                 });
@@ -81,8 +72,26 @@ export const gridMiddleware: Middleware = store => next => action => {
             grid = new Simulation(context);
 
             const setup = grid.getSetup();
-            const setupAction = gridSetupActionCreators.gridSetup(setup);
+
+            const user = setup.user;
+            const schedulers = setup.schedulers;
+            const resourceManagers = setup.clusters.map(c => c.resourceManager);
+            const workers = setup.clusters.reduce(
+                (acc, c) => [...acc, ...c.workers],
+                []
+            );
+
+            const setupAction = actionCreators.gridSetup(setup);
+            const schedulerAction = actionCreators.schedulerInit(schedulers);
+            const rmAction = actionCreators.resourceManagerInit(
+                resourceManagers
+            );
+            const workerAction = actionCreators.workerInit(workers);
+
             store.dispatch(setupAction);
+            store.dispatch(schedulerAction);
+            store.dispatch(rmAction);
+            store.dispatch(workerAction);
 
             grid.start();
             break;
