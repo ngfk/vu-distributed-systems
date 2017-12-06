@@ -3,12 +3,12 @@ import { GridJob } from './grid-job';
 import { GridSocket } from './grid-socket';
 
 export enum MessageType {
-    Status,
-    Request,
-    Confirmation,
-    Result,
-    Acknowledgement,
-    Ping
+    Status = 'status',
+    Request = 'request',
+    Confirmation = 'confirmation',
+    Result = 'result',
+    Acknowledgement = 'acknowledgement',
+    Ping = 'ping'
 }
 
 export class GridMessage {
@@ -20,6 +20,10 @@ export class GridMessage {
         public readonly type: MessageType,
         public readonly value: number
     ) {}
+
+    public getJob(): GridJob {
+        return this.job;
+    }
 
     public attachJob(job: GridJob): void {
         this.job = job.copy();

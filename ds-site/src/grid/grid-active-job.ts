@@ -9,19 +9,26 @@ export enum ActiveJobStatus {
 
 export class GridActiveJob {
     private schedulers = new Map<GridSocket, ActiveJobStatus>();
+    public status: JobStatus;
+    public workerSocket: GridSocket;
+    public rmSocket: GridSocket;
 
     constructor(
         public job: GridJob,
-        public status: JobStatus,
-        public workerSocket: GridSocket,
-        public rmSocket: GridSocket,
-        private schedulerSockets: GridSocket[]
+        public schedulerSocket?: GridSocket,
+        private schedulerSockets?: GridSocket[]
     ) {
-        if (schedulerSockets !== null) {
-            schedulerSockets.forEach(socket => {
-                this.schedulers.set(socket, ActiveJobStatus.Unconfirmed);
-            });
+        this.status = JobStatus.Waiting;
+
+        if (!this.schedulerSocket || !schedulerSockets) {
+            return;
         }
+
+        schedulerSockets.forEach(socket => {
+            this.schedulers.set(socket, ActiveJobStatus.Unconfirmed);
+        });
+
+        this.confirmScheduler(this.schedulerSocket);
     }
 
     public confirmScheduler(scheduler: GridSocket): void {
@@ -33,7 +40,7 @@ export class GridActiveJob {
     }
 
     public canStart(): boolean {
-        const statuses = [...this.schedulers.values()];
+        const statuses = Array.from(this.schedulers.values());
 
         for (let i = 0; i < statuses.length; i++) {
             if (statuses[i] === ActiveJobStatus.Unconfirmed) {
@@ -44,7 +51,7 @@ export class GridActiveJob {
     }
 
     public isFinished(): boolean {
-        const statuses = [...this.schedulers.values()];
+        const statuses = Array.from(this.schedulers.values());
         return statuses.some(s => s === ActiveJobStatus.Done);
     }
 }
