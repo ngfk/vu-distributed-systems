@@ -19,7 +19,7 @@ const types = Object.keys(typesMap).map(key => ({
     name: `${key}:${' '.repeat(10 - key.length - 1)}${typesMap[key]}`
 }));
 
-const scopes = ['ds-grid', 'ds-site', 'meta'];
+const scopes = ['core', 'test', 'meta'];
 
 module.exports = {
     types,

@@ -1,13 +1,15 @@
 {
     "name": "vu-distributed-systems",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "",
     "main": "index.js",
+    "homepage": "https://ngfk.github.io/vu-distributed-systems",
+    "private": true,
     "scripts": {
-        "start": "http-server --port $PORT ds-site/build",
-        "watch": "npm run --prefix=ds-site start",
-        "postinstall": "npm install --prefix ds-site && npm run build",
-        "build": "npm run --prefix ds-site build",
+        "start": "npm run start:site",
+        "start:site": "react-scripts-ts start",
+        "start:grid": "nodemon ./src/grid/index.ts",
+        "build": "react-scripts-ts build",
         "commit": "git-cz"
     },
     "repository": {
@@ -20,9 +22,21 @@
     "bugs": {
         "url": "https://github.com/ngfk/vu-distributed-systems/issues"
     },
+    "dependencies": {
+        "@ngfk/ts-redux": "^2.1.0",
+        "react": "^16.1.1",
+        "react-dom": "^16.1.1",
+        "react-redux": "^5.0.6",
+        "redux": "^3.7.2"
+    },
     "devDependencies": {
+        "@types/node": "^8.0.53",
+        "@types/react": "^16.0.25",
+        "@types/react-dom": "^16.0.3",
+        "@types/react-redux": "^5.0.14",
         "commitizen": "^2.9.6",
-        "cz-customizable": "^5.2.0"
+        "cz-customizable": "^5.2.0",
+        "react-scripts-ts": "^2.8.0"
     },
     "config": {
         "commitizen": {
@@ -41,7 +55,15 @@
         "semi": true,
         "useTabs": false
     },
-    "dependencies": {
-        "http-server": "^0.10.0"
+    "nodemonConfig": {
+        "watch": [
+            "src/**/*.ts"
+        ],
+        "exec": "ts-node",
+        "quiet": true,
+        "events": {
+            "start": "clear",
+            "restart": "clear"
+        }
     }
 }

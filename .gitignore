@@ -1,5 +1,4 @@
-/.DS_Store
-ds-grid/.vscode/launch.json
-ds-site/.vscode/launch.json
 
+/.DS_Store
+build/
 node_modules/
