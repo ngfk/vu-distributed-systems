@@ -1,25 +1,25 @@
 import { Reducer, ReducerBuilder } from '@ngfk/ts-redux';
 
-import { WorkerActionMap } from '../actions/worker.actions';
-import { Workers } from '../models/worker';
+import { Schedulers } from '../../models/scheduler';
+import { SchedulerActionMap } from '../actions/scheduler.actions';
 
-const initial: Workers = {};
+const initial: Schedulers = {};
 
-export const workerReducer: Reducer<Workers> = new ReducerBuilder<
-    Workers,
-    WorkerActionMap
+export const schedulerReducer: Reducer<Schedulers> = new ReducerBuilder<
+    Schedulers,
+    SchedulerActionMap
 >()
     .init(initial)
-    .case('WORKER_INIT', (state, payload) =>
+    .case('SCHEDULER_INIT', (state, payload) =>
         payload.reduce(
             (acc, id) => ({
                 ...acc,
                 [id]: { id, isDown: false, jobCount: 0 }
             }),
-            {} as Workers
+            {} as Schedulers
         )
     )
-    .case('WORKER_TOGGLE', (state, payload) => {
+    .case('SCHEDULER_TOGGLE', (state, payload) => {
         const worker = state[payload.id];
         if (!worker) return state;
 
@@ -31,7 +31,7 @@ export const workerReducer: Reducer<Workers> = new ReducerBuilder<
             }
         };
     })
-    .case('WORKER_JOBS', (state, payload) => ({
+    .case('SCHEDULER_JOBS', (state, payload) => ({
         ...state,
         [payload.id]: {
             ...state[payload.id],

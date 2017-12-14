@@ -1,8 +1,8 @@
 import { Reducer } from '@ngfk/ts-redux/dist/reducer';
 import { createReducer } from '@ngfk/ts-redux/dist/reducer-creation';
 
+import { UserModel } from '../../models/user';
 import { UserActionMap } from '../actions/user.actions';
-import { UserModel } from '../models/user';
 
 const initial: UserModel = {
     id: '0',

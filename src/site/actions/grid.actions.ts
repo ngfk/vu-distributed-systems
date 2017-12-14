@@ -1,6 +1,6 @@
 import { ActionFactory } from '@ngfk/ts-redux';
 
-import { GridSetupParams } from '../models/grid-setup';
+import { GridSetupParams } from '../../models/grid-setup';
 
 export interface GridActionMap {
     GRID_START: GridSetupParams;

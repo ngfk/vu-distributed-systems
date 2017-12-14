@@ -1,7 +1,7 @@
 import { Reducer, ReducerBuilder } from '@ngfk/ts-redux';
 
+import { ResourceManagers } from '../../models/resource-manager';
 import { ResourceManagerActionMap } from '../actions/resource-manager.actions';
-import { ResourceManagers } from '../models/resource-manager';
 
 const initial: ResourceManagers = {};
 

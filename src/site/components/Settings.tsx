@@ -2,7 +2,6 @@ import * as React from 'react';
 
 import { ActionCreators } from '../actions/actions';
 import { GridSetupActionCreators } from '../actions/grid-setup.actions';
-import { debounce } from '../utils/debounce';
 
 export interface SettingsProps {
     actions: ActionCreators;
@@ -137,3 +136,18 @@ export class Settings extends React.Component<SettingsProps, SettingsState> {
         });
     }
 }
+
+const debounce = (func: Function, delay: number): any => {
+    let inDebounce: any = undefined;
+
+    return function(this: any) {
+        const context = this;
+        const args = arguments;
+
+        clearTimeout(inDebounce);
+        return (inDebounce = setTimeout(
+            () => func.apply(context, args),
+            delay
+        ));
+    };
+};

@@ -1,9 +1,9 @@
 import * as React from 'react';
 
+import { ResourceManagerModel } from '../../models/resource-manager';
+import { Workers } from '../../models/worker';
 import { ActionCreators } from '../actions/actions';
 import { Worker } from '../components/Worker';
-import { ResourceManagerModel } from '../models/resource-manager';
-import { Workers } from '../models/worker';
 import { ResourceManager } from './ResourceManager';
 
 export interface ClusterProps {

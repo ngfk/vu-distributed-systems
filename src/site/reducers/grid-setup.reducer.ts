@@ -1,7 +1,7 @@
 import { createReducer, Reducer } from '@ngfk/ts-redux';
 
+import { GridClusterSetup, GridSetup } from '../../models/grid-setup';
 import { GridSetupActionMap } from '../actions/grid-setup.actions';
-import { GridClusterSetup, GridSetup } from '../models/grid-setup';
 
 const initial: GridSetup = {
     user: '0',

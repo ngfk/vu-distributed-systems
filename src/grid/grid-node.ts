@@ -1,6 +1,6 @@
 import { NodeType } from '../models/node-type';
-import { delay } from '../utils/delay';
 import { uuid } from '../utils/uuid';
+import { wait } from '../utils/wait';
 import { GridContext } from './grid-context';
 import { GridMessage, MessageType } from './grid-message';
 import { GridSocket } from './grid-socket';
@@ -32,7 +32,7 @@ export abstract class GridNode {
 
         while (this.running) {
             if (this.status !== NodeStatus.Dead) await this.run();
-            await delay(200);
+            await wait(200);
         }
     }
 

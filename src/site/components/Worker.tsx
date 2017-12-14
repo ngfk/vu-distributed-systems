@@ -1,8 +1,8 @@
 import * as React from 'react';
 
+import { WorkerModel } from '../../models/worker';
+import { getNodeColor } from '../../utils/node-color';
 import { ActionCreators } from '../actions/actions';
-import { WorkerModel } from '../models/worker';
-import { getNodeColor } from '../utils/node-color';
 
 export interface WorkerProps {
     nr: number;

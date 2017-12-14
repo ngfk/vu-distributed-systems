@@ -1,5 +1,5 @@
-import { delay } from '../utils/delay';
 import { randomRange } from '../utils/random';
+import { wait } from '../utils/wait';
 import { GridMessage } from './grid-message';
 import { GridNode } from './grid-node';
 
@@ -13,7 +13,7 @@ export class GridSocket {
         //     console.log(msg);
         // }
 
-        await delay(randomRange(0, 200));
+        await wait(randomRange(0, 200));
         this.receiver.onMessage(message);
     }
 }

@@ -1,16 +1,16 @@
 import * as React from 'react';
 
+import { ResourceManagerModel } from '../../models/resource-manager';
+import { getNodeColor } from '../../utils/node-color';
 import { ActionCreators } from '../actions/actions';
-import { SchedulerModel } from '../models/scheduler';
-import { getNodeColor } from '../utils/node-color';
 
-export interface SchedulerProps {
+export interface ResourceManagerProps {
     nr: number;
-    model?: SchedulerModel;
+    model?: ResourceManagerModel;
     actions: ActionCreators;
 }
 
-export class Scheduler extends React.Component<SchedulerProps> {
+export class ResourceManager extends React.Component<ResourceManagerProps> {
     public render(): JSX.Element {
         const { nr, model } = this.props;
         const backgroundColor = model
@@ -19,12 +19,16 @@ export class Scheduler extends React.Component<SchedulerProps> {
 
         return (
             <div
-                className="scheduler"
+                className="resource-manager"
                 onClick={this.handleClick}
                 style={{ backgroundColor }}
             >
-                <div className="scheduler__label">scheduler: {nr}</div>
-                <div className="scheduler__jobs">{model && model.jobCount}</div>
+                <div className="resource-manager__label">
+                    resource-manager: {nr}
+                </div>
+                <div className="resource-manager__jobs">
+                    {model && model.jobCount}
+                </div>
             </div>
         );
     }
@@ -32,7 +36,7 @@ export class Scheduler extends React.Component<SchedulerProps> {
     private handleClick = () => {
         if (!this.props.model) return;
 
-        this.props.actions.schedulerToggle({
+        this.props.actions.resourceManagerToggle({
             id: this.props.model.id
         });
     };

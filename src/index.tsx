@@ -1,4 +1,4 @@
-import './index.css';
+import './site/index.css';
 
 import { createStore } from '@ngfk/ts-redux';
 import * as React from 'react';
@@ -6,13 +6,13 @@ import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { applyMiddleware, compose, Middleware } from 'redux';
 
-import { actionCreators, ActionMap } from './actions/actions';
-import App from './containers/App';
 import { GridContext } from './grid/grid-context';
 import { Simulation } from './grid/simulation';
 import { NodeType } from './models/node-type';
-import { reducer, State } from './reducers/reducer';
-import registerServiceWorker from './registerServiceWorker';
+import { actionCreators, ActionMap } from './site/actions/actions';
+import App from './site/containers/App';
+import { reducer, State } from './site/reducers/reducer';
+import registerServiceWorker from './site/registerServiceWorker';
 
 let grid: Simulation | undefined;
 
