@@ -115,7 +115,7 @@ export class GridScheduler extends GridNode {
 
     private onUserConfirmation(message: GridMessage): void {
         const activeJob = this.findActiveJob(message.value);
-        activeJob.status = JobStatus.Closed;
+        activeJob.status = JobStatus.Finished;
         const job = activeJob.job;
 
         // Synchronize with other schedulers
@@ -162,7 +162,7 @@ export class GridScheduler extends GridNode {
 
         // Send result to user
         const userMessage = this.createMessage(MessageType.Result, job.id);
-        job.getOrigin().send(userMessage);
+        job.origin.send(userMessage);
     }
 
     private onSchedulerResult(message: GridMessage): void {
@@ -208,7 +208,7 @@ export class GridScheduler extends GridNode {
             MessageType.Confirmation,
             activeJob.job.id
         );
-        activeJob.job.getOrigin().send(userMessage);
+        activeJob.job.origin.send(userMessage);
 
         // Forward job to ResourceManager
         const job = activeJob.job;

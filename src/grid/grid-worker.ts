@@ -53,17 +53,14 @@ export class GridWorker extends GridNode {
         this.activeJob.status = JobStatus.Running;
         this.sendJobCount(1);
 
-        const executeActive = () => {
+        this.activeJob.job.execute().then(() => {
             if (!this.activeJob) throw new Error('No active job');
 
-            this.activeJob.job.setResult(42);
-            this.activeJob.status = JobStatus.Closed;
+            this.activeJob.status = JobStatus.Finished;
             this.sendJobCount(0);
 
             this.sendJobResultToRM();
-        };
-
-        setTimeout(executeActive, this.activeJob.job.duration);
+        });
     }
 
     private getAliveMessage(): GridMessage {

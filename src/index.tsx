@@ -10,12 +10,20 @@ import { GridContext } from './grid/grid-context';
 import { Simulation } from './grid/simulation';
 import { NodeType } from './models/node-type';
 import { actionCreators, ActionMap } from './site/actions/actions';
-import App from './site/containers/App';
+import { App } from './site/containers/App';
 import { reducer, State } from './site/reducers/reducer';
 import registerServiceWorker from './site/registerServiceWorker';
 
 let grid: Simulation | undefined;
 
+/**
+ * The girdMiddleware function is used to catch actions triggered from the
+ * interface and forward them to the grid.
+ *
+ * The internal sendJobCount function is passed as a context parameter to the
+ * simulation and is used to reflect changes from the grid simulation on
+ * interface.
+ */
 export const gridMiddleware: Middleware = store => next => action => {
     // Unfortunately it would be too much effort to make this function type
     // safe, so this function simply uses a lot of casting.
@@ -120,7 +128,7 @@ export const gridMiddleware: Middleware = store => next => action => {
     return next(action);
 };
 
-// Redux store
+// Setup redux store
 const enhancer = window['__REDUX_DEVTOOLS_EXTENSION_COMPOSE__'] || compose;
 const middleware = applyMiddleware(gridMiddleware);
 const reduxStore = createStore<State, ActionMap>(reducer, enhancer(middleware));

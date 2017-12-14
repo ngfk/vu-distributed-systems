@@ -20,7 +20,8 @@ export class GridUser extends GridNode {
     }
 
     public async run(): Promise<void> {
-        const job = new GridJob(this.socket, randomRange(0, 5000));
+        const jobDuration = randomRange(0, 5000);
+        const job = new GridJob(this.socket, jobDuration);
         this.executeJob(job);
         // await delay(10000);
     }

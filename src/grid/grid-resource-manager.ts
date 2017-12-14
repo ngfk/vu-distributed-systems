@@ -193,7 +193,7 @@ export class GridResourceManager extends GridNode {
     private onWorkerResult(message: GridMessage): void {
         const jobId = message.value;
         const aj = this.findActiveJob(jobId);
-        aj.status = JobStatus.Closed;
+        aj.status = JobStatus.Finished;
         aj.job = message.getJob();
         this.workers.set(message.senderSocket, NodeStatus.Available);
 
@@ -214,6 +214,6 @@ export class GridResourceManager extends GridNode {
             if (key.job.id === jobId) return key;
         }
 
-        throw Error('Unknown active job: ' + jobId);
+        throw new Error('Unknown active job: ' + jobId);
     }
 }

@@ -15,7 +15,12 @@ export interface AppProps {
     actions: ActionCreators;
 }
 
-class App extends React.Component<AppProps> {
+/**
+ * The root component of the application. The container component links the
+ * react interface with the redux store and defines the overall structure of
+ * the interface.
+ */
+class AppBase extends React.Component<AppProps> {
     public render(): JSX.Element {
         const { actions, state } = this.props;
 
@@ -43,4 +48,7 @@ const mapDispatchToProps = (dispatch: any) => ({
     actions: bindActionCreators(actionCreators, dispatch)
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+/**
+ * Inject the state and actions into the container component.
+ */
+export const App = connect(mapStateToProps, mapDispatchToProps)(AppBase);

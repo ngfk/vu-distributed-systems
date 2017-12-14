@@ -1,3 +1,5 @@
+// Note: Created by create-react-app tool, does not influence the simulation...
+
 // tslint:disable:no-console
 // In production, we register a service worker to serve assets from local cache.
 

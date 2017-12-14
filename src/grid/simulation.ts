@@ -11,7 +11,7 @@ export class Simulation {
     private user: GridUser;
     private schedulers: GridScheduler[] = [];
     private resourceManagers: GridResourceManager[] = [];
-    private workers: { [id: string]: GridWorker[] } = {};
+    private workers: { [rmId: string]: GridWorker[] } = {};
 
     constructor(private context: GridContext) {
         this.user = new GridUser(context);
@@ -49,6 +49,9 @@ export class Simulation {
         console.log('Simulation initialized...');
     }
 
+    /**
+     * Starts the simulation.
+     */
     public async start(): Promise<void> {
         if (!this.context.jobs) {
             // No job count provided, simply let the user create jobs forever.
@@ -64,17 +67,31 @@ export class Simulation {
         }
     }
 
+    /**
+     * Stops the simulation.
+     * Note: this only only prevents the `run` methods on every node from
+     * being executed. Every message that was still in the simulation will
+     * continue its path until finished or lost.
+     */
     public stop(): void {
         this.user.stop();
         this.schedulers.forEach(s => s.stop());
         this.resourceManagers.forEach(rm => rm.stop());
     }
 
+    /**
+     * Toggles the current state of a scheduler.
+     * @param nodeId The scheduler id
+     */
     public toggleScheduler(nodeId: string): void {
         const scheduler = this.schedulers.find(s => s.id === nodeId);
         if (scheduler) scheduler.toggleStatus();
     }
 
+    /**
+     * Toggles the current state of a resource manager.
+     * @param nodeId The resource-manager id
+     */
     public toggleResourceManager(nodeId: string): void {
         const resourceManager = this.resourceManagers.find(
             rm => rm.id === nodeId
@@ -82,6 +99,10 @@ export class Simulation {
         if (resourceManager) resourceManager.toggleStatus();
     }
 
+    /**
+     * Toggles the current state of a worker.
+     * @param nodeId The worker id
+     */
     public toggleWorker(nodeId: string): void {
         for (const rmId in this.workers) {
             const worker = this.workers[rmId].find(w => w.id === nodeId);
@@ -89,6 +110,10 @@ export class Simulation {
         }
     }
 
+    /**
+     * Retrieves the structure of id's. This can be used to setup the
+     * interface with the same id's as the simulation.
+     */
     public getSetup(): GridSetup {
         return {
             user: this.user.id,

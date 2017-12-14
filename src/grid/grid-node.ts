@@ -52,7 +52,8 @@ export abstract class GridNode {
     }
 
     public sendJobCount(jobCount: number): void {
-        this.context.sendJobCount(this.type, this.id, jobCount);
+        if (this.context.sendJobCount)
+            this.context.sendJobCount(this.type, this.id, jobCount);
     }
 
     public abstract async run(): Promise<void>;

@@ -73,7 +73,7 @@
         "no-consecutive-blank-lines": [true],
         "object-literal-shorthand": true,
         // "semicolon": [true, "always"],
-        "variable-name": [true, "check-format", "ban-keywords"],
+        // "variable-name": [true, "check-format", "ban-keywords"],
         "whitespace": [
             true,
             "check-branch",
