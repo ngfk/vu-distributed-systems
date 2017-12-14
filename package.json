@@ -9,6 +9,8 @@
         "start": "npm run start:site",
         "start:site": "react-scripts-ts start",
         "start:grid": "nodemon ./src/grid/index.ts",
+        "test": "mocha --require ts-node/register test/**/*.spec.ts",
+        "test:watch": "npm run test -- --watch --watch-extensions ts,tsx",
         "build": "react-scripts-ts build",
         "commit": "git-cz"
     },
@@ -30,13 +32,18 @@
         "redux": "^3.7.2"
     },
     "devDependencies": {
+        "@types/chai": "^4.0.10",
+        "@types/mocha": "^2.2.44",
         "@types/node": "^8.0.53",
         "@types/react": "^16.0.25",
         "@types/react-dom": "^16.0.3",
         "@types/react-redux": "^5.0.14",
+        "chai": "^4.1.2",
         "commitizen": "^2.9.6",
         "cz-customizable": "^5.2.0",
-        "react-scripts-ts": "^2.8.0"
+        "mocha": "^4.0.1",
+        "react-scripts-ts": "^2.8.0",
+        "ts-node": "^4.0.1"
     },
     "config": {
         "commitizen": {

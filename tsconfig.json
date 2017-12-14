@@ -1,4 +1,3 @@
-
 {
     "compilerOptions": {
         "outDir": "build",
@@ -9,7 +8,6 @@
         "allowJs": true,
         "jsx": "react",
         "moduleResolution": "node",
-        "rootDir": "src",
         "forceConsistentCasingInFileNames": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
@@ -18,5 +16,12 @@
         "suppressImplicitAnyIndexErrors": true,
         "downlevelIteration": true
     },
-    "exclude": ["node_modules", "build", "webpack"]
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "node_modules",
+        "build",
+        "webpack"
+    ]
 }
