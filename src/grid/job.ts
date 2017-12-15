@@ -1,6 +1,6 @@
-import { uuid } from '../utils/uuid';
-import { wait } from '../utils/wait';
-import { GridSocket } from './grid-socket';
+import { sleep } from '../utils/sleep';
+import { GridNode } from './grid-node';
+import { Socket } from './socket';
 
 /**
  * Represents the current status of a job.
@@ -14,19 +14,21 @@ export enum JobStatus {
 /**
  * Represents a job within the gird.
  */
-export class GridJob {
-    /**
-     * A unique identifier for this message.
-     */
-    public readonly id = uuid();
-
+export class Job {
     /**
      * The origin of this message, always represents the user that sent the
      * message.
      */
-    public readonly origin: GridSocket;
+    public readonly origin: Socket;
 
+    /**
+     * The job execution duration.
+     */
     private readonly duration: number;
+
+    /**
+     * The job status.
+     */
     private status: JobStatus;
 
     /**
@@ -34,8 +36,8 @@ export class GridJob {
      * @param origin Socket of the user that creates this job instance
      * @param duration The execution time of this job in ms
      */
-    constructor(origin: GridSocket, duration: number) {
-        this.origin = origin;
+    constructor(origin: GridNode, duration: number) {
+        this.origin = origin.socket;
         this.status = JobStatus.Waiting;
         this.duration = duration;
     }
@@ -46,7 +48,7 @@ export class GridJob {
      */
     public async execute(): Promise<void> {
         this.status = JobStatus.Running;
-        await wait(this.duration);
+        await sleep(this.duration);
         this.status = JobStatus.Finished;
     }
 

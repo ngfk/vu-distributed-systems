@@ -1,6 +1,6 @@
 import { NodeType } from '../models/node-type';
 import { randomRange } from '../utils/random';
-import { wait } from '../utils/wait';
+import { sleep } from '../utils/sleep';
 import { GridActiveJob } from './grid-active-job';
 import { GridContext } from './grid-context';
 import { JobStatus } from './grid-job';
@@ -32,7 +32,7 @@ export class GridScheduler extends GridNode {
         const message = this.createMessage(MessageType.Ping);
         this.getActiveSchedulers().forEach(s => s.send(message));
 
-        await wait(5000);
+        await sleep(5000);
     }
 
     public onMessage(message: GridMessage): void {

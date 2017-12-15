@@ -1,5 +1,4 @@
 import { GridSetup } from '../models/grid-setup';
-import { wait } from '../utils/wait';
 import { GridContext } from './grid-context';
 import { GridResourceManager } from './grid-resource-manager';
 import { GridScheduler } from './grid-scheduler';
@@ -53,18 +52,9 @@ export class Simulation {
      * Starts the simulation.
      */
     public async start(): Promise<void> {
-        if (!this.context.jobs) {
-            // No job count provided, simply let the user create jobs forever.
-            this.user.start();
-            this.schedulers.forEach(s => s.start());
-            this.resourceManagers.forEach(rm => rm.start());
-        } else {
-            // Only create the amount of jobs specified in the context.
-            for (let i = 0; i < this.context.jobs; i++) {
-                this.user.run();
-                await wait(200);
-            }
-        }
+        this.user.start();
+        this.schedulers.forEach(s => s.start());
+        this.resourceManagers.forEach(rm => rm.start());
     }
 
     /**

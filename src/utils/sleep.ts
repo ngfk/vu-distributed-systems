@@ -3,7 +3,7 @@
  * duration has exceeded.
  * @param duration The duration to wait
  */
-export const wait = (duration: number): Promise<void> => {
+export const sleep = (duration: number): Promise<void> => {
     return new Promise<void>(resolve => {
         setTimeout(() => resolve(), duration);
     });
