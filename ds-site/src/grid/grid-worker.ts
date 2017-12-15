@@ -37,6 +37,7 @@ export class GridWorker extends GridNode {
     }
 
     private onRequest(message: GridMessage) {
+        if (this.status === NodeStatus.Dead) return;
         this.status = NodeStatus.Busy;
 
         const newMessage = this.createMessage(
@@ -78,6 +79,7 @@ export class GridWorker extends GridNode {
     }
 
     private onStatus(rmSocket: GridSocket) {
+        if (this.status === NodeStatus.Dead) return;
         rmSocket.send(this.getAliveMessage());
     }
 

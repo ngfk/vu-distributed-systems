@@ -73,6 +73,7 @@ export class GridResourceManager extends GridNode {
     }
 
     private onSchedulerRequest(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
         const socket = message.senderSocket;
         const activeJob = new GridActiveJob(message.getJob(), socket);
 
@@ -89,6 +90,7 @@ export class GridResourceManager extends GridNode {
     }
 
     private onSchedulerAcknowledgement(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
         const jobId = message.value;
         const aj = this.findActiveJob(jobId);
         this.jobs.delete(aj);
@@ -124,12 +126,14 @@ export class GridResourceManager extends GridNode {
     }
 
     private sendJobRequestToWorker(worker: GridSocket, job: GridJob) {
+        if (this.status === NodeStatus.Dead) return;
         const message = this.createMessage(MessageType.Request, job.id);
         message.attachJob(job);
         worker.send(message);
     }
 
     private tryJobExecution(aj: GridActiveJob): void {
+        if (this.status === NodeStatus.Dead) return;
         const availableWorker = this.getAvailableWorker();
         if (!availableWorker) return;
 
@@ -140,6 +144,7 @@ export class GridResourceManager extends GridNode {
     }
 
     private onSchedulerPing(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
         this.sendStatus(message.senderSocket);
     }
 
@@ -176,6 +181,7 @@ export class GridResourceManager extends GridNode {
     }
 
     private sendJobResultToCluster(aj: GridActiveJob): void {
+        if (this.status === NodeStatus.Dead) return;
         const message = new GridMessage(
             this.socket,
             NodeType.ResourceManager,
@@ -191,6 +197,8 @@ export class GridResourceManager extends GridNode {
     }
 
     private onWorkerResult(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
+
         const jobId = message.value;
         const aj = this.findActiveJob(jobId);
         aj.status = JobStatus.Closed;

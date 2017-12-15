@@ -8,7 +8,8 @@ export enum MessageType {
     Confirmation = 'confirmation',
     Result = 'result',
     Acknowledgement = 'acknowledgement',
-    Ping = 'ping'
+    Ping = 'ping',
+    PingResponse = 'pingresponse'
 }
 
 export class GridMessage {

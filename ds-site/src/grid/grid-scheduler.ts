@@ -10,11 +10,13 @@ import { GridSocket } from './grid-socket';
 
 export class GridScheduler extends GridNode {
     private schedulers = new Map<GridSocket, NodeStatus>();
+    private responses: GridSocket[];
     private resourceManagers: GridSocket[];
     private jobs = new Set<GridActiveJob>();
 
     constructor(context: GridContext) {
         super(context, NodeType.Scheduler);
+        this.responses = [];
     }
 
     public registerResourceManagers(resourceManagers: GridSocket[]): void {
@@ -29,8 +31,15 @@ export class GridScheduler extends GridNode {
 
     public async run(): Promise<void> {
         // Ping other schedulers
+        if (this.status === NodeStatus.Dead) return;
         const message = this.createMessage(MessageType.Ping);
         this.getActiveSchedulers().forEach(s => s.send(message));
+        await delay(2000);
+        this.schedulers.forEach((state, socket) => {
+            if (this.responses.find(s => s === socket))
+                this.schedulers.set(socket, NodeStatus.Dead);
+            console.log(this.responses.find(s => s === socket));
+        });
 
         await delay(5000);
     }
@@ -64,6 +73,9 @@ export class GridScheduler extends GridNode {
 
     private onSchedulerMessage(message: GridMessage): void {
         switch (message.type) {
+            case MessageType.PingResponse:
+                this.onSchedulerPingResponse(message);
+                break;
             case MessageType.Ping:
                 this.onSchedulerPing(message);
                 break;
@@ -91,9 +103,11 @@ export class GridScheduler extends GridNode {
     }
 
     private onUserRequest(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
         const job = message.getJob();
 
         const activeSchedulers = this.getActiveSchedulers();
+
         const activeJob = new GridActiveJob(job, this.socket, activeSchedulers);
 
         this.jobs.add(activeJob);
@@ -114,6 +128,7 @@ export class GridScheduler extends GridNode {
     }
 
     private onUserConfirmation(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
         const activeJob = this.findActiveJob(message.value);
         activeJob.status = JobStatus.Closed;
         const job = activeJob.job;
@@ -129,15 +144,28 @@ export class GridScheduler extends GridNode {
         }
     }
 
-    private onSchedulerPing(message: GridMessage): void {
+    private onSchedulerPingResponse(message: GridMessage): void {
         const socket = message.senderSocket;
 
         const status = this.schedulers.get(socket);
         if (status === NodeStatus.Dead)
             this.schedulers.set(socket, NodeStatus.Available);
+        this.responses.push(socket);
+    }
+
+    private onSchedulerPing(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
+        const socket = message.senderSocket;
+
+        const status = this.schedulers.get(socket);
+        if (status === NodeStatus.Dead)
+            this.schedulers.set(socket, NodeStatus.Available);
+        const newMessage = this.createMessage(MessageType.PingResponse);
+        message.senderSocket.send(newMessage);
     }
 
     private onSchedulerRequest(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
         const job = message.getJob();
         const activeJob = new GridActiveJob(job, message.senderSocket);
         this.jobs.add(activeJob);
@@ -151,11 +179,11 @@ export class GridScheduler extends GridNode {
         const scheduler = message.senderSocket;
         const activeJob = this.findActiveJob(message.value);
         activeJob.confirmScheduler(scheduler);
-
         if (activeJob.canStart()) this.executeJob(activeJob);
     }
 
     private onResourceManagerResult(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
         const activeJob = this.findActiveJob(message.value);
         activeJob.markAsDone(this.socket);
         const job = activeJob.job;
@@ -166,6 +194,7 @@ export class GridScheduler extends GridNode {
     }
 
     private onSchedulerResult(message: GridMessage): void {
+        if (this.status === NodeStatus.Dead) return;
         const activeJob = this.findActiveJob(message.value);
         const newMessage = this.createMessage(
             MessageType.Acknowledgement,
@@ -203,6 +232,7 @@ export class GridScheduler extends GridNode {
     }
 
     private executeJob(activeJob: GridActiveJob): void {
+        if (this.status === NodeStatus.Dead) return;
         // Send confirmation to user
         const userMessage = this.createMessage(
             MessageType.Confirmation,

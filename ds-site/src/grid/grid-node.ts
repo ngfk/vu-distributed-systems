@@ -41,6 +41,7 @@ export abstract class GridNode {
     }
 
     public toggleStatus(): void {
+        console.log(this.status);
         this.status =
             this.status === NodeStatus.Dead
                 ? NodeStatus.Available
