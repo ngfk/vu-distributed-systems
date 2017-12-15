@@ -1,4 +1,5 @@
 import { NodeType } from '../models/node-type';
+import { sleep } from '../utils/sleep';
 import { uuid } from '../utils/uuid';
 import { JobCountSetter } from './grid-context';
 import { Message } from './message';
@@ -35,6 +36,7 @@ export abstract class GridNode {
 
         while (this.running) {
             if (this.status !== NodeStatus.Dead) await this.run();
+            await sleep(200);
         }
     }
 
@@ -43,6 +45,7 @@ export abstract class GridNode {
     }
 
     public toggleStatus(): void {
+        console.log('toggle');
         this.status =
             this.status === NodeStatus.Dead
                 ? NodeStatus.Available
@@ -54,6 +57,6 @@ export abstract class GridNode {
             this.jobCountSetter(this.type, this.id, jobCount);
     }
 
+    public abstract async run(): Promise<void>;
     public abstract onMessage(message: Message): void;
-    protected abstract async run(): Promise<void>;
 }

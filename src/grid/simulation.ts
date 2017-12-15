@@ -1,50 +1,60 @@
 import { GridSetup } from '../models/grid-setup';
-import { GridContext } from './grid-context';
-import { GridResourceManager } from './grid-resource-manager';
-import { GridScheduler } from './grid-scheduler';
-import { GridSocket } from './grid-socket';
-import { GridUser } from './grid-user';
-import { GridWorker } from './grid-worker';
+import { JobCountSetter } from './grid-context';
+import { ResourceManagerNode } from './resource-manager';
+import { SchedulerNode } from './scheduler';
+import { Socket } from './socket';
+import { UserNode } from './user';
+import { WorkerNode } from './worker';
 
 export class Simulation {
-    private user: GridUser;
-    private schedulers: GridScheduler[] = [];
-    private resourceManagers: GridResourceManager[] = [];
-    private workers: { [rmId: string]: GridWorker[] } = {};
+    private user: UserNode;
+    private schedulers: SchedulerNode[] = [];
+    private resourceManagers: ResourceManagerNode[] = [];
+    private workers: { [rmId: string]: WorkerNode[] } = {};
 
-    constructor(private context: GridContext) {
-        this.user = new GridUser(context);
+    constructor(
+        schedulerCount: number,
+        clusterCount: number,
+        workerCount: number,
+        jcs: JobCountSetter = () => {}
+    ) {
+        this.user = new UserNode();
 
-        const rmSockets: GridSocket[] = [];
-        for (let c = 0; c < context.clusters; c++) {
-            const rm = new GridResourceManager(context);
+        const rmSockets: Socket[] = [];
+        for (let c = 0; c < clusterCount; c++) {
+            const rm = new ResourceManagerNode();
             this.resourceManagers.push(rm);
             this.workers[rm.id] = [];
             rmSockets.push(rm.socket);
 
-            const workerSockets: GridSocket[] = [];
-            for (let w = 0; w < context.workers; w++) {
-                const worker = new GridWorker(context);
+            const workerSockets: Socket[] = [];
+            for (let w = 0; w < workerCount; w++) {
+                const worker = new WorkerNode().registerJobCountSetter(jcs);
                 this.workers[rm.id].push(worker);
                 workerSockets.push(worker.socket);
             }
 
-            rm.registerWorkers(workerSockets);
+            rm.registerWorkers(workerSockets).registerJobCountSetter(jcs);
         }
 
-        const schedulerSockets: GridSocket[] = [];
-        for (let s = 0; s < context.schedulers; s++) {
-            const scheduler = new GridScheduler(context);
+        const schedulerSockets: Socket[] = [];
+        for (let s = 0; s < schedulerCount; s++) {
+            const scheduler = new SchedulerNode();
             this.schedulers.push(scheduler);
             schedulerSockets.push(scheduler.socket);
         }
 
-        this.schedulers.forEach(s => {
-            s.registerSchedulers(schedulerSockets);
-            s.registerResourceManagers(rmSockets);
+        this.schedulers.forEach(scheduler => {
+            scheduler
+                .registerSchedulers(schedulerSockets)
+                .registerResourceManagers(rmSockets)
+                .registerJobCountSetter(jcs);
         });
 
-        this.user.registerSchedulers(schedulerSockets);
+        this.user
+            .registerSchedulers(schedulerSockets)
+            .registerJobCountSetter(jcs);
+
         console.log('Simulation initialized...');
     }
 

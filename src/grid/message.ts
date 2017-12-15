@@ -1,5 +1,5 @@
-import { GridNode } from './grid-node';
 import { Job } from './job';
+import { GridNode } from './node';
 import { Socket } from './socket';
 
 export enum MessageType {
@@ -7,7 +7,8 @@ export enum MessageType {
     Confirmation = 'confirmation',
     Result = 'result',
     Acknowledgement = 'acknowledgement',
-    Ping = 'ping'
+    Ping = 'ping',
+    PingAck = 'ping-ack'
 }
 
 export class Message {
@@ -24,9 +25,9 @@ export class Message {
     /**
      * Optional. The job to be sent.
      */
-    public readonly job?: Job;
+    public readonly job: Job;
 
-    constructor(from: GridNode, type: MessageType, job?: Job) {
+    constructor(from: GridNode, type: MessageType, job: Job) {
         this.from = from.socket;
         this.type = type;
         this.job = job;

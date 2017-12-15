@@ -25,10 +25,19 @@ export class WorkerNode extends GridNode {
     /**
      * Map use to keep track of messages that are unconfirmed.
      */
-    private confirmed = new Map<Job, boolean>();
+    // private confirmed = new Map<Job, boolean>();
 
     constructor() {
         super(NodeType.Worker);
+    }
+
+    /**
+     * The run method is constantly triggered from the base class. However a
+     * worker does not need a constantly running thread.
+     */
+    public async run(): Promise<void> {
+        // Workers actually don't need a constantly running thread.
+        throw new Error('Not implemented yet.');
     }
 
     /**
@@ -57,23 +66,14 @@ export class WorkerNode extends GridNode {
     }
 
     /**
-     * The run method is constantly triggered from the base class. However a
-     * worker does not need a constantly running thread.
-     */
-    protected async run(): Promise<void> {
-        // Workers actually don't need a constantly running thread.
-        throw new Error('Not implemented yet.');
-    }
-
-    /**
      * Executed when a request message is received from a resource manager.
      * @param message The message
      */
     private onRequest(message: Message): void {
-        if (!message.job) throw new Error(WorkerNode.NO_JOB_MESSAGE);
+        const { job } = message;
 
         // Send a confirmation to the resource manager
-        const confirmation = new Message(this, MessageType.Confirmation);
+        const confirmation = new Message(this, MessageType.Confirmation, job);
         message.from.send(confirmation);
 
         // Set active job
@@ -93,7 +93,7 @@ export class WorkerNode extends GridNode {
         if (!message.job) throw new Error(WorkerNode.NO_JOB_MESSAGE);
 
         // Register as confirmed
-        this.confirmed.set(message.job, true);
+        // this.confirmed.set(message.job, true);
 
         // Reset active job
         this.job = undefined;
@@ -132,12 +132,13 @@ export class WorkerNode extends GridNode {
 
         // Register job as unconfirmed
         const job = this.job;
-        this.confirmed.set(job, false);
+        this.setJobCount(0);
+        // this.confirmed.set(job, false);
 
         // Retry if no confirmation is received within 5 seconds
-        setTimeout(() => {
-            if (!this.confirmed.get(job)) this.sendJobResult(resourceManager);
-            else this.confirmed.delete(job);
-        }, 5000);
+        // setTimeout(() => {
+        //     if (!this.confirmed.get(job)) this.sendJobResult(resourceManager);
+        //     else this.confirmed.delete(job);
+        // }, 5000);
     }
 }

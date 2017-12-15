@@ -14,12 +14,6 @@ export class UserNode extends GridNode {
     public static readonly NO_SCHEDULER = 'No schedulers have been registered for this user.';
 
     /**
-     * Error message used when a message that should contain a job does not
-     * have a job.
-     */
-    public static readonly NO_JOB_MESSAGE = 'Received message should contain a job.';
-
-    /**
      * Collection of schedulers. If not a simulation this would be the data
      * structure as defined in: Appendix A.
      */
@@ -32,7 +26,7 @@ export class UserNode extends GridNode {
     private submittedJobs = new Set<Job>();
 
     /**
-     * Map use to keep track of messages that are unconfirmed.
+     * Map used to keep track of messages that are unconfirmed.
      */
     private confirmed = new Map<Job, boolean>();
 
@@ -78,6 +72,18 @@ export class UserNode extends GridNode {
     }
 
     /**
+     * The run method is constantly triggered from the base class. The user
+     * will constantly dispatch jobs.
+     */
+    public async run(): Promise<void> {
+        this.dispatchJob();
+
+        // Wait 200ms to 500ms before dispatching a new job.
+        const delay = randomRange(200, 500);
+        await sleep(delay);
+    }
+
+    /**
      * Every message that the user receives enters here.
      * @param message The received message
      */
@@ -93,42 +99,28 @@ export class UserNode extends GridNode {
     }
 
     /**
-     * The run method is constantly triggered from the base class. The user
-     * will constantly dispatch jobs.
-     */
-    protected async run(): Promise<void> {
-        this.dispatchJob();
-
-        // Wait 200ms to 500ms before dispatching a new job.
-        const delay = randomRange(200, 500);
-        await sleep(delay);
-    }
-
-    /**
      * Executed when a confirmation message is received from a scheduler.
      * @param message The message.
      */
     private onConfirmation(message: Message): void {
-        if (!message.job) throw new Error(UserNode.NO_JOB_MESSAGE);
-
         // Register as confirmed
         this.confirmed.set(message.job, true);
     }
 
     /**
-     * Executed when a result message if received from a scheduler. A
+     * Executed when a result message is received from a scheduler. A
      * confirmation message is sent to the scheduler.
      * @param message The message.
      */
     private onResult(message: Message): void {
-        if (!message.job) throw new Error(UserNode.NO_JOB_MESSAGE);
+        const { job } = message;
 
-        // Send confirmation to scheduler
-        const confirmation = new Message(this, MessageType.Confirmation);
+        // Send confirmation to scheduler (fig 2 step 12)
+        const confirmation = new Message(this, MessageType.Confirmation, job);
         message.from.send(confirmation);
 
         // Remove from active jobs
-        this.submittedJobs.delete(message.job);
+        this.submittedJobs.delete(job);
         this.setJobCount(this.submittedJobs.size);
     }
 
@@ -138,15 +130,14 @@ export class UserNode extends GridNode {
      * @param message The message to send
      */
     private sendToScheduler(message: Message): void {
-        if (!message.job) throw new Error(UserNode.NO_JOB_MESSAGE);
+        const { job } = message;
 
-        // Pick a random scheduler & send the message
+        // Pick a random scheduler & send the message (fig 2, step 1)
         const schedulerIdx = randomRange(0, this.schedulers.size - 1);
         const scheduler = [...this.schedulers][schedulerIdx];
         scheduler.send(message);
 
         // Register job as unconfirmed
-        const job = message.job;
         this.confirmed.set(job, false);
 
         // Retry using a different scheduler if no confirmation is received

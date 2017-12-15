@@ -6,7 +6,6 @@ import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { applyMiddleware, compose, Middleware } from 'redux';
 
-import { GridContext } from './grid/grid-context';
 import { Simulation } from './grid/simulation';
 import { NodeType } from './models/node-type';
 import { actionCreators, ActionMap } from './site/actions/actions';
@@ -70,14 +69,12 @@ export const gridMiddleware: Middleware = store => next => action => {
         case 'GRID_START': {
             const payload = p as ActionMap['GRID_START'];
 
-            const context: GridContext = {
-                schedulers: payload.schedulers,
-                clusters: payload.clusters,
-                workers: payload.workers,
+            grid = new Simulation(
+                payload.schedulers,
+                payload.clusters,
+                payload.workers,
                 sendJobCount
-            };
-
-            grid = new Simulation(context);
+            );
 
             const setup = grid.getSetup();
 

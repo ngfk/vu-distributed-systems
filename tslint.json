@@ -38,7 +38,7 @@
         "no-conditional-assignment": true,
         "no-construct": true,
         "no-duplicate-variable": true,
-        "no-empty": true,
+        // "no-empty": true,
         "no-eval": true,
         "no-invalid-this": [true],
         "no-null-keyword": true,

@@ -1,5 +1,5 @@
 import { sleep } from '../utils/sleep';
-import { GridNode } from './grid-node';
+import { GridNode } from './node';
 import { Socket } from './socket';
 
 /**

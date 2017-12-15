@@ -1,8 +1,8 @@
 import { NodeType } from '../models/node-type';
 import { randomRange } from '../utils/random';
 import { sleep } from '../utils/sleep';
-import { GridNode } from './grid-node';
 import { Message } from './message';
+import { GridNode } from './node';
 
 /**
  * The Socket class is used to fake a socket connection between nodes. Whenever
@@ -40,6 +40,15 @@ export class Socket {
      * @param message The message to send
      */
     public async send(message: Message): Promise<void> {
+        // if (
+        //     message.type !== MessageType.Ping &&
+        //     message.type !== MessageType.PingAck
+        // ) {
+        //     let msg = `[${message.type}]`;
+        //     msg += ` ${message.from.type} -> ${this.receiver.type}`;
+        //     console.log(msg);
+        // }
+
         if (Socket.DELAY) {
             // Delay the delivery of the message.
             const duration = randomRange(0, 200);
